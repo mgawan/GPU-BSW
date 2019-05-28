@@ -586,7 +586,7 @@ int main()
   	cudaErrchk(cudaMalloc(&alAend_d, NBLOCKS*sizeof(short)));
   	cudaErrchk(cudaMalloc(&alBend_d, NBLOCKS*sizeof(short)));
 
-	for(int iter = 0; iter < 10; iter++){
+//	for(int iter = 0; iter < 10; iter++){
 
 	cudaErrchk(cudaMemcpy(strA_d, strA, totalLengthA*sizeof(char), cudaMemcpyHostToDevice));
 	cudaErrchk(cudaMemcpy(strB_d, strB, totalLengthB*sizeof(char), cudaMemcpyHostToDevice));
@@ -606,7 +606,7 @@ int main()
 	cudaErrchk(cudaMemcpy(alAend, alAend_d, NBLOCKS*sizeof(short), cudaMemcpyDeviceToHost));
 	cudaErrchk(cudaMemcpy(alBend, alBend_d, NBLOCKS*sizeof(short), cudaMemcpyDeviceToHost));
 
-	}
+	//}
 	auto end = NOW;
 	chrono::duration<double> diff = end - start;
 	cout << "time = " << diff.count() << endl;
