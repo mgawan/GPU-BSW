@@ -10,7 +10,7 @@ using namespace std;
 
 #define EXTEND_GAP -1
 #define START_GAP -2
-#define NBLOCKS 15000
+#define NBLOCKS 31000
 #define NOW std::chrono::high_resolution_clock::now()
 
 #define cudaErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
@@ -27,13 +27,13 @@ inline void gpuAssert(cudaError_t code, const char* file, int line, bool abort =
 //double findMax(double array[], int length)
 
 __inline__ __device__
-int warpReduceMax(int val, int *myIndex, int *myIndex2) {
+short warpReduceMax(short val, short *myIndex, short *myIndex2) {
 int warpSize = 32;
-int myMax = 0;
-int newInd = 0;
-int newInd2 = 0;
-int ind = *myIndex;
-int ind2 = *myIndex2;
+short myMax = 0;
+short newInd = 0;
+short newInd2 = 0;
+short ind = *myIndex;
+short ind2 = *myIndex2;
 
 
   myMax = val;
@@ -62,13 +62,13 @@ int ind2 = *myIndex2;
 
 
 __device__
-int blockShuffleReduce(int myVal, int *myIndex, int *myIndex2){
+short blockShuffleReduce(short myVal, short *myIndex, short *myIndex2){
 	int laneId = threadIdx.x % 32;
 	int warpId = threadIdx.x / 32;
 	__shared__ int locTots[32];
 	__shared__ int locInds[32];
-	int myInd = *myIndex;
-	int myInd2 = *myIndex2;
+	short myInd = *myIndex;
+	short myInd2 = *myIndex2;
 	myVal = warpReduceMax(myVal, &myInd, &myInd2);
 
 
@@ -129,12 +129,12 @@ __device__ __host__
 }
 
 __device__ __noinline__
-void traceBack(int current_i, int current_j, int* seqA_align_begin, int* seqB_align_begin,
-const char* seqA, const char* seqB,int* I_i, int* I_j, int lengthSeqB){
+void traceBack(short current_i, short current_j, short* seqA_align_begin, short* seqB_align_begin,
+const char* seqA, const char* seqB,short* I_i, short* I_j, unsigned lengthSeqB){
       // int current_i=i_max,current_j=j_max;
 	int myId = blockIdx.x;
-        int next_i=I_i[current_i*(lengthSeqB+1) + current_j];
-        int next_j=I_j[current_i*(lengthSeqB+1) + current_j];
+        short next_i=I_i[current_i*(lengthSeqB+1) + current_j];
+        short next_j=I_j[current_i*(lengthSeqB+1) + current_j];
 
 
 while(((current_i!=next_i) || (current_j!=next_j)) && (next_j!=0) && (next_i!=0))
@@ -158,20 +158,20 @@ while(((current_i!=next_i) || (current_j!=next_j)) && (next_j!=0) && (next_i!=0)
 
 
 __global__
-void align_sequences_gpu(char* seqA_array,char* seqB_array, int* prefix_lengthA,
-int* prefix_lengthB, int* prefix_matrices, int *I_i_array, int *I_j_array,
-int* seqA_align_begin, int* seqA_align_end, int* seqB_align_begin, int* seqB_align_end){
+void align_sequences_gpu(char* seqA_array,char* seqB_array, unsigned* prefix_lengthA,
+unsigned* prefix_lengthB, unsigned* prefix_matrices, short *I_i_array, short *I_j_array,
+short* seqA_align_begin, short* seqA_align_end, short* seqB_align_begin, short* seqB_align_end){
 
 	int myId = blockIdx.x;
 	int myTId = threadIdx.x;
 
-	int lengthSeqA;
-	int lengthSeqB;
-	int matrixOffset;
+	unsigned lengthSeqA;
+	unsigned lengthSeqB;
+	unsigned matrixOffset;
 	//local pointers
 	char* seqA;
 	char* seqB;
-	int* I_i, *I_j;
+	short* I_i, *I_j;
 
 	extern __shared__ char is_valid_array[];
 	char* is_valid = &is_valid_array[0];
@@ -237,9 +237,9 @@ int* seqA_align_begin, int* seqA_align_end, int* seqB_align_begin, int* seqB_ali
 	int ind;
 
 	int i = 1;
-	int thread_max = 0;
-	int thread_max_i = 0;
-	int thread_max_j = 0;
+	short thread_max = 0;
+	short thread_max_i = 0;
+	short thread_max_j = 0;
 
 	short* tmp_ptr;
 
@@ -496,12 +496,12 @@ int main()
   		sequencesB.push_back(seqB);
 	}
   	//
-	int nAseq = NBLOCKS;
-	int nBseq = NBLOCKS;
+	unsigned nAseq = NBLOCKS;
+	unsigned nBseq = NBLOCKS;
 
-  	int *offsetA, *offsetB;
-  	offsetA = (int*)malloc(nAseq*sizeof(int));
-  	offsetB = (int*)malloc(nBseq*sizeof(int));
+  	unsigned *offsetA, *offsetB;
+  	offsetA = (unsigned*)malloc(nAseq*sizeof(int));
+  	offsetB = (unsigned*)malloc(nBseq*sizeof(int));
 
   	offsetA[0]=sequencesA[0].size();
   	for(int i = 1; i < nAseq; i++){
@@ -513,8 +513,8 @@ int main()
   		offsetB[i]=offsetB[i-1]+sequencesB[i].size();
   	}
 
-  	int totalLengthA = offsetA[nAseq-1];
-  	int totalLengthB = offsetB[nBseq-1];
+  	unsigned totalLengthA = offsetA[nAseq-1];
+  	unsigned totalLengthB = offsetB[nBseq-1];
 
   	//declare A and B strings
 	char* strA, *strB;
@@ -536,9 +536,9 @@ int main()
   //	 	memcpy(seqptr, sequencesB[i].c_str(), sequencesB[i].size());
   //	}
 	auto start = NOW;
-  	int *offsetMatrix;
-  	offsetMatrix = (int*)malloc(NBLOCKS*sizeof(int));
-  	offsetMatrix[0]=(sequencesA[0].size()+1)*(sequencesB[0].size()+1);
+  	unsigned *offsetMatrix;
+  	offsetMatrix = (unsigned*)malloc(NBLOCKS*sizeof(int));
+  	offsetMatrix[0]=(sequencesA[0].size()+1)*(sequencesB[0].size()+1); // offsets for traceback matrices
   	for(int i = 1; i < NBLOCKS; i++){
   		offsetMatrix[i]=offsetMatrix[i-1]+(sequencesA[i].size()+1)*(sequencesB[i].size()+1);
   	}
@@ -546,12 +546,12 @@ int main()
 	//int lengthSeqB = seqB.size();
 
 	char *strA_d, *strB_d;
-	int *offsetA_d, *offsetB_d;
-	int *offsetMatrix_d;
-	int *I_i, *I_j; // device pointers
+	unsigned *offsetA_d, *offsetB_d;
+	unsigned *offsetMatrix_d;
+	short *I_i, *I_j; // device pointers for traceback matrices
 	//double *matrix, *Ematrix, *Fmatrix;
-  	int alAbeg[NBLOCKS], alBbeg[NBLOCKS], alAend[NBLOCKS], alBend[NBLOCKS];
-  	int *alAbeg_d, *alBbeg_d, *alAend_d, *alBend_d;
+  	short alAbeg[NBLOCKS], alBbeg[NBLOCKS], alAend[NBLOCKS], alBend[NBLOCKS];
+  	short *alAbeg_d, *alBbeg_d, *alAend_d, *alBend_d;
 
 	//cout << "allocating memory" << endl;
 
@@ -569,20 +569,22 @@ int main()
 	//cout << dp_matrices_cells << endl;
 
 
-	cudaErrchk(cudaMalloc(&I_i, dp_matrices_cells*sizeof(int)));
-	cudaErrchk(cudaMalloc(&I_j, dp_matrices_cells*sizeof(int)));
+	cudaErrchk(cudaMalloc(&I_i, dp_matrices_cells*sizeof(short)));
+	cudaErrchk(cudaMalloc(&I_j, dp_matrices_cells*sizeof(short)));
 	//cout << "allocating matrices" << endl;
 
 
 // use character arrays for output data
 	//allocating offsets
-	cudaErrchk(cudaMalloc(&offsetA_d, nAseq*sizeof(int)));
-	cudaErrchk(cudaMalloc(&offsetB_d, nBseq*sizeof(int)));
-	cudaErrchk(cudaMalloc(&offsetMatrix_d, NBLOCKS*sizeof(int)));
-  	cudaErrchk(cudaMalloc(&alAbeg_d, NBLOCKS*sizeof(int)));
-  	cudaErrchk(cudaMalloc(&alBbeg_d, NBLOCKS*sizeof(int)));
-  	cudaErrchk(cudaMalloc(&alAend_d, NBLOCKS*sizeof(int)));
-  	cudaErrchk(cudaMalloc(&alBend_d, NBLOCKS*sizeof(int)));
+	cudaErrchk(cudaMalloc(&offsetA_d, nAseq*sizeof(int))); // array for storing offsets for A
+	cudaErrchk(cudaMalloc(&offsetB_d, nBseq*sizeof(int)));  // array for storing offsets for B
+	cudaErrchk(cudaMalloc(&offsetMatrix_d, NBLOCKS*sizeof(int))); // array for storing ofsets for traceback matrix
+
+	// copy back
+  	cudaErrchk(cudaMalloc(&alAbeg_d, NBLOCKS*sizeof(short)));
+  	cudaErrchk(cudaMalloc(&alBbeg_d, NBLOCKS*sizeof(short)));
+  	cudaErrchk(cudaMalloc(&alAend_d, NBLOCKS*sizeof(short)));
+  	cudaErrchk(cudaMalloc(&alBend_d, NBLOCKS*sizeof(short)));
 
 	//for(int iter = 0; iter < 14; iter++){
 
@@ -599,10 +601,10 @@ int main()
 	//cout << "kernel launched" << endl;
 
 
-	cudaErrchk(cudaMemcpy(alAbeg, alAbeg_d, NBLOCKS*sizeof(int), cudaMemcpyDeviceToHost));
-	cudaErrchk(cudaMemcpy(alBbeg, alBbeg_d, NBLOCKS*sizeof(int), cudaMemcpyDeviceToHost));
-	cudaErrchk(cudaMemcpy(alAend, alAend_d, NBLOCKS*sizeof(int), cudaMemcpyDeviceToHost));
-	cudaErrchk(cudaMemcpy(alBend, alBend_d, NBLOCKS*sizeof(int), cudaMemcpyDeviceToHost));
+	cudaErrchk(cudaMemcpy(alAbeg, alAbeg_d, NBLOCKS*sizeof(short), cudaMemcpyDeviceToHost));
+	cudaErrchk(cudaMemcpy(alBbeg, alBbeg_d, NBLOCKS*sizeof(short), cudaMemcpyDeviceToHost));
+	cudaErrchk(cudaMemcpy(alAend, alAend_d, NBLOCKS*sizeof(short), cudaMemcpyDeviceToHost));
+	cudaErrchk(cudaMemcpy(alBend, alBend_d, NBLOCKS*sizeof(short), cudaMemcpyDeviceToHost));
 
 	//}
 	auto end = NOW;
