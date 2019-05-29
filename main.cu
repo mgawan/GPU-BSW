@@ -10,7 +10,7 @@ using namespace std;
 
 #define EXTEND_GAP -1
 #define START_GAP -2
-#define NBLOCKS 31000
+#define NBLOCKS 15000
 #define NOW std::chrono::high_resolution_clock::now()
 
 #define cudaErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
@@ -128,7 +128,7 @@ __device__ __host__
 	return max;
 }
 
-__device__ __noinline__
+__device__
 void traceBack(short current_i, short current_j, short* seqA_align_begin, short* seqB_align_begin,
 const char* seqA, const char* seqB,short* I_i, short* I_j, unsigned lengthSeqB){
       // int current_i=i_max,current_j=j_max;
@@ -208,20 +208,17 @@ short* seqA_align_begin, short* seqA_align_end, short* seqB_align_begin, short* 
 
 	//char* v = is_valid;
 
+__syncthreads();
 	memset(is_valid, 0, lengthSeqB);
-	//if(myId == 0) printf("is_valid= %lu\n", is_valid);
 	is_valid += lengthSeqB;
-	//if(myId == 0) printf("is_valid= %lu\n", is_valid);
 	memset(is_valid, 1, lengthSeqB);
 	is_valid += lengthSeqB;
-	//if(myId == 0) printf("is_valid= %lu\n", is_valid);
 	memset(is_valid, 0, lengthSeqB);
-	//if(myId == 0) for(int k = 0; k < 3*lengthSeqB; k++) printf("%d ", f[k]);
-
 
 
 
 	if(myTId == 0) {
+
 		memset(curr_H, 0, 9*(lengthSeqB+1)*sizeof(short));
 	}
 	//__shared__ int global_max;
@@ -255,14 +252,14 @@ short* seqA_align_begin, short* seqA_align_end, short* seqB_align_begin, short* 
 		prev_prev_H = tmp_ptr;
 
 		memset(curr_H, 0, (lengthSeqB+1)*sizeof(short));
-
+		__syncthreads();
 		tmp_ptr = prev_E;
 		prev_E = curr_E;
 		curr_E = prev_prev_E;
 		prev_prev_E = tmp_ptr;
 
 		memset(curr_F, 0, (lengthSeqB+1)*sizeof(short));
-
+		__syncthreads();
 		tmp_ptr = prev_F;
 		prev_F = curr_F;
 		curr_F = prev_prev_F;
@@ -623,8 +620,8 @@ int main()
 	cudaErrchk(cudaFree(alAend_d));
 	cudaErrchk(cudaFree(alBend_d));
 
-	cout << "startA=" << alAbeg[8] << ", endA=" << alAend[8] << " start2A=" << alAbeg[29000] << " end2A=" << alAend[29000] << endl;
-	cout << "startB=" << alBbeg[8] << ", endB=" << alBend[8] << " start2B=" << alBbeg[29000] << " end2B=" << alBend[29000] << endl;
+	cout << "startA=" << alAbeg[8] << ", endA=" << alAend[8] << " start2A=" << alAbeg[14001] << " end2A=" << alAend[14001] << endl;
+	cout << "startB=" << alBbeg[8] << ", endB=" << alBend[8] << " start2B=" << alBbeg[14001] << " end2B=" << alBend[14001] << endl;
 
 
 
