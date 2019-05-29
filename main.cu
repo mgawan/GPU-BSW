@@ -8,7 +8,7 @@
 #include <chrono>
 using namespace std;
 
-#define EXTEND_GAP -1
+#define EXTEND_GAP -2
 #define START_GAP -2
 #define NBLOCKS 15000
 #define NOW std::chrono::high_resolution_clock::now()
@@ -27,13 +27,13 @@ inline void gpuAssert(cudaError_t code, const char* file, int line, bool abort =
 //double findMax(double array[], int length)
 
 __inline__ __device__
-short warpReduceMax(short val, short *myIndex, short *myIndex2) {
+short warpReduceMax(short val, short &myIndex, short &myIndex2) {
 int warpSize = 32;
 short myMax = 0;
 short newInd = 0;
 short newInd2 = 0;
-short ind = *myIndex;
-short ind2 = *myIndex2;
+short ind = myIndex;
+short ind2 = myIndex2;
 
 
   myMax = val;
@@ -52,45 +52,50 @@ short ind2 = *myIndex2;
     	myMax = val;
 
     	}
+			__syncthreads();
     }
-
-		*myIndex = ind;
-		*myIndex2 = ind2;
+	__syncthreads();
+		myIndex = ind;
+		myIndex2 = ind2;
 		val = myMax;
   return val;
 }
 
 
 __device__
-short blockShuffleReduce(short myVal, short *myIndex, short *myIndex2){
+short blockShuffleReduce(short myVal, short &myIndex, short &myIndex2){
 	int laneId = threadIdx.x % 32;
 	int warpId = threadIdx.x / 32;
-	__shared__ int locTots[32];
-	__shared__ int locInds[32];
-	short myInd = *myIndex;
-	short myInd2 = *myIndex2;
-	myVal = warpReduceMax(myVal, &myInd, &myInd2);
+	__shared__ short locTots[32];
+	__shared__ short locInds[32];
+	__shared__ short locInds2[32];
+	short myInd = myIndex;
+	short myInd2 = myIndex2;
+	myVal = warpReduceMax(myVal, myInd, myInd2);
 
 
 	if(laneId == 0) locTots[warpId] = myVal;
 	if(laneId == 0) locInds[warpId] = myInd;
+	if(laneId == 0) locInds2[warpId] = myInd2;
 
 	__syncthreads();
 
 	if(threadIdx.x <= (blockDim.x / 32)){
 		myVal = locTots[threadIdx.x];
 		myInd = locInds[threadIdx.x];
+		myInd2 = locInds2[threadIdx.x];
 	}else{
 		myVal = 0;
 		myInd = -1;
 		myInd2 = -1;
 	}
+	__syncthreads();
 
-
-	if(warpId == 0) myVal = warpReduceMax(myVal, &myInd, &myInd2);
-	*myIndex = myInd;
-	*myIndex2 = myInd2;
-
+	if(warpId == 0) {
+	myVal = warpReduceMax(myVal, myInd, myInd2);
+	myIndex = myInd;
+	myIndex2 = myInd2;
+}
 return myVal;
 }
 
@@ -217,10 +222,10 @@ __syncthreads();
 
 
 
-	if(myTId == 0) {
+	//if(myTId == 0) {
 
 		memset(curr_H, 0, 9*(lengthSeqB+1)*sizeof(short));
-	}
+//	}
 	//__shared__ int global_max;
 	__shared__ int i_max;
 	__shared__ int j_max;
@@ -258,16 +263,15 @@ __syncthreads();
 		curr_E = prev_prev_E;
 		prev_prev_E = tmp_ptr;
 
-		memset(curr_F, 0, (lengthSeqB+1)*sizeof(short));
+		memset(curr_E, 0, (lengthSeqB+1)*sizeof(short));
 		__syncthreads();
 		tmp_ptr = prev_F;
 		prev_F = curr_F;
 		curr_F = prev_prev_F;
 		prev_prev_F = tmp_ptr;
 
-		memset(curr_E, 0, (lengthSeqB+1)*sizeof(short));
+		memset(curr_F, 0, (lengthSeqB+1)*sizeof(short));
 
-		//if(myId == 0 ) printf("j=%d, i=%d, is_valid=%d,cond=%d\n", j, i,is_valid[myTId],(diag < lengthSeqB || diag >= lengthSeqA));
 		__syncthreads();
 
 		if(is_valid[myTId]){
@@ -279,10 +283,6 @@ __syncthreads();
 			curr_F[j] = (fVal > hfVal) ? fVal : hfVal;
 			curr_E[j] = (eVal > heVal) ? eVal: heVal;
 
-
-
-			//curr_F[j] = ((prev_F[j]+EXTEND_GAP)>(prev_H[j]+START_GAP)) ? prev_F[j]+EXTEND_GAP : prev_H[j]+START_GAP;
-		//	curr_E[j] = ((prev_E[j-1]+EXTEND_GAP)>(prev_H[j-1]+START_GAP)) ? prev_E[j-1]+EXTEND_GAP : prev_H[j-1]+START_GAP;
 
 
 
@@ -302,8 +302,8 @@ __syncthreads();
 
 
 			thread_max_i = (thread_max >= curr_H[j]) ? thread_max_i : i;
-			thread_max_j = (thread_max >= curr_H[j]) ? thread_max_i : myTId+1;
-		thread_max = thread_max >= curr_H[j] ? thread_max : curr_H[j];
+			thread_max_j = (thread_max >= curr_H[j]) ? thread_max_j : myTId+1;
+		thread_max = (thread_max >= curr_H[j]) ? thread_max : curr_H[j];
 
 			//if(myId==0) printf("id=%d thread_max=%d, i=%d\n", myTId, thread_max, thread_max_i);
 
@@ -331,19 +331,20 @@ __syncthreads();
 	}
 
 	//atomicMax(&global_max, thread_max);
-	thread_max = blockShuffleReduce(thread_max, &thread_max_i, &thread_max_j);// thread 0 will have the correct values
+	thread_max = blockShuffleReduce(thread_max, thread_max_i, thread_max_j);// thread 0 will have the correct values
 
 	// traceback
 	if(myTId == 0) {
 		i_max = thread_max_i;
 		j_max = thread_max_j;
-		int current_i=i_max,current_j=j_max;
+		short current_i=i_max,current_j=j_max;
 		seqA_align_end[myId] = current_i;
 		seqB_align_end[myId] = current_j;
 
 		traceBack(current_i, current_j, seqA_align_begin, seqB_align_begin, seqA, seqB, I_i, I_j, lengthSeqB);
 
 	}
+	__syncthreads();
 }
 
 __host__
@@ -620,8 +621,8 @@ int main()
 	cudaErrchk(cudaFree(alAend_d));
 	cudaErrchk(cudaFree(alBend_d));
 
-	cout << "startA=" << alAbeg[8] << ", endA=" << alAend[8] << " start2A=" << alAbeg[14001] << " end2A=" << alAend[14001] << endl;
-	cout << "startB=" << alBbeg[8] << ", endB=" << alBend[8] << " start2B=" << alBbeg[14001] << " end2B=" << alBend[14001] << endl;
+	cout << "startA=" << alAbeg[0] << ", endA=" << alAend[0] << " start2A=" << alAbeg[14000] << " end2A=" << alAend[14000] << endl;
+	cout << "startB=" << alBbeg[0] << ", endB=" << alBend[0] << " start2B=" << alBbeg[14000] << " end2B=" << alBend[14000] << endl;
 
 
 
