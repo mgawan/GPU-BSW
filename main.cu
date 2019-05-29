@@ -6,6 +6,7 @@
 #include <cmath>
 #include <sys/time.h>
 #include <chrono>
+#include <cuda_profiler_api.h>
 using namespace std;
 
 #define EXTEND_GAP -2
@@ -592,12 +593,13 @@ int main()
 	cudaErrchk(cudaMemcpy(offsetB_d, offsetB, nBseq*sizeof(int), cudaMemcpyHostToDevice));
 	cudaErrchk(cudaMemcpy(offsetMatrix_d, offsetMatrix, NBLOCKS*sizeof(int), cudaMemcpyHostToDevice));
 
+cudaProfilerStart();
 
   	//cout << "launching kernel" << endl;
 	align_sequences_gpu<<<NBLOCKS, seqB.size(), 3*3*(seqB.size()+1)*sizeof(short)+3*seqB.size()+(seqB.size()&1) >>>(strA_d, strB_d, offsetA_d, offsetB_d, offsetMatrix_d, I_i, I_j, alAbeg_d, alAend_d, alBbeg_d, alBend_d);
 
 	//cout << "kernel launched" << endl;
-
+cudaProfilerStop();
 
 	cudaErrchk(cudaMemcpy(alAbeg, alAbeg_d, NBLOCKS*sizeof(short), cudaMemcpyDeviceToHost));
 	cudaErrchk(cudaMemcpy(alBbeg, alBbeg_d, NBLOCKS*sizeof(short), cudaMemcpyDeviceToHost));
@@ -621,8 +623,8 @@ int main()
 	cudaErrchk(cudaFree(alAend_d));
 	cudaErrchk(cudaFree(alBend_d));
 
-	cout << "startA=" << alAbeg[0] << ", endA=" << alAend[0] << " start2A=" << alAbeg[14000] << " end2A=" << alAend[14000] << endl;
-	cout << "startB=" << alBbeg[0] << ", endB=" << alBend[0] << " start2B=" << alBbeg[14000] << " end2B=" << alBend[14000] << endl;
+	cout << "startA=" << alAbeg[0] << ", endA=" << alAend[0] << " start2A=" << alAbeg[9] << " end2A=" << alAend[9] << endl;
+	cout << "startB=" << alBbeg[0] << ", endB=" << alBend[0] << " start2B=" << alBbeg[9] << " end2B=" << alBend[9] << endl;
 
 
 
