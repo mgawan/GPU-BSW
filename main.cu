@@ -12,6 +12,8 @@ using namespace std;
 #define EXTEND_GAP -2
 #define START_GAP -2
 #define NBLOCKS 15000
+#define MATCH 5
+#define MISMATCH -3
 #define NOW std::chrono::high_resolution_clock::now()
 
 #define cudaErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
@@ -212,6 +214,7 @@ short* seqA_align_begin, short* seqA_align_end, short* seqB_align_begin, short* 
 	short* prev_F = &curr_F[lengthSeqB+1];
 	short* prev_prev_F = &prev_F[lengthSeqB+1];
 
+  char* myLocString = (char*)&prev_prev_F[lengthSeqB+1];
 	//char* v = is_valid;
 
 __syncthreads();
@@ -231,12 +234,24 @@ __syncthreads();
 	//__shared__ int global_max;
 	__shared__ int i_max;
 	__shared__ int j_max;
+	int j = myTId+1;
+ char myColumnChar = seqB[j-1]; // read only once
+
+///////////locsl dtring read in
+for(int i = myTId; i < lengthSeqA; i+=32){
+		myLocString[i] = seqA[i];
+
+}
 
 	__syncthreads();
 
 
 
 	short traceback[4];
+	__shared__ short iVal[4]; //= {-1,-1,0,0};
+	iVal[0] = -1; iVal[1] = -1; iVal[2] = 0; iVal[3] = 0;
+	__shared__ short jVal[4]; //= {-1,0,-1,0};
+	jVal[0] = -1; jVal[1] = 0; jVal[2] = -1; jVal[3] = 0;
 
 	int ind;
 
@@ -249,7 +264,7 @@ __syncthreads();
 
 	for(int diag = 0; diag < lengthSeqA + lengthSeqB - 1; diag++){ // iterate for the number of anti-diagonals
 
-		int j = myTId+1;
+
 
 		is_valid = is_valid - (diag < lengthSeqB || diag >= lengthSeqA);
 
@@ -286,47 +301,29 @@ __syncthreads();
 			curr_E[j] = (eVal > heVal) ? eVal: heVal;
 
 
+ //(myLocString[i-1] == myColumnChar)?MATCH:MISMATCH
 
-
-			traceback[0] = prev_prev_H[j-1]+similarityScore(seqA[i-1],seqB[j-1]);
+			traceback[0] = prev_prev_H[j-1]+((myLocString[i-1] == myColumnChar)?MATCH:MISMATCH);//similarityScore(myLocString[i-1],myColumnChar);//seqB[j-1]
 			traceback[1] = curr_F[j];
 			traceback[2] = curr_E[j];
 			traceback[3] = 0;
 
-		/*	curr_H[j] =  prev_prev_H[j-1]+similarityScore(seqA[i-1],seqB[j-1]);
-			curr_H[j] =  curr_H[j] >= curr_F[j]? curr_H[j]: curr_F[j];
-			curr_H[j] =  curr_H[j] >= curr_E[j]? curr_H[j]: curr_E[j];
-			curr_H[j] =  curr_H[j] >= 0? curr_H[j]: 0;
-			*/
 
 			curr_H[j] = findMax(traceback,4,&ind);
+			I_i[i*(lengthSeqB+1)+j] = i + iVal[ind];
+			I_j[i*(lengthSeqB+1)+j] = j + jVal[ind];
+///////////////////
+///////////////
 
+
+/////////////
+///////////
 
 			thread_max_i = (thread_max >= curr_H[j]) ? thread_max_i : i;
 			thread_max_j = (thread_max >= curr_H[j]) ? thread_max_j : myTId+1;
 		thread_max = (thread_max >= curr_H[j]) ? thread_max : curr_H[j];
 
-		//if(myId==0) printf("id=%d thread_max=%d, i=%d\n", myTId, thread_max, thread_max_i);
 
-			switch(ind)
-			{
-				case 0:
-					I_i[i*(lengthSeqB+1)+j] = i-1;
-					I_j[i*(lengthSeqB+1)+j] = j-1;
-					break;
-				case 1:
-					I_i[i*(lengthSeqB+1)+j] = i-1;
-                    			I_j[i*(lengthSeqB+1)+j] = j;
-                    			break;
-				case 2:
-					I_i[i*(lengthSeqB+1)+j] = i;
-                    			I_j[i*(lengthSeqB+1)+j] = j-1;
-                    			break;
-				case 3:
-					I_i[i*(lengthSeqB+1)+j] = i;
-                    			I_j[i*(lengthSeqB+1)+j] = j;
-                    			break;
-			}
 			i++;
         }
 	}
@@ -598,7 +595,7 @@ int main()
 cudaProfilerStart();
 
   	//cout << "launching kernel" << endl;
-	align_sequences_gpu<<<NBLOCKS, seqB.size(), 3*3*(seqB.size()+1)*sizeof(short)+3*seqB.size()+(seqB.size()&1) >>>(strA_d, strB_d, offsetA_d, offsetB_d, offsetMatrix_d, I_i, I_j, alAbeg_d, alAend_d, alBbeg_d, alBend_d);
+	align_sequences_gpu<<<NBLOCKS, seqB.size(), 3*3*(seqB.size()+1)*sizeof(short)+3*seqB.size()+(seqB.size()&1)+ seqA.size() >>>(strA_d, strB_d, offsetA_d, offsetB_d, offsetMatrix_d, I_i, I_j, alAbeg_d, alAend_d, alBbeg_d, alBend_d);
 
 	//cout << "kernel launched" << endl;
 cudaProfilerStop();
