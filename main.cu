@@ -138,22 +138,55 @@ __device__ __host__
 
 __device__
 void traceBack(short current_i, short current_j, short* seqA_align_begin, short* seqB_align_begin,
-const char* seqA, const char* seqB,short* I_i, short* I_j, unsigned lengthSeqB){
+const char* seqA, const char* seqB,short* I_i, short* I_j, unsigned lengthSeqB, unsigned lengthSeqA, unsigned int *diagOffset){
       // int current_i=i_max,current_j=j_max;
+			//printf ("SeqA:%d SeqB:%d\n",lengthSeqA,lengthSeqB);
+//if(blockIdx.x == 265)
+		//	for(int i = lengthSeqA+lengthSeqB; i>lengthSeqA+lengthSeqB -10; i--){
+		//		printf ("diagOffset:%d \n",diagOffset[i]);
+		//	}
 	int myId = blockIdx.x;
-        short next_i=I_i[current_i*(lengthSeqB+1) + current_j];
-        short next_j=I_j[current_i*(lengthSeqB+1) + current_j];
+	unsigned short current_diagId;// = current_i+current_j;
+	unsigned short current_locOffset;// = 0;
 
+	current_diagId = current_i+current_j;
+	current_locOffset = 0;
+	if(current_diagId < lengthSeqA + 1){
+		current_locOffset = current_j;
+	}else{
+		unsigned short myOff = current_diagId -lengthSeqA;
+		current_locOffset = current_j - myOff;
+	}
+//	I_i[diagOffset[diagId]+locOffset] = i + iVal[ind]; // coalesced accesses,
+//	I_j[diagOffset[diagId]+locOffset] = j + jVal[ind]; // coalesced accesses,
+//printf ("current_i:%d current_j:%d\n",current_i,current_j);
+//if(blockIdx.x==265)
+//printf ("diagOffset:%d current_locOffset:%d\n",diagOffset[current_diagId],current_locOffset);
+
+
+        short next_i=I_i[diagOffset[current_diagId]+current_locOffset];
+        short next_j=I_j[diagOffset[current_diagId]+current_locOffset];
+//printf ("next_i:%d next_j:%d\n",next_i,next_j);
+//printf ("diagOffset:%d current_locOffset:%d\n",diagOffset[current_diagId],current_locOffset);
 
 while(((current_i!=next_i) || (current_j!=next_j)) && (next_j!=0) && (next_i!=0))
         {
 
 
-
                 current_i = next_i;
                 current_j = next_j;
-                next_i = I_i[current_i*(lengthSeqB+1) + current_j];
-                next_j = I_j[current_i*(lengthSeqB+1) + current_j];
+
+								current_diagId = current_i+current_j;
+								current_locOffset = 0;
+								if(current_diagId < lengthSeqA + 1){
+									current_locOffset = current_j;
+								}else{
+									unsigned short myOff2 = current_diagId -lengthSeqA;
+									current_locOffset = current_j - myOff2;
+								}
+
+                next_i = I_i[diagOffset[current_diagId]+current_locOffset];
+                next_j = I_j[diagOffset[current_diagId]+current_locOffset];
 
         }
 	//printf("final current_i=%d, current_j=%d\n", current_i, current_j);
@@ -253,6 +286,7 @@ for(int i = myTId; i < lengthSeqA; i+=32){
 	__shared__ short jVal[4]; //= {-1,0,-1,0};
 	jVal[0] = -1; jVal[1] = 0; jVal[2] = -1; jVal[3] = 0;
 
+	__shared__ unsigned int diagOffset[1071+128+2]; //make this dynamic shared memory later on
 	int ind;
 
 	int i = 1;
@@ -261,9 +295,26 @@ for(int i = myTId; i < lengthSeqA; i+=32){
 	short thread_max_j = 0;
 
 	short* tmp_ptr;
-
+	int locSum = 0;
+	for(int diag = 0; diag < lengthSeqA + lengthSeqB - 1; diag++){
+	int locDiagId = diag + 1;
+ if(myTId == 0){ // this computes the prefixSum for diagonal offset look up table.
+	 if(locDiagId <= lengthSeqB + 1){
+		 locSum += locDiagId;
+		 diagOffset[locDiagId] = locSum;
+	 }else if (locDiagId > lengthSeqA + 1){
+		 locSum += (lengthSeqB + 1) - (locDiagId- (lengthSeqA+1));
+		 diagOffset[locDiagId] = locSum;
+	 }else{
+		 locSum += lengthSeqB + 1;
+		 diagOffset[locDiagId] = locSum;
+	 }
+		 diagOffset[lengthSeqA + lengthSeqB ] = locSum+2;
+		// printf("diag:%d\tlocSum:%d\n",diag,diagOffset[]);
+ }
+}
+__syncthreads();
 	for(int diag = 0; diag < lengthSeqA + lengthSeqB - 1; diag++){ // iterate for the number of anti-diagonals
-
 
 
 		is_valid = is_valid - (diag < lengthSeqB || diag >= lengthSeqA);
@@ -310,18 +361,30 @@ for(int i = myTId; i < lengthSeqA; i+=32){
 
 
 			curr_H[j] = findMax(traceback,4,&ind);
-			I_i[i*(lengthSeqB+1)+j] = i + iVal[ind];
-			I_j[i*(lengthSeqB+1)+j] = j + jVal[ind];
-///////////////////
+		//	I_i[i*(lengthSeqB+1)+j] = i + iVal[ind]; // non-coalesced accesses, need to change
+	//		I_j[i*(lengthSeqB+1)+j] = j + jVal[ind]; // non-coalesced accesses, need to change
+
+
+
+
+/////////////////// coalesced version
 ///////////////
-
-
+unsigned short diagId = i+j;
+unsigned short locOffset = 0;
+if(diagId < lengthSeqA + 1){
+	locOffset = j;
+}else{
+	unsigned short myOff = diagId -lengthSeqA;
+	locOffset = j - myOff;
+}
+I_i[diagOffset[diagId]+locOffset] = i + iVal[ind]; // coalesced accesses, need to change
+I_j[diagOffset[diagId]+locOffset] = j + jVal[ind]; // coalesced accesses, need to change
 /////////////
 ///////////
 
 			thread_max_i = (thread_max >= curr_H[j]) ? thread_max_i : i;
 			thread_max_j = (thread_max >= curr_H[j]) ? thread_max_j : myTId+1;
-		thread_max = (thread_max >= curr_H[j]) ? thread_max : curr_H[j];
+			thread_max = (thread_max >= curr_H[j]) ? thread_max : curr_H[j];
 
 
 			i++;
@@ -340,8 +403,10 @@ for(int i = myTId; i < lengthSeqA; i+=32){
 		short current_i=i_max,current_j=j_max;
 		seqA_align_end[myId] = current_i;
 		seqB_align_end[myId] = current_j;
-
-		traceBack(current_i, current_j, seqA_align_begin, seqB_align_begin, seqA, seqB, I_i, I_j, lengthSeqB);
+//		for(int i = lengthSeqA+lengthSeqB; i>lengthSeqA+lengthSeqB -10; i--){
+	//		printf ("diagOffset:%d \n",diagOffset[i]);
+	//	}
+		traceBack(current_i, current_j, seqA_align_begin, seqB_align_begin, seqA, seqB, I_i, I_j, lengthSeqB, lengthSeqA, diagOffset);
 
 	}
 	__syncthreads();
@@ -486,7 +551,7 @@ int main()
 	string seqB = /*"GGGAAAAAAAGGGG";*/"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGTTTTTTCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCAAAAAAAAAAAAAAA";//AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGTTTTTTTTT"; // sequence A
 	//CONTIG SEQUENCE
 	string seqA = /*"AAAAAAA";*/"GAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGTTTTTTCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCAAAAAAAAAAAAAAAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGA";//GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATTTTTTTTTTTTTTTTTTTTTTTTTT"; // sequence B
-
+cout << "lengthA:"<<seqA.size()<<" lengthB:"<<seqB.size()<<endl;
   	vector<string> sequencesA, sequencesB;
 
 	for(int i = 0; i < NBLOCKS; i++) {
@@ -622,8 +687,8 @@ cudaProfilerStop();
 	cudaErrchk(cudaFree(alAend_d));
 	cudaErrchk(cudaFree(alBend_d));
 
-	cout << "startA=" << alAbeg[0] << ", endA=" << alAend[0] << " start2A=" << alAbeg[9] << " end2A=" << alAend[9] << endl;
-	cout << "startB=" << alBbeg[0] << ", endB=" << alBend[0] << " start2B=" << alBbeg[9] << " end2B=" << alBend[9] << endl;
+	cout << "startA=" << alAbeg[0] << ", endA=" << alAend[0] << " start2A=" << alAbeg[9000] << " end2A=" << alAend[9000] << endl;
+	cout << "startB=" << alBbeg[0] << ", endB=" << alBend[0] << " start2B=" << alBbeg[9000] << " end2B=" << alBend[9000] << endl;
 
 
 
