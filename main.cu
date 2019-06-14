@@ -248,6 +248,9 @@ short* seqA_align_begin, short* seqA_align_end, short* seqB_align_begin, short* 
 	short* prev_prev_F = &prev_F[lengthSeqB+1];
 
   char* myLocString = (char*)&prev_prev_F[lengthSeqB+1];
+
+	unsigned alignmentPad = lengthSeqA%4;
+	unsigned int* diagOffset = (unsigned int*)&myLocString[lengthSeqA+alignmentPad];
 	//char* v = is_valid;
 
 __syncthreads();
@@ -286,7 +289,7 @@ for(int i = myTId; i < lengthSeqA; i+=32){
 	__shared__ short jVal[4]; //= {-1,0,-1,0};
 	jVal[0] = -1; jVal[1] = 0; jVal[2] = -1; jVal[3] = 0;
 
-	__shared__ unsigned int diagOffset[1071+128+2]; //make this dynamic shared memory later on
+	//__shared__ unsigned int diagOffset[1071+128+2]; //make this dynamic shared memory later on
 	int ind;
 
 	int i = 1;
@@ -310,7 +313,7 @@ for(int i = myTId; i < lengthSeqA; i+=32){
 		 diagOffset[locDiagId] = locSum;
 	 }
 		 diagOffset[lengthSeqA + lengthSeqB ] = locSum+2;
-		// printf("diag:%d\tlocSum:%d\n",diag,diagOffset[]);
+		//printf("diag:%d\tlocSum:%d\n",diag,diagOffset[locDiagId]);
  }
 }
 __syncthreads();
@@ -659,8 +662,9 @@ cout << "lengthA:"<<seqA.size()<<" lengthB:"<<seqB.size()<<endl;
 
 cudaProfilerStart();
 
+unsigned alignmentPad = seqA.size()%4;
   	//cout << "launching kernel" << endl;
-	align_sequences_gpu<<<NBLOCKS, seqB.size(), 3*3*(seqB.size()+1)*sizeof(short)+3*seqB.size()+(seqB.size()&1)+ seqA.size() >>>(strA_d, strB_d, offsetA_d, offsetB_d, offsetMatrix_d, I_i, I_j, alAbeg_d, alAend_d, alBbeg_d, alBend_d);
+	align_sequences_gpu<<<NBLOCKS, seqB.size(), 3*3*(seqB.size()+1)*sizeof(short)+3*seqB.size()+(seqB.size()&1)+ seqA.size()+alignmentPad + sizeof(int)*(seqA.size()+seqB.size()+2)>>>(strA_d, strB_d, offsetA_d, offsetB_d, offsetMatrix_d, I_i, I_j, alAbeg_d, alAend_d, alBbeg_d, alBend_d);
 
 	//cout << "kernel launched" << endl;
 cudaProfilerStop();
