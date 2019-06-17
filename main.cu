@@ -210,6 +210,8 @@ short* seqA_align_begin, short* seqA_align_end, short* seqB_align_begin, short* 
 	int myId = blockIdx.x;
 	int myTId = threadIdx.x;
 
+//	if(myId == 4)
+//	printf("block3 lenA:%d",prefix_lengthA[myId]);
 	unsigned lengthSeqA;
 	unsigned lengthSeqB;
 	unsigned matrixOffset;
@@ -569,12 +571,33 @@ cout << "lengthA:"<<seqA.size()<<" lengthB:"<<seqB.size()<<endl;
 	unsigned nAseq = NBLOCKS;
 	unsigned nBseq = NBLOCKS;
 
+	thrust::host_vector<int> offsetA(sequencesA.size());
+		thrust::host_vector<int> offsetB(sequencesB.size());
+		thrust::device_vector<unsigned> vec_offsetA_d(sequencesA.size());
+		thrust::device_vector<unsigned> vec_offsetB_d(sequencesB.size());
+
+		thrust::host_vector<unsigned> offsetMatrix(NBLOCKS);//*sizeof(unsigned));
+		thrust::device_vector<unsigned> vec_offsetMatrix_d(NBLOCKS);//*sizeof(unsigned));
+			//offsetMatrix = (int*)malloc(NBLOCKS*sizeof(int));
+			for(int i = 0; i < NBLOCKS; i++){
+				offsetMatrix[i]=(sequencesA[i].size()+1)*(sequencesB[i].size()+1);
+			}
 
 
-		unsigned *offsetA = new unsigned[nAseq*sizeof(int)];
-		unsigned *offsetB = new unsigned[nBseq*sizeof(int)];
+	//	unsigned *offsetA = new unsigned[nAseq*sizeof(int)];
+	//	unsigned *offsetB = new unsigned[nBseq*sizeof(int)];
+	for(int i = 0; i < nAseq; i++){
 
-  	offsetA[0]=sequencesA[0].size();
+		offsetA[i]=sequencesA[i].size();
+	}
+
+        for(int i = 0; i < nBseq; i++){
+
+		offsetB[i]=sequencesB[i].size();
+	}
+
+
+  /*	offsetA[0]=sequencesA[0].size();
   	for(int i = 1; i < nAseq; i++){
   		offsetA[i]=offsetA[i-1]+sequencesA[i].size();
   	}
@@ -583,47 +606,95 @@ cout << "lengthA:"<<seqA.size()<<" lengthB:"<<seqB.size()<<endl;
   	for(int i = 1; i < nBseq; i++){
   		offsetB[i]=offsetB[i-1]+sequencesB[i].size();
   	}
+*/
+auto start = NOW;
+ vec_offsetA_d = offsetA;
+	vec_offsetB_d = offsetB;
+cout <<"*******here here1"<<endl;
+	thrust::inclusive_scan(vec_offsetA_d.begin(),vec_offsetA_d.end(),vec_offsetA_d.begin());
+		thrust::inclusive_scan(vec_offsetB_d.begin(),vec_offsetB_d.end(),vec_offsetB_d.begin());
 
-  	unsigned totalLengthA = offsetA[nAseq-1];
-  	unsigned totalLengthB = offsetB[nBseq-1];
+	unsigned totalLengthA =vec_offsetA_d[nAseq-1];
+	unsigned totalLengthB =vec_offsetB_d[nBseq-1];
 
+	cout << "lengthA:"<<totalLengthA<<endl;
+	cout << "lengthB:"<<totalLengthB<<endl;
+//  	unsigned totalLengthA = offsetA[nAseq-1];
+  //	unsigned totalLengthB = offsetB[nBseq-1];
+	unsigned* offsetA_d = thrust::raw_pointer_cast(&vec_offsetA_d[0]);
+	unsigned* offsetB_d = thrust::raw_pointer_cast(&vec_offsetB_d[0]);
   	//declare A and B strings
 	//char* strA, *strB;
   	//allocate and copy A string
   //	strA = (char*)malloc(sizeof(char)*totalLengthA);
   	//strB = (char*)malloc(sizeof(char)*totalLengthB);
 
-char *strA = new char[totalLengthA];
-char *strB = new char[totalLengthB];
+//char *strA = new char[totalLengthA];
+//char *strB = new char[totalLengthB];
+unsigned offsetSumA = 0;
+unsigned offsetSumB = 0;
+cout <<"*******here here2"<<endl;
 
+vec_offsetMatrix_d = offsetMatrix;
+
+thrust::inclusive_scan(vec_offsetMatrix_d.begin(),vec_offsetMatrix_d.end(),vec_offsetMatrix_d.begin());
+
+//char* strA, *strB;
+	//allocate and copy A string
+	//strA = (char*)malloc(sizeof(char)*totalLengthA);
+//	strB = (char*)malloc(sizeof(char)*totalLengthB);
+	char *strA = new char[totalLengthA];
+		char *strB = new char[totalLengthB];
+	for(int i = 0; i<nAseq; i++){
+		char *seqptrA = strA + offsetSumA;//vec_offsetA_d[i] - sequencesA[i].size();
+		memcpy(seqptrA, sequencesA[i].c_str(), sequencesA[i].size());
+
+		char *seqptrB = strB + offsetSumB;// vec_offsetB_d[i] - sequencesB[i].size();
+		memcpy(seqptrB, sequencesB[i].c_str(), sequencesB[i].size());
+		offsetSumA += sequencesA[i].size();
+		offsetSumB += sequencesB[i].size();
+	}
+/*
   	for(int i = 0; i<nAseq; i++){
-  	 	char *seqptrA = strA + offsetA[i] - sequencesA[i].size();
+  	 	char *seqptrA = strA + offsetSumA;//offsetA[i] - sequencesA[i].size();
   	 //	memcpy(seqptrA, sequencesA[i].c_str(), sequencesA[i].size());
 			strcpy (seqptrA, sequencesA[i].c_str());
-  	 	char *seqptrB = strB + offsetB[i] - sequencesB[i].size();
+  	 	char *seqptrB = strB + offsetSumB;//offsetB[i] - sequencesB[i].size();
   	 	//memcpy(seqptrB, sequencesB[i].c_str(), sequencesB[i].size());
 			strcpy (seqptrB, sequencesB[i].c_str());
-  	}
 
+			offsetSumA += sequencesA[i].size();
+			offsetSumB += sequencesB[i].size();
+		//	cout <<"offsetA:"<<offsetSumA<<endl;
+		//	cout <<"offsetB:"<<offsetSumB<<endl;
+	}*/
+cout <<"*****here here3"<<endl;
   	//allocate and copy B string
   //	strB = (char*)malloc(sizeof(char)*totalLengthB);
   //	for(int i = 0; i<nBseq; i++){
   //	 	char *seqptr = strB + offsetB[i] - sequencesB[i].size();
   //	 	memcpy(seqptr, sequencesB[i].c_str(), sequencesB[i].size());
   //	}
-	auto start = NOW;
-  	unsigned *offsetMatrix;
-  	offsetMatrix = (unsigned*)malloc(NBLOCKS*sizeof(int));
-  	offsetMatrix[0]=(sequencesA[0].size()+1)*(sequencesB[0].size()+1); // offsets for traceback matrices
-  	for(int i = 1; i < NBLOCKS; i++){
-  		offsetMatrix[i]=offsetMatrix[i-1]+(sequencesA[i].size()+1)*(sequencesB[i].size()+1);
-  	}
+
+//  	unsigned *offsetMatrix;
+//  	offsetMatrix = (unsigned*)malloc(NBLOCKS*sizeof(int));
+//  	offsetMatrix[0]=(sequencesA[0].size()+1)*(sequencesB[0].size()+1); // offsets for traceback matrices
+//  	for(int i = 1; i < NBLOCKS; i++){
+//  		offsetMatrix[i]=offsetMatrix[i-1]+(sequencesA[i].size()+1)*(sequencesB[i].size()+1);
+//  	}
+
+
+cout <<"*******here here7"<<endl;
+//cout<<vec_offsetMatrix_d[0]<< " "<< vec_offsetMatrix_d[nAseq-1]<<endl;
+
+	long dp_matrices_cells = vec_offsetMatrix_d[NBLOCKS-1];
+unsigned* offsetMatrix_d = thrust::raw_pointer_cast(&vec_offsetMatrix_d[0]);
 
 	//int lengthSeqB = seqB.size();
 
 	char *strA_d, *strB_d;
-	unsigned *offsetA_d, *offsetB_d;
-	unsigned *offsetMatrix_d;
+	//unsigned *offsetA_d, *offsetB_d;
+//	unsigned *offsetMatrix_d;
 	short *I_i, *I_j; // device pointers for traceback matrices
 	//double *matrix, *Ematrix, *Fmatrix;
   	short alAbeg[NBLOCKS], alBbeg[NBLOCKS], alAend[NBLOCKS], alBend[NBLOCKS];
@@ -638,11 +709,11 @@ char *strB = new char[totalLengthB];
 	//malloc matrices
 //WHY ARW WE USING INTS FOR THIS??
 
-	long dp_matrices_cells = 0;
-	for(int i = 0; i < nAseq; i++) {
-		dp_matrices_cells += (sequencesA[i].size()+1) * (sequencesB[i].size()+1);
-	}
-	//cout << dp_matrices_cells << endl;
+//	long dp_matrices_cells = 0;
+//	for(int i = 0; i < nAseq; i++) {
+//		dp_matrices_cells += (sequencesA[i].size()+1) * (sequencesB[i].size()+1);
+//	}
+	cout << "dpcells:"<<endl<<dp_matrices_cells << endl;
 
 
 	cudaErrchk(cudaMalloc(&I_i, dp_matrices_cells*sizeof(short)));
@@ -652,9 +723,9 @@ char *strB = new char[totalLengthB];
 
 // use character arrays for output data
 	//allocating offsets
-	cudaErrchk(cudaMalloc(&offsetA_d, nAseq*sizeof(int))); // array for storing offsets for A
-	cudaErrchk(cudaMalloc(&offsetB_d, nBseq*sizeof(int)));  // array for storing offsets for B
-	cudaErrchk(cudaMalloc(&offsetMatrix_d, NBLOCKS*sizeof(int))); // array for storing ofsets for traceback matrix
+//	cudaErrchk(cudaMalloc(&offsetA_d, nAseq*sizeof(int))); // array for storing offsets for A
+//	cudaErrchk(cudaMalloc(&offsetB_d, nBseq*sizeof(int)));  // array for storing offsets for B
+//	cudaErrchk(cudaMalloc(&offsetMatrix_d, NBLOCKS*sizeof(int))); // array for storing ofsets for traceback matrix
 
 	// copy back
   	cudaErrchk(cudaMalloc(&alAbeg_d, NBLOCKS*sizeof(short)));
@@ -663,21 +734,21 @@ char *strB = new char[totalLengthB];
   	cudaErrchk(cudaMalloc(&alBend_d, NBLOCKS*sizeof(short)));
 
 //	for(int iter = 0; iter < 10; iter++){
-
+cout <<"*******here here6"<<endl;
 	cudaErrchk(cudaMemcpy(strA_d, strA, totalLengthA*sizeof(char), cudaMemcpyHostToDevice));
 	cudaErrchk(cudaMemcpy(strB_d, strB, totalLengthB*sizeof(char), cudaMemcpyHostToDevice));
-	cudaErrchk(cudaMemcpy(offsetA_d, offsetA, nAseq*sizeof(int), cudaMemcpyHostToDevice));
-	cudaErrchk(cudaMemcpy(offsetB_d, offsetB, nBseq*sizeof(int), cudaMemcpyHostToDevice));
-	cudaErrchk(cudaMemcpy(offsetMatrix_d, offsetMatrix, NBLOCKS*sizeof(int), cudaMemcpyHostToDevice));
+	//cudaErrchk(cudaMemcpy(offsetA_d, offsetA, nAseq*sizeof(int), cudaMemcpyHostToDevice));
+//	cudaErrchk(cudaMemcpy(offsetB_d, offsetB, nBseq*sizeof(int), cudaMemcpyHostToDevice));
+//	cudaErrchk(cudaMemcpy(offsetMatrix_d, offsetMatrix, NBLOCKS*sizeof(int), cudaMemcpyHostToDevice));
 
-cudaProfilerStart();
-
+//cudaProfilerStart();
+cout <<"*******here here4"<<endl;
 unsigned alignmentPad = seqA.size()%4;
   	//cout << "launching kernel" << endl;
 	align_sequences_gpu<<<NBLOCKS, seqB.size(), 3*3*(seqB.size()+1)*sizeof(short)+3*seqB.size()+(seqB.size()&1)+ seqA.size()+alignmentPad + sizeof(int)*(seqA.size()+seqB.size()+2)>>>(strA_d, strB_d, offsetA_d, offsetB_d, offsetMatrix_d, I_i, I_j, alAbeg_d, alAend_d, alBbeg_d, alBend_d);
-
+cout <<"*******here here5"<<endl;
 	//cout << "kernel launched" << endl;
-cudaProfilerStop();
+//cudaProfilerStop();
 //cudaDeviceSynchronize();
 	cudaErrchk(cudaMemcpy(alAbeg, alAbeg_d, NBLOCKS*sizeof(short), cudaMemcpyDeviceToHost));
 	cudaErrchk(cudaMemcpy(alBbeg, alBbeg_d, NBLOCKS*sizeof(short), cudaMemcpyDeviceToHost));
@@ -692,17 +763,17 @@ cudaProfilerStop();
 	cudaErrchk(cudaFree(strB_d));
 	cudaErrchk(cudaFree(I_i));
 	cudaErrchk(cudaFree(I_j));
-	cudaErrchk(cudaFree(offsetA_d));
-	cudaErrchk(cudaFree(offsetB_d));
-	cudaErrchk(cudaFree(offsetMatrix_d));
+//	cudaErrchk(cudaFree(offsetA_d));
+//	cudaErrchk(cudaFree(offsetB_d));
+//	cudaErrchk(cudaFree(offsetMatrix_d));
 
 	cudaErrchk(cudaFree(alAbeg_d));
 	cudaErrchk(cudaFree(alBbeg_d));
 	cudaErrchk(cudaFree(alAend_d));
 	cudaErrchk(cudaFree(alBend_d));
 
-	cout << "startA=" << alAbeg[0] << ", endA=" << alAend[0] << " start2A=" << alAbeg[9000] << " end2A=" << alAend[9000] << endl;
-	cout << "startB=" << alBbeg[0] << ", endB=" << alBend[0] << " start2B=" << alBbeg[9000] << " end2B=" << alBend[9000] << endl;
+	cout << "startA=" << alAbeg[0] << ", endA=" << alAend[0] << " start2A=" << alAbeg[900] << " end2A=" << alAend[900] << endl;
+	cout << "startB=" << alBbeg[0] << ", endB=" << alBend[0] << " start2B=" << alBbeg[900] << " end2B=" << alBend[900] << endl;
 
 
 
