@@ -205,7 +205,7 @@ while(((current_i!=next_i) || (current_j!=next_j)) && (next_j!=0) && (next_i!=0)
 __global__
 void align_sequences_gpu(char* seqA_array,char* seqB_array, unsigned* prefix_lengthA,
 unsigned* prefix_lengthB, unsigned* prefix_matrices, short *I_i_array, short *I_j_array,
-short* seqA_align_begin, short* seqA_align_end, short* seqB_align_begin, short* seqB_align_end){
+short* seqA_align_begin, short* seqA_align_end, short* seqB_align_begin, short* seqB_align_end, int outalign){
 
 	int myId = blockIdx.x;
 	int myTId = threadIdx.x;
@@ -219,6 +219,7 @@ short* seqA_align_begin, short* seqA_align_end, short* seqB_align_begin, short* 
 	char* seqA;
 	char* seqB;
 	short* I_i, *I_j;
+	unsigned totBytes = 0;
 
 	extern __shared__ char is_valid_array[];
 	char* is_valid = &is_valid_array[0];
@@ -244,18 +245,25 @@ short* seqA_align_begin, short* seqA_align_end, short* seqB_align_begin, short* 
 	short* curr_H = (short*)(&is_valid_array[3*lengthSeqB+(lengthSeqB&1)]);// point where the valid_array ends
 	short* prev_H = &curr_H[lengthSeqB+1]; // where the curr_H array ends
 	short* prev_prev_H = &prev_H[lengthSeqB+1];
+	totBytes += (3*lengthSeqB+(lengthSeqB&1))*sizeof(char) + ((lengthSeqB+1) + (lengthSeqB+1))*sizeof(short);
 
 	short* curr_E = &prev_prev_H[lengthSeqB+1];
 	short* prev_E = &curr_E[lengthSeqB+1];
 	short* prev_prev_E = &prev_E[lengthSeqB+1];
+	totBytes += ((lengthSeqB+1) + (lengthSeqB+1) + (lengthSeqB+1))*sizeof(short);
 
 	short* curr_F = &prev_prev_E[lengthSeqB+1];
 	short* prev_F = &curr_F[lengthSeqB+1];
 	short* prev_prev_F = &prev_F[lengthSeqB+1];
+	totBytes += ((lengthSeqB+1) + (lengthSeqB+1) + (lengthSeqB+1))*sizeof(short);
 
   char* myLocString = (char*)&prev_prev_F[lengthSeqB+1];
+	totBytes += (lengthSeqB+1)*sizeof(short) + (lengthSeqA)*sizeof(char);
 
-	unsigned alignmentPad = lengthSeqA%4;
+
+//if(myTId == 0 && myId == 0)
+	//printf("outalign: %d locAlign: %d", outalign, totBytes);
+	unsigned alignmentPad = 4 - totBytes%4;
 	unsigned int* diagOffset = (unsigned int*)&myLocString[lengthSeqA+alignmentPad];
 	//char* v = is_valid;
 
@@ -557,9 +565,9 @@ int main()
 {
 
 	//READ SEQUENCE
-	string seqB = /*"GGGAAAAAAAGGGG";*/"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGTTTTTTCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCAAAAAAAAAAAAAAA";//AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGTTTTTTTTT"; // sequence A
+	string seqB = /*"GGGAAAAAAAGGGG";*/"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGTTTTTTCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCAAAAAAAAAAAA";//AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGTTTTTTTTT"; // sequence A
 	//CONTIG SEQUENCE
-	string seqA = /*"AAAAAAA";*/"GAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGTTTTTTCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCAAAAAAAAAAAAAAAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGA";//GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATTTTTTTTTTTTTTTTTTTTTTTTTT"; // sequence B
+	string seqA = /*"AAAAAAA";*/"GAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGTTTTTTCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCAAAAAAAAAAAAAAAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGGGG";//GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATTTTTTTTTTTTTTTTTTTTTTTTTT"; // sequence B
 cout << "lengthA:"<<seqA.size()<<" lengthB:"<<seqB.size()<<endl;
   	vector<string> sequencesA, sequencesB;
 
@@ -743,9 +751,12 @@ cout <<"*******here here6"<<endl;
 
 //cudaProfilerStart();
 cout <<"*******here here4"<<endl;
-unsigned alignmentPad = seqA.size()%4;
-  	//cout << "launching kernel" << endl;
-	align_sequences_gpu<<<NBLOCKS, seqB.size(), 3*3*(seqB.size()+1)*sizeof(short)+3*seqB.size()+(seqB.size()&1)+ seqA.size()+alignmentPad + sizeof(int)*(seqA.size()+seqB.size()+2)>>>(strA_d, strB_d, offsetA_d, offsetB_d, offsetMatrix_d, I_i, I_j, alAbeg_d, alAend_d, alBbeg_d, alBend_d);
+
+unsigned totShmem = 3*3*(seqB.size()+1)*sizeof(short)+3*seqB.size()+(seqB.size()&1)+ seqA.size();
+cout <<"shmem:"<<totShmem<<endl;
+unsigned alignmentPad = 4 - totShmem%4;
+  	cout << "alignmentpad:" <<alignmentPad<<endl;
+	align_sequences_gpu<<<NBLOCKS, seqB.size(),totShmem+alignmentPad + sizeof(int)*(seqA.size()+seqB.size()+2)>>>(strA_d, strB_d, offsetA_d, offsetB_d, offsetMatrix_d, I_i, I_j, alAbeg_d, alAend_d, alBbeg_d, alBend_d, alignmentPad);
 cout <<"*******here here5"<<endl;
 	//cout << "kernel launched" << endl;
 //cudaProfilerStop();
