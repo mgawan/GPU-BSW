@@ -205,7 +205,7 @@ while(((current_i!=next_i) || (current_j!=next_j)) && (next_j!=0) && (next_i!=0)
 __global__
 void align_sequences_gpu(char* seqA_array,char* seqB_array, unsigned* prefix_lengthA,
 unsigned* prefix_lengthB, unsigned* prefix_matrices, short *I_i_array, short *I_j_array,
-short* seqA_align_begin, short* seqA_align_end, short* seqB_align_begin, short* seqB_align_end, int outalign){
+short* seqA_align_begin, short* seqA_align_end, short* seqB_align_begin, short* seqB_align_end){
 
 	int myId = blockIdx.x;
 	int myTId = threadIdx.x;
@@ -756,7 +756,7 @@ unsigned totShmem = 3*3*(seqB.size()+1)*sizeof(short)+3*seqB.size()+(seqB.size()
 cout <<"shmem:"<<totShmem<<endl;
 unsigned alignmentPad = 4 - totShmem%4;
   	cout << "alignmentpad:" <<alignmentPad<<endl;
-	align_sequences_gpu<<<NBLOCKS, seqB.size(),totShmem+alignmentPad + sizeof(int)*(seqA.size()+seqB.size()+2)>>>(strA_d, strB_d, offsetA_d, offsetB_d, offsetMatrix_d, I_i, I_j, alAbeg_d, alAend_d, alBbeg_d, alBend_d, alignmentPad);
+	align_sequences_gpu<<<NBLOCKS, seqB.size(),totShmem+alignmentPad + sizeof(int)*(seqA.size()+seqB.size()+2)>>>(strA_d, strB_d, offsetA_d, offsetB_d, offsetMatrix_d, I_i, I_j, alAbeg_d, alAend_d, alBbeg_d, alBend_d);
 cout <<"*******here here5"<<endl;
 	//cout << "kernel launched" << endl;
 //cudaProfilerStop();
