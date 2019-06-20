@@ -100,12 +100,7 @@ traceBack(short current_i, short current_j, short* seqA_align_begin,
           short* seqB_align_begin, const char* seqA, const char* seqB, short* I_i,
           short* I_j, unsigned lengthSeqB, unsigned lengthSeqA, unsigned int* diagOffset)
 {
-    // int current_i=i_max,current_j=j_max;
-    // printf ("SeqA:%d SeqB:%d\n",lengthSeqA,lengthSeqB);
-    // if(blockIdx.x == 265)
-    //	for(int i = lengthSeqA+lengthSeqB; i>lengthSeqA+lengthSeqB -10; i--){
-    //		printf ("diagOffset:%d \n",diagOffset[i]);
-    //	}
+
     int            myId = blockIdx.x;
     unsigned short current_diagId;     // = current_i+current_j;
     unsigned short current_locOffset;  // = 0;
@@ -121,18 +116,9 @@ traceBack(short current_i, short current_j, short* seqA_align_begin,
         unsigned short myOff = current_diagId - lengthSeqA;
         current_locOffset    = current_j - myOff;
     }
-    //	I_i[diagOffset[diagId]+locOffset] = i + iVal[ind]; // coalesced accesses,
-    //	I_j[diagOffset[diagId]+locOffset] = j + jVal[ind]; // coalesced accesses,
-    // printf ("current_i:%d current_j:%d\n",current_i,current_j);
-    // if(blockIdx.x==265)
-    // printf ("diagOffset:%d
-    // current_locOffset:%d\n",diagOffset[current_diagId],current_locOffset);
 
     short next_i = I_i[diagOffset[current_diagId] + current_locOffset];
     short next_j = I_j[diagOffset[current_diagId] + current_locOffset];
-    // printf ("next_i:%d next_j:%d\n",next_i,next_j);
-    // printf ("diagOffset:%d
-    // current_locOffset:%d\n",diagOffset[current_diagId],current_locOffset);
 
     while(((current_i != next_i) || (current_j != next_j)) && (next_j != 0) &&
           (next_i != 0))
@@ -225,17 +211,20 @@ align_sequences_gpu(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA
     short* prev_prev_F = &prev_F[lengthSeqB + 1];
     totBytes += ((lengthSeqB + 1) + (lengthSeqB + 1) + (lengthSeqB + 1)) * sizeof(short);
 
+
     char* myLocString = (char*) &prev_prev_F[lengthSeqB + 1];
     totBytes += (lengthSeqB + 1) * sizeof(short) + (lengthSeqA) * sizeof(char);
 
+
     // if(myTId == 0 && myId == 0)
     // printf("outalign: %d locAlign: %d", outalign, totBytes);
-    unsigned      alignmentPad = 4 - totBytes % 4;
+    unsigned      alignmentPad = 4+(4 - totBytes % 4);
+  //  if(myId == 0 && myTId == 0)
+  //  printf("totBytes %d\n pading:%d\n", totBytes, alignmentPad);
     unsigned int* diagOffset   = (unsigned int*) &myLocString[lengthSeqA + alignmentPad];
     // char* v = is_valid;
 
     __syncthreads();
-    // if(myTId == 0) {
     memset(is_valid, 0, lengthSeqB);
     is_valid += lengthSeqB;
     memset(is_valid, 1, lengthSeqB);
@@ -243,8 +232,7 @@ align_sequences_gpu(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA
     memset(is_valid, 0, lengthSeqB);
 
     memset(curr_H, 0, 9 * (lengthSeqB + 1) * sizeof(short));
-    //}
-    //__shared__ int global_max;
+
     __shared__ int i_max;
     __shared__ int j_max;
     int            j            = myTId + 1;
@@ -270,8 +258,6 @@ align_sequences_gpu(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA
     jVal[2] = -1;
     jVal[3] = 0;
 
-    //__shared__ unsigned int diagOffset[1071+128+2]; //make this dynamic shared memory
-    // later on
     int ind;
 
     int   i            = 1;
@@ -356,13 +342,8 @@ align_sequences_gpu(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA
             traceback[3] = 0;
 
             curr_H[j] = findMax(traceback, 4, &ind);
-            //	I_i[i*(lengthSeqB+1)+j] = i + iVal[ind]; // non-coalesced accesses, need
-            // to change
-            //		I_j[i*(lengthSeqB+1)+j] = j + jVal[ind]; // non-coalesced accesses,
-            //need to change
 
-            /////////////////// coalesced version
-            ///////////////
+
             unsigned short diagId    = i + j;
             unsigned short locOffset = 0;
             if(diagId < lengthSeqA + 1)
@@ -374,12 +355,11 @@ align_sequences_gpu(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA
                 unsigned short myOff = diagId - lengthSeqA;
                 locOffset            = j - myOff;
             }
+
             I_i[diagOffset[diagId] + locOffset] =
                 i + iVal[ind];  // coalesced accesses, need to change
             I_j[diagOffset[diagId] + locOffset] =
-                j + jVal[ind];  // coalesced accesses, need to change
-                                /////////////
-                                ///////////
+                j + jVal[ind];
 
             thread_max_i = (thread_max >= curr_H[j]) ? thread_max_i : i;
             thread_max_j = (thread_max >= curr_H[j]) ? thread_max_j : myTId + 1;
@@ -387,16 +367,13 @@ align_sequences_gpu(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA
 
             i++;
         }
+        __syncthreads();
     }
-
+  //__syncthreads();
     // atomicMax(&global_max, thread_max);
     thread_max = blockShuffleReduce(
         thread_max, thread_max_i, thread_max_j);  // thread 0 will have the correct values
-    // if(myId == 0 && myTId == 0)
-    // printf("thread_max:%d thread_i:%d thread_j:%d \n",thread_max, thread_max_i,
-    // thread_max_j);
-
-    // traceback
+    //  __syncthreads();
     if(myTId == 0)
     {
         i_max           = thread_max_i;
@@ -404,11 +381,9 @@ align_sequences_gpu(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA
         short current_i = i_max, current_j = j_max;
         seqA_align_end[myId] = current_i;
         seqB_align_end[myId] = current_j;
-        //		for(int i = lengthSeqA+lengthSeqB; i>lengthSeqA+lengthSeqB -10; i--){
-        //		printf ("diagOffset:%d \n",diagOffset[i]);
-        //	}
+
         traceBack(current_i, current_j, seqA_align_begin, seqB_align_begin, seqA, seqB,
                   I_i, I_j, lengthSeqB, lengthSeqA, diagOffset);
     }
-    __syncthreads();
+  //  __syncthreads();
 }

@@ -9,7 +9,7 @@
 #define EXTEND_GAP -2
 #define START_GAP -2
 #define NBLOCKS 15000
-#define MATCH 5
+#define MATCH 15
 #define MISMATCH -3
 #define NOW std::chrono::high_resolution_clock::now()
 
