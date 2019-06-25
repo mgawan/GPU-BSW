@@ -19,10 +19,11 @@ warpReduceMax(short val, short& myIndex, short& myIndex2, unsigned lengthSeqB)
         val     = max(val, __shfl_down_sync(mask, val, offset));
         newInd  = __shfl_down_sync(mask, ind, offset);
         newInd2 = __shfl_down_sync(mask, ind2, offset);
-        //if(blockIdx.x == 0)
-        //printf("max:%d, src: %d, curr_thrd:%d \n",val, threadIdx.x+offset, threadIdx.x);
+        __syncthreads();
+    //   if(blockIdx.x == 0 && threadIdx.x == 4)
+    //    printf("max:%d, src: %d, curr_thrd:%d \n",val, threadIdx.x+offset, threadIdx.x);
         //newInd2 = threadIdx.x + offset;
-
+//__syncthreads();
 
         if(val != myMax)
         {
@@ -51,6 +52,9 @@ blockShuffleReduce(short myVal, short& myIndex, short& myIndex2, unsigned length
     short            myInd2 = myIndex2;
     myVal                   = warpReduceMax(myVal, myInd, myInd2, lengthSeqB);
 
+
+  //  if(laneId == 0 && blockIdx.x == 0)
+  //   printf("max:%d, warp::%d \n",myVal, warpId);
     if(laneId == 0)
         locTots[warpId] = myVal;
     if(laneId == 0)
@@ -59,12 +63,16 @@ blockShuffleReduce(short myVal, short& myIndex, short& myIndex2, unsigned length
         locInds2[warpId] = myInd2;
 
     __syncthreads();
-
-    if(threadIdx.x <= (blockDim.x / 32))
+float check = ((float)blockDim.x / 32);
+float myt = threadIdx.x;
+    if(myt < check)/////******//////
     {
+
         myVal  = locTots[threadIdx.x];
         myInd  = locInds[threadIdx.x];
         myInd2 = locInds2[threadIdx.x];
+      //  if(blockIdx.x == 0)
+        //  printf("max:%d, thread::%d, check:%f \n",myVal, threadIdx.x, check);
     }
     else
     {
@@ -76,6 +84,9 @@ blockShuffleReduce(short myVal, short& myIndex, short& myIndex2, unsigned length
 
     if(warpId == 0)
     {
+    //  if(blockIdx.x == 0)
+      // printf("max:%d, thread::%d \n",myVal, threadIdx.x);
+
         myVal    = warpReduceMax(myVal, myInd, myInd2,lengthSeqB);
         myIndex  = myInd;
         myIndex2 = myInd2;
@@ -373,10 +384,6 @@ align_sequences_gpu(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA
             thread_max   = (thread_max >= curr_H[j]) ? thread_max : curr_H[j];
 
             i++;
-        }else{
-          thread_max_i = 0;
-          thread_max_j = 0;
-          thread_max_j = 0;
         }
         __syncthreads();
     }
@@ -396,8 +403,8 @@ align_sequences_gpu(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA
   // printf("before:returning thread: %d maxval: %d\n", threadIdx.x, thread_max);
   thread_max = blockShuffleReduce(thread_max, thread_max_i, thread_max_j, lengthSeqB);  // thread 0 will have the correct values
 
-  if(myTId ==0 && myId == 0)
-   printf("returning thread: %d maxval: %d\n", thread_max_j, thread_max);
+  //if(myTId ==0 && myId == 0)
+   //printf("returning thread: %d maxval: %d\n", thread_max_j, thread_max);
 __syncthreads();
 
   //    if(myId == 1 && myTId==0)printf("after:max:%d thread_j:%d\n", thread_max, thread_max_j );

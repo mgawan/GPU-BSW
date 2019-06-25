@@ -15,7 +15,7 @@ int main()
     // READ SEQUENCE
   /*  string seqB =
         "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGTTTTTTC"
-        "CCCCCCCCCCCCCCCCCCCCCCCCCCCCCAAAAAAAAAAAAAAAAA";  // AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGTTTTTTTTT";
+        "CCCCCCCCCCCCCCCCCCCCCCCCCCCCCAAAAAAAAAAAAAAAAAAA";  // AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGTTTTTTTTT";
                                                       // // sequence A
     // CONTIG SEQUENCE
     string seqA =
@@ -32,20 +32,28 @@ int main()
         "AAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAG"
         "AGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAG"
         "AGAGAGAAGAGAGAGAGAAGAGAGAGAGAAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAG"
-        "AGAGAAGAGAGAGAGAAGAGAGAGAGGGG";   */
+        "AGAGAAGAGAGAGAGAAGAGAGAGAGGGG";
+        */
 vector<string> sequencesA, sequencesB;
+//unsigned largestA = seqA.size(), largestB= seqB.size();
+
 //////////////
 //////////////
 
 string myInLine;
 ifstream ref_file("./test_data/ref_file.txt");
 ifstream quer_file("./test_data/query_file.txt");
+unsigned largestA = 0, largestB= 0;
+
 if(ref_file.is_open())
 {
 while(getline(ref_file,myInLine))
 {
 string seq = myInLine.substr(myInLine.find(":")+1, myInLine.size()-1);
 sequencesA.push_back(seq);
+if(seq.size() > largestA){
+  largestA = seq.size();
+}
 }
 }
 
@@ -55,17 +63,21 @@ while(getline(quer_file,myInLine))
 {
 string seq = myInLine.substr(myInLine.find(":")+1, myInLine.size()-1);
 sequencesB.push_back(seq);
+if(seq.size() > largestB){
+  largestB = seq.size();
 }
 }
+}
+cout <<"largestA:"<<largestA<<" largestB:"<<largestB<<endl;
 //////////////
 //////////////
 
-  //
-  //   for(int i = 0; i < NBLOCKS; i++)
-  // {
-  //       sequencesA.push_back(seqA);
-  //      sequencesB.push_back(seqB);
-  //   }
+
+   //   for(int i = 0; i < NBLOCKS; i++)
+   // {
+   //       sequencesA.push_back(seqA);
+   //      sequencesB.push_back(seqB);
+   //   }
 
 //cout << "totalA:"<<sequencesA.size()<<" sizeA:"<<sequencesA[0].length()<<endl;
 //cout << "totalB:"<<sequencesB.size()<<" sizeB:"<<sequencesB[0].length()<<endl;
@@ -168,15 +180,15 @@ sequencesB.push_back(seq);
 
 
 
-    unsigned totShmem = 3 * 3 * (sequencesB[0].size() + 1) * sizeof(short) + 3 * sequencesB[0].size()  + (sequencesB[0].size()  & 1) + sequencesA[0].size();
+    unsigned totShmem = 3 * 3 * (largestB + 1) * sizeof(short) + 3 * largestB  + (largestB  & 1) + largestA;
   //  cout << "shmem:" << totShmem << endl;
     unsigned alignmentPad = 4+(4 - totShmem % 4);
   //  cout << "alignmentpad:" << alignmentPad << endl;
   //  cout << "totShmem:"<<totShmem + alignmentPad +
       //  sizeof(int) * (sequencesA[0].size() + sequencesB[0].size() + 2)<<endl;
-    align_sequences_gpu<<<NBLOCKS, sequencesB[0].size(),
+    align_sequences_gpu<<<NBLOCKS, largestB,
                           totShmem + alignmentPad +
-                              sizeof(int) * (sequencesA[0].size() + sequencesB[0].size()+2)>>>(
+                              sizeof(int) * (largestA + largestB+2)>>>(
         strA_d, strB_d, offsetA_d, offsetB_d, offsetMatrix_d, I_i, I_j, alAbeg_d,
         alAend_d, alBbeg_d, alBend_d);
 
@@ -205,12 +217,12 @@ sequencesB.push_back(seq);
 int error = 0;
     for(int i = 0; i < NBLOCKS; i++){
       if(alAbeg[i] != 189 || alAend[i] != 314 || alBbeg[i] != 1 || alBend[i] != 126){
-        cout << "i:"<<i<<" startA=" << alAbeg[i] << ", endA=" << alAend[i]<<" startB=" << alBbeg[i] << ", endB=" << alBend[i]<<endl;
+       cout << "i:"<<i<<" startA=" << alAbeg[i] << ", endA=" << alAend[i]<<" startB=" << alBbeg[i] << ", endB=" << alBend[i]<<endl;
         error++;
       }
     }
     cout <<"total errors:"<<error<<endl;
 
-
+      //  cout << " startA=" << alAbeg[0] << ", endA=" << alAend[0]<<" startB=" << alBbeg[0] << ", endB=" << alBend[0]<<endl;
     return 0;
 }
