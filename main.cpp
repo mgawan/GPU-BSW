@@ -7,6 +7,7 @@
 #include <thrust/host_vector.h>
 #include <thrust/scan.h>
 #include <vector>
+#include<sstream>
 
 using namespace std;
 
@@ -41,8 +42,8 @@ vector<string> sequencesA, sequencesB;
 //////////////
 
 string myInLine;
-ifstream ref_file("./test_data/ref_file.txt");
-ifstream quer_file("./test_data/query_file.txt");
+ifstream ref_file("./test_data/ref_file_1.txt");
+ifstream quer_file("./test_data/que_file_1.txt");
 unsigned largestA = 0, largestB= 0;
 
 if(ref_file.is_open())
@@ -214,6 +215,44 @@ cout <<"largestA:"<<largestA<<" largestB:"<<largestB<<endl;
     cudaErrchk(cudaFree(alBbeg_d));
     cudaErrchk(cudaFree(alAend_d));
     cudaErrchk(cudaFree(alBend_d));
+
+
+//verifying correctness
+    string rstLine;
+    ifstream rst_file("./test_data/results_1");
+    int i = 0, errors=0;
+    if(rst_file.is_open())
+    {
+    while(getline(rst_file,rstLine))
+    {
+    string in = rstLine.substr(rstLine.find(":")+1, rstLine.size()-1);
+    vector<int> valsVec;
+
+    stringstream myStream(in);
+
+    int val;
+    while(myStream >> val){
+      valsVec.push_back(val);
+      if(myStream.peek() == ',')
+        myStream.ignore();
+    }
+
+   int ref_st = valsVec[0];
+   int ref_end = valsVec[1];
+   int que_st = valsVec[2];
+   int que_end = valsVec[3];
+
+   if(alAbeg[i] != ref_st || alAend[i] != ref_end || alBbeg[i] != que_st || alBend[i] != que_end){
+    cout << "i:"<<i<<" startA=" << alAbeg[i] << ", endA=" << alAend[i]<<" startB=" << alBbeg[i] << ", endB=" << alBend[i]<<endl;
+        cout << "corr:"<<i<<" corr_strtA=" << ref_st << ", corr_endA=" << ref_end<<" corr_startB=" << que_st << ", corr_endB=" << que_end<<endl;
+     errors++;
+   }
+  //  cout <<ref_st<<" "<<ref_end<<" "<<ref_st<<" "<<ref_end<<endl;
+i++;
+    }
+    cout <<"total errors:"<<errors<<endl;
+    }
+
 // int error = 0;
 //     for(int i = 0; i < NBLOCKS; i++){
 //       if(alAbeg[i] != 189 || alAend[i] != 314 || alBbeg[i] != 1 || alBend[i] != 126){
@@ -223,6 +262,6 @@ cout <<"largestA:"<<largestA<<" largestB:"<<largestB<<endl;
 //     }
 //     cout <<"total errors:"<<error<<endl;
 
-      //  cout << " startA=" << alAbeg[0] << ", endA=" << alAend[0]<<" startB=" << alBbeg[0] << ", endB=" << alBend[0]<<endl;
+       //cout << " startA=" << alAbeg[0] << ", endA=" << alAend[0]<<" startB=" << alBbeg[0] << ", endB=" << alBend[0]<<endl;
     return 0;
 }
