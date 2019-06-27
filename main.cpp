@@ -8,42 +8,28 @@
 #include <thrust/scan.h>
 #include <vector>
 #include<sstream>
+#include<omp.h>
 
 using namespace std;
 
-int main()
+int main(int argc, char *argv[])
 {
-    // READ SEQUENCE
-  /*  string seqB =
-        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGTTTTTTC"
-        "CCCCCCCCCCCCCCCCCCCCCCCCCCCCCAAAAAAAAAAAAAAAAAAA";  // AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGTTTTTTTTT";
-                                                      // // sequence A
-    // CONTIG SEQUENCE
-    string seqA =
-        "GAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGA"
-        "GAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGA"
-        "GAGAGAGAGAGAGAGAGAGAGAGAGAGAGAGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGGGGGGGGGGG"
-        "GGGGGGGGGGGGGGGGGGGGGGGGGTTTTTTCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCAAAAAAAAAAAAAAAAGAG"
-        "AGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGA"
-        "GAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAG"
-        "AAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAG"
-        "AGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGA"
-        "GAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAAGAGAGA"
-        "GAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAG"
-        "AAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAG"
-        "AGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAG"
-        "AGAGAGAAGAGAGAGAGAAGAGAGAGAGAAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAGAGAGAAGAGAG"
-        "AGAGAAGAGAGAGAGAAGAGAGAGAGGGG";
-        */
-vector<string> sequencesA, sequencesB;
-//unsigned largestA = seqA.size(), largestB= seqB.size();
 
-//////////////
-//////////////
+
+int deviceCount;
+cudaGetDeviceCount(&deviceCount);
+cudaDeviceProp prop[deviceCount];
+for(int i = 0; i < deviceCount; i++)
+  cudaGetDeviceProperties(&prop[i], 0);
+
+for(int i = 0; i < deviceCount; i++)
+  cout <<"total Global Memory for Device "<<i<<":"<<prop[i].totalGlobalMem<<endl;
+vector<string> G_sequencesA, G_sequencesB;// sequence A is the longer one/reference string
+
 
 string myInLine;
-ifstream ref_file("./test_data/ref_file_1.txt");
-ifstream quer_file("./test_data/que_file_1.txt");
+ifstream ref_file(argv[1]);//"./test_data/ref_file_1.txt"
+ifstream quer_file(argv[2]);//"./test_data/que_file_1.txt"
 unsigned largestA = 0, largestB= 0;
 
 if(ref_file.is_open())
@@ -51,7 +37,7 @@ if(ref_file.is_open())
 while(getline(ref_file,myInLine))
 {
 string seq = myInLine.substr(myInLine.find(":")+1, myInLine.size()-1);
-sequencesA.push_back(seq);
+G_sequencesA.push_back(seq);
 if(seq.size() > largestA){
   largestA = seq.size();
 }
@@ -63,26 +49,27 @@ if(quer_file.is_open())
 while(getline(quer_file,myInLine))
 {
 string seq = myInLine.substr(myInLine.find(":")+1, myInLine.size()-1);
-sequencesB.push_back(seq);
+G_sequencesB.push_back(seq);
 if(seq.size() > largestB){
   largestB = seq.size();
 }
 }
 }
 cout <<"largestA:"<<largestA<<" largestB:"<<largestB<<endl;
-//////////////
-//////////////
 
+#pragma omp parallel
+{
+  int totThreads = omp_get_num_threads();
+  cout <<"total threads:"<< totThreads<<endl;
+  int my_cpu_id = omp_get_thread_num();
+  cudaSetDevice(my_cpu_id);
+  int myGPUid;
+  cudaGetDevice(&myGPUid);
 
-   //   for(int i = 0; i < NBLOCKS; i++)
-   // {
-   //       sequencesA.push_back(seqA);
-   //      sequencesB.push_back(seqB);
-   //   }
-
-//cout << "totalA:"<<sequencesA.size()<<" sizeA:"<<sequencesA[0].length()<<endl;
-//cout << "totalB:"<<sequencesB.size()<<" sizeB:"<<sequencesB[0].length()<<endl;
-
+  cout <<" gpuid:"<<myGPUid<<" cpuID:"<<my_cpu_id<<endl;
+  vector<string> sequencesA, sequencesB;
+  sequencesA = G_sequencesA;
+  sequencesB = G_sequencesB;
     thrust::host_vector<int>        offsetA(sequencesA.size());
     thrust::host_vector<int>        offsetB(sequencesB.size());
     thrust::device_vector<unsigned> vec_offsetA_d(sequencesA.size());
@@ -90,14 +77,13 @@ cout <<"largestA:"<<largestA<<" largestB:"<<largestB<<endl;
 
     thrust::host_vector<unsigned>   offsetMatrix(NBLOCKS);        //*sizeof(unsigned));
     thrust::device_vector<unsigned> vec_offsetMatrix_d(NBLOCKS);  //*sizeof(unsigned));
-    // offsetMatrix = (int*)malloc(NBLOCKS*sizeof(int));
+
     for(int i = 0; i < NBLOCKS; i++)
     {
         offsetMatrix[i] = (sequencesA[i].size() + 1) * (sequencesB[i].size() + 1);
     }
 
-    //	unsigned *offsetA = new unsignedf[nAseq*sizeof(int)];
-    //	unsigned *offsetB = new unsigned[nBseq*sizeof(int)];
+
     for(int i = 0; i < sequencesA.size(); i++)
     {
         offsetA[i] = sequencesA[i].size();
@@ -109,7 +95,9 @@ cout <<"largestA:"<<largestA<<" largestB:"<<largestB<<endl;
     }
 
 
-    auto start    = NOW;
+
+for(int i = 0; i < 1; i++){
+  auto start    = NOW;
     vec_offsetA_d = offsetA;
     vec_offsetB_d = offsetB;
   //  cout << "*******here here1" << endl;
@@ -203,9 +191,7 @@ cout <<"largestA:"<<largestA<<" largestB:"<<largestB<<endl;
         cudaMemcpy(alBend, alBend_d, NBLOCKS * sizeof(short), cudaMemcpyDeviceToHost));
 
     //}
-    auto                     end  = NOW;
-    chrono::duration<double> diff = end - start;
-    cout << "time = " << diff.count() << endl;
+
     cudaErrchk(cudaFree(strA_d));
     cudaErrchk(cudaFree(strB_d));
     cudaErrchk(cudaFree(I_i));
@@ -215,12 +201,13 @@ cout <<"largestA:"<<largestA<<" largestB:"<<largestB<<endl;
     cudaErrchk(cudaFree(alBbeg_d));
     cudaErrchk(cudaFree(alAend_d));
     cudaErrchk(cudaFree(alBend_d));
+    auto                     end  = NOW;
+    chrono::duration<double> diff = end - start;
+    cout << "time = " << diff.count() << endl;
 
-
-//verifying correctness
     string rstLine;
     ifstream rst_file("./test_data/results_1");
-    int i = 0, errors=0;
+    int k = 0, errors=0;
     if(rst_file.is_open())
     {
     while(getline(rst_file,rstLine))
@@ -242,16 +229,20 @@ cout <<"largestA:"<<largestA<<" largestB:"<<largestB<<endl;
    int que_st = valsVec[2];
    int que_end = valsVec[3];
 
-   if(alAbeg[i] != ref_st || alAend[i] != ref_end || alBbeg[i] != que_st || alBend[i] != que_end){
-    cout << "i:"<<i<<" startA=" << alAbeg[i] << ", endA=" << alAend[i]<<" startB=" << alBbeg[i] << ", endB=" << alBend[i]<<endl;
-        cout << "corr:"<<i<<" corr_strtA=" << ref_st << ", corr_endA=" << ref_end<<" corr_startB=" << que_st << ", corr_endB=" << que_end<<endl;
+   if(alAbeg[k] != ref_st || alAend[k] != ref_end || alBbeg[k] != que_st || alBend[k] != que_end){
+    cout << "k:"<<k<<" startA=" << alAbeg[k] << ", endA=" << alAend[k]<<" startB=" << alBbeg[k] << ", endB=" << alBend[k]<<endl;
+        cout << "corr:"<<k<<" corr_strtA=" << ref_st << ", corr_endA=" << ref_end<<" corr_startB=" << que_st << ", corr_endB=" << que_end<<endl;
      errors++;
    }
   //  cout <<ref_st<<" "<<ref_end<<" "<<ref_st<<" "<<ref_end<<endl;
-i++;
+k++;
     }
     cout <<"total errors:"<<errors<<endl;
     }
+
+}// for iterations end here
+}
+//verifying correctness
 
 // int error = 0;
 //     for(int i = 0; i < NBLOCKS; i++){
