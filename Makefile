@@ -1,9 +1,9 @@
 objects = main.o kernel.o
 ARCH = compute_70
 ifeq ($(DEBUG),TRUE)
-	NVCCFLAGS = -g -G
+	NVCCFLAGS = -g -G -Xcompiler -fopenmp
 else
-	NVCCFLAGS = -O3
+	NVCCFLAGS = -O3 -Xcompiler -fopenmp
 endif
 
 program_gpu: $(objects)

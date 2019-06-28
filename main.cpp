@@ -22,8 +22,12 @@ cudaDeviceProp prop[deviceCount];
 for(int i = 0; i < deviceCount; i++)
   cudaGetDeviceProperties(&prop[i], 0);
 
-for(int i = 0; i < deviceCount; i++)
+for(int i = 0; i < deviceCount; i++){
   cout <<"total Global Memory for Device "<<i<<":"<<prop[i].totalGlobalMem<<endl;
+  cout <<"Compute version of device "<<i<<":"<<prop[i].major<<endl;
+}
+
+
 vector<string> G_sequencesA, G_sequencesB;// sequence A is the longer one/reference string
 
 
@@ -32,12 +36,14 @@ ifstream ref_file(argv[1]);//"./test_data/ref_file_1.txt"
 ifstream quer_file(argv[2]);//"./test_data/que_file_1.txt"
 unsigned largestA = 0, largestB= 0;
 
+int totSizeA = 0, totSizeB = 0;
 if(ref_file.is_open())
 {
 while(getline(ref_file,myInLine))
 {
 string seq = myInLine.substr(myInLine.find(":")+1, myInLine.size()-1);
 G_sequencesA.push_back(seq);
+totSizeA += seq.size();
 if(seq.size() > largestA){
   largestA = seq.size();
 }
@@ -50,15 +56,33 @@ while(getline(quer_file,myInLine))
 {
 string seq = myInLine.substr(myInLine.find(":")+1, myInLine.size()-1);
 G_sequencesB.push_back(seq);
+totSizeB += seq.size();
 if(seq.size() > largestB){
   largestB = seq.size();
 }
 }
 }
+unsigned NBLOCKS = G_sequencesA.size();
+cout <<"strings read:"<<NBLOCKS<<endl;
+unsigned maxMatrixSize = (largestA+1)*(largestB+1);
+long long totMemEst = largestA*G_sequencesA.size() + largestB*G_sequencesB.size() + maxMatrixSize*G_sequencesA.size()*sizeof(short)*2 + G_sequencesA.size()*sizeof(short)*4;
+
+cout <<"totMemReq:"<<totMemEst<<endl;
+
+// determining number of iterations required on a single GPUassert
+int its = 0;
+long long estMem = totMemEst;
+while(estMem > (prop[0].totalGlobalMem*0.90)){
+  its++;
+  estMem /= its;
+}
+
+
+
 cout <<"largestA:"<<largestA<<" largestB:"<<largestB<<endl;
 
-#pragma omp parallel
-{
+//#pragma omp parallel
+//{
   int totThreads = omp_get_num_threads();
   cout <<"total threads:"<< totThreads<<endl;
   int my_cpu_id = omp_get_thread_num();
@@ -67,22 +91,63 @@ cout <<"largestA:"<<largestA<<" largestB:"<<largestB<<endl;
   cudaGetDevice(&myGPUid);
 
   cout <<" gpuid:"<<myGPUid<<" cpuID:"<<my_cpu_id<<endl;
-  vector<string> sequencesA, sequencesB;
-  sequencesA = G_sequencesA;
-  sequencesB = G_sequencesB;
+  //vector<string> sequencesA, sequencesB;
+  unsigned leftOvers = NBLOCKS%its;
+  unsigned stringsPerIt = NBLOCKS/its;
+
+  cout <<"Total iterations:"<<its<<endl;
+  cout <<"Alignments Per Iteration:"<<stringsPerIt<<endl;
+  cout <<"Lef over:"<<leftOvers<<endl;
+    short *alAbeg = new short[NBLOCKS];
+    short *alBbeg = new short[NBLOCKS];
+    short *alAend = new short[NBLOCKS];
+    short *alBend = new short[NBLOCKS]; // memory on CPU for copying the results
+
+    short *test_Abeg = alAbeg;
+    short *test_Bbeg = alBbeg;
+    short *test_Aend = alAend;
+    short *test_Bend = alBend;
+
+
+
+  for(int perGPUIts = 0; perGPUIts < its; perGPUIts++){
+    int blocksLaunched = 0;
+    vector<string>::const_iterator beginAVec;
+    vector<string>::const_iterator endAVec;
+    vector<string>::const_iterator beginBVec;
+    vector<string>::const_iterator endBVec;
+    if(perGPUIts == its-1){
+      beginAVec = G_sequencesA.begin()+(perGPUIts*stringsPerIt);
+      endAVec = G_sequencesA.begin()+((perGPUIts+1)*stringsPerIt)+leftOvers; // so that each openmp thread has a copy of strings it needs to align
+      beginBVec = G_sequencesB.begin()+(perGPUIts*stringsPerIt);
+      endBVec = G_sequencesB.begin()+((perGPUIts+1)*stringsPerIt)+leftOvers; // so that each openmp thread has a copy of strings it needs to align
+
+      blocksLaunched = stringsPerIt + leftOvers;
+    }else{
+      beginAVec = G_sequencesA.begin()+(perGPUIts*stringsPerIt);
+      endAVec = G_sequencesA.begin()+(perGPUIts+1)*stringsPerIt; // so that each openmp thread has a copy of strings it needs to align
+      beginBVec = G_sequencesB.begin()+(perGPUIts*stringsPerIt);
+      endBVec = G_sequencesB.begin()+(perGPUIts+1)*stringsPerIt; // so that each openmp thread has a copy of strings it needs to align
+          blocksLaunched = stringsPerIt;
+    }
+
+    vector<string> sequencesA(beginAVec,endAVec);
+    vector<string> sequencesB(beginBVec, endBVec);
+
+//  sequencesB = G_sequencesB;
     thrust::host_vector<int>        offsetA(sequencesA.size());
     thrust::host_vector<int>        offsetB(sequencesB.size());
     thrust::device_vector<unsigned> vec_offsetA_d(sequencesA.size());
     thrust::device_vector<unsigned> vec_offsetB_d(sequencesB.size());
 
-    thrust::host_vector<unsigned>   offsetMatrix(NBLOCKS);        //*sizeof(unsigned));
-    thrust::device_vector<unsigned> vec_offsetMatrix_d(NBLOCKS);  //*sizeof(unsigned));
+    //thrust::host_vector<unsigned>   offsetMatrix(NBLOCKS);        //*sizeof(unsigned));
+    //thrust::device_vector<unsigned> vec_offsetMatrix_d(NBLOCKS);  //*sizeof(unsigned));
 
-    for(int i = 0; i < NBLOCKS; i++)
-    {
-        offsetMatrix[i] = (sequencesA[i].size() + 1) * (sequencesB[i].size() + 1);
-    }
-
+    // for(int i = 0; i < NBLOCKS; i++)
+    // {
+    //     offsetMatrix[i] = (sequencesA[i].size() + 1) * (sequencesB[i].size() + 1);
+    // }
+cout <<"Asize:"<<sequencesA.size()<<endl;
 
     for(int i = 0; i < sequencesA.size(); i++)
     {
@@ -95,9 +160,9 @@ cout <<"largestA:"<<largestA<<" largestB:"<<largestB<<endl;
     }
 
 
-
-for(int i = 0; i < 1; i++){
   auto start    = NOW;
+for(int i = 0; i < 1; i++){
+
     vec_offsetA_d = offsetA;
     vec_offsetB_d = offsetB;
   //  cout << "*******here here1" << endl;
@@ -117,11 +182,11 @@ for(int i = 0; i < 1; i++){
     unsigned offsetSumA = 0;
     unsigned offsetSumB = 0;
 
-    vec_offsetMatrix_d = offsetMatrix;
-    thrust::inclusive_scan(vec_offsetMatrix_d.begin(), vec_offsetMatrix_d.end(),
-                           vec_offsetMatrix_d.begin());
+  //  vec_offsetMatrix_d = offsetMatrix;
+  //  thrust::inclusive_scan(vec_offsetMatrix_d.begin(), vec_offsetMatrix_d.end(),
+  //                         vec_offsetMatrix_d.begin());
 
-//cout <<"dp matrix prefix_sum computed."<<endl;
+
     char* strA = new char[totalLengthA];
     char* strB = new char[totalLengthB];
     for(int i = 0; i < sequencesA.size(); i++)
@@ -135,30 +200,34 @@ for(int i = 0; i < 1; i++){
         offsetSumB += sequencesB[i].size();
     }
 
-    long      dp_matrices_cells = vec_offsetMatrix_d[NBLOCKS - 1];
-    unsigned* offsetMatrix_d    = thrust::raw_pointer_cast(&vec_offsetMatrix_d[0]);
+  //  long      dp_matrices_cells = vec_offsetMatrix_d[NBLOCKS - 1];
+  //  unsigned* offsetMatrix_d    = thrust::raw_pointer_cast(&vec_offsetMatrix_d[0]);
 
     char * strA_d, *strB_d;
     short *I_i, *I_j;  // device pointers for traceback matrices
                        // double *matrix, *Ematrix, *Fmatrix;
-    short  alAbeg[NBLOCKS], alBbeg[NBLOCKS], alAend[NBLOCKS], alBend[NBLOCKS];
-    short *alAbeg_d, *alBbeg_d, *alAend_d, *alBend_d;
 
+    short *alAbeg_d, *alBbeg_d, *alAend_d, *alBend_d;
+    //unsigned *offsetMatrix_d;
     // cout << "allocating memory" << endl;
 
+    //cudaErrchk(cudaMalloc(&offsetMatrix_d, (largestA+1)*(largestB+1)*NBLOCKS* sizeof(unsigned)));
     cudaErrchk(cudaMalloc(&strA_d, totalLengthA * sizeof(char)));
     cudaErrchk(cudaMalloc(&strB_d, totalLengthB * sizeof(char)));
 
   //  cout << "dpcells:" << endl << dp_matrices_cells << endl;
 
-    cudaErrchk(cudaMalloc(&I_i, dp_matrices_cells * sizeof(short)));
-    cudaErrchk(cudaMalloc(&I_j, dp_matrices_cells * sizeof(short)));
+  //  cudaErrchk(cudaMalloc(&I_i, dp_matrices_cells * sizeof(short)));
+  //  cudaErrchk(cudaMalloc(&I_j, dp_matrices_cells * sizeof(short)));
+
+  cudaErrchk(cudaMalloc(&I_i, maxMatrixSize*blocksLaunched* sizeof(short)));
+  cudaErrchk(cudaMalloc(&I_j, maxMatrixSize*blocksLaunched* sizeof(short)));
 
     // copy back
-    cudaErrchk(cudaMalloc(&alAbeg_d, NBLOCKS * sizeof(short)));
-    cudaErrchk(cudaMalloc(&alBbeg_d, NBLOCKS * sizeof(short)));
-    cudaErrchk(cudaMalloc(&alAend_d, NBLOCKS * sizeof(short)));
-    cudaErrchk(cudaMalloc(&alBend_d, NBLOCKS * sizeof(short)));
+    cudaErrchk(cudaMalloc(&alAbeg_d, blocksLaunched * sizeof(short)));
+    cudaErrchk(cudaMalloc(&alBbeg_d, blocksLaunched * sizeof(short)));
+    cudaErrchk(cudaMalloc(&alAend_d, blocksLaunched * sizeof(short)));
+    cudaErrchk(cudaMalloc(&alBend_d, blocksLaunched * sizeof(short)));
 
     //	for(int iter = 0; iter < 10; iter++){
 
@@ -175,20 +244,26 @@ for(int i = 0; i < 1; i++){
   //  cout << "alignmentpad:" << alignmentPad << endl;
   //  cout << "totShmem:"<<totShmem + alignmentPad +
       //  sizeof(int) * (sequencesA[0].size() + sequencesB[0].size() + 2)<<endl;
-    align_sequences_gpu<<<NBLOCKS, largestB,
+    align_sequences_gpu<<<blocksLaunched, largestB,
                           totShmem + alignmentPad +
                               sizeof(int) * (largestA + largestB+2)>>>(
-        strA_d, strB_d, offsetA_d, offsetB_d, offsetMatrix_d, I_i, I_j, alAbeg_d,
+        strA_d, strB_d, offsetA_d, offsetB_d, maxMatrixSize, I_i, I_j, alAbeg_d,
         alAend_d, alBbeg_d, alBend_d);
 
+        // offset pouinters for correct copy back
+        alAbeg += perGPUIts*stringsPerIt;
+        alBbeg += perGPUIts*stringsPerIt;
+        alAend += perGPUIts*stringsPerIt;
+        alBend += perGPUIts*stringsPerIt;
+
     cudaErrchk(
-        cudaMemcpy(alAbeg, alAbeg_d, NBLOCKS * sizeof(short), cudaMemcpyDeviceToHost));
+        cudaMemcpy(alAbeg, alAbeg_d, blocksLaunched * sizeof(short), cudaMemcpyDeviceToHost));
     cudaErrchk(
-        cudaMemcpy(alBbeg, alBbeg_d, NBLOCKS * sizeof(short), cudaMemcpyDeviceToHost));
+        cudaMemcpy(alBbeg, alBbeg_d, blocksLaunched * sizeof(short), cudaMemcpyDeviceToHost));
     cudaErrchk(
-        cudaMemcpy(alAend, alAend_d, NBLOCKS * sizeof(short), cudaMemcpyDeviceToHost));
+        cudaMemcpy(alAend, alAend_d, blocksLaunched * sizeof(short), cudaMemcpyDeviceToHost));
     cudaErrchk(
-        cudaMemcpy(alBend, alBend_d, NBLOCKS * sizeof(short), cudaMemcpyDeviceToHost));
+        cudaMemcpy(alBend, alBend_d, blocksLaunched * sizeof(short), cudaMemcpyDeviceToHost));
 
     //}
 
@@ -201,12 +276,13 @@ for(int i = 0; i < 1; i++){
     cudaErrchk(cudaFree(alBbeg_d));
     cudaErrchk(cudaFree(alAend_d));
     cudaErrchk(cudaFree(alBend_d));
+  }
     auto                     end  = NOW;
     chrono::duration<double> diff = end - start;
     cout << "time = " << diff.count() << endl;
 
     string rstLine;
-    ifstream rst_file("./test_data/results_1");
+    ifstream rst_file(argv[3]);
     int k = 0, errors=0;
     if(rst_file.is_open())
     {
@@ -229,9 +305,9 @@ for(int i = 0; i < 1; i++){
    int que_st = valsVec[2];
    int que_end = valsVec[3];
 
-   if(alAbeg[k] != ref_st || alAend[k] != ref_end || alBbeg[k] != que_st || alBend[k] != que_end){
-    cout << "k:"<<k<<" startA=" << alAbeg[k] << ", endA=" << alAend[k]<<" startB=" << alBbeg[k] << ", endB=" << alBend[k]<<endl;
-        cout << "corr:"<<k<<" corr_strtA=" << ref_st << ", corr_endA=" << ref_end<<" corr_startB=" << que_st << ", corr_endB=" << que_end<<endl;
+   if(test_Abeg[k] != ref_st || test_Aend[k] != ref_end || test_Bbeg[k] != que_st || test_Bend[k] != que_end){
+  //  cout << "k:"<<k<<" startA=" << alAbeg[k] << ", endA=" << alAend[k]<<" startB=" << alBbeg[k] << ", endB=" << alBend[k]<<endl;
+  //      cout << "corr:"<<k<<" corr_strtA=" << ref_st << ", corr_endA=" << ref_end<<" corr_startB=" << que_st << ", corr_endB=" << que_end<<endl;
      errors++;
    }
   //  cout <<ref_st<<" "<<ref_end<<" "<<ref_st<<" "<<ref_end<<endl;
@@ -241,7 +317,7 @@ k++;
     }
 
 }// for iterations end here
-}
+//}// paralle pragma ends
 //verifying correctness
 
 // int error = 0;

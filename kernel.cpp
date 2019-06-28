@@ -165,7 +165,7 @@ traceBack(short current_i, short current_j, short* seqA_align_begin,
 
 __global__ void
 align_sequences_gpu(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA,
-                    unsigned* prefix_lengthB, unsigned* prefix_matrices, short* I_i_array,
+                    unsigned* prefix_lengthB, unsigned maxMatrixSize, short* I_i_array,
                     short* I_j_array, short* seqA_align_begin, short* seqA_align_end,
                     short* seqB_align_begin, short* seqB_align_end)
 {
@@ -193,18 +193,18 @@ align_sequences_gpu(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA
         matrixOffset = 0;
         seqA         = seqA_array;
         seqB         = seqB_array;
-        I_i          = I_i_array;
-        I_j          = I_j_array;
+        I_i          = I_i_array+(myId*maxMatrixSize);
+        I_j          = I_j_array+(myId*maxMatrixSize);
     }
     else
     {
         lengthSeqA   = prefix_lengthA[myId] - prefix_lengthA[myId - 1];
         lengthSeqB   = prefix_lengthB[myId] - prefix_lengthB[myId - 1];
-        matrixOffset = prefix_matrices[myId - 1];
+        //matrixOffset = prefix_matrices[myId - 1];
         seqA         = seqA_array + prefix_lengthA[myId - 1];
         seqB         = seqB_array + prefix_lengthB[myId - 1];
-        I_i          = I_i_array + matrixOffset;
-        I_j          = I_j_array + matrixOffset;
+        I_i          = I_i_array +(myId*maxMatrixSize); //+ matrixOffset;
+        I_j          = I_j_array +(myId*maxMatrixSize);
     }
 
     short* curr_H =
