@@ -134,6 +134,9 @@ cout <<"largestA:"<<largestA<<" largestB:"<<largestB<<endl;
     vector<string> sequencesA(beginAVec,endAVec);
     vector<string> sequencesB(beginBVec, endBVec);
 
+    cout <<"vecAsize:"<<sequencesA.size()<<endl;
+    cout <<"vecBsize:"<<sequencesB.size()<<endl;
+
 //  sequencesB = G_sequencesB;
     thrust::host_vector<int>        offsetA(sequencesA.size());
     thrust::host_vector<int>        offsetB(sequencesB.size());
@@ -251,22 +254,32 @@ for(int i = 0; i < 1; i++){
         alAend_d, alBbeg_d, alBend_d);
 
         // offset pouinters for correct copy back
-        alAbeg += perGPUIts*stringsPerIt;
-        alBbeg += perGPUIts*stringsPerIt;
-        alAend += perGPUIts*stringsPerIt;
-        alBend += perGPUIts*stringsPerIt;
+
+
+        cout <<"blocksLaunched:"<<blocksLaunched<<endl;
+
+        cout <<"alAbeg:"<<alAbeg<<endl;
+
+        size_t free, total;
+        cudaMemGetInfo	(	&free, &total	);
+        cout <<"free memory percent: "<<((float)free/total)<<" totalMem:"<<total<<endl;
 
     cudaErrchk(
         cudaMemcpy(alAbeg, alAbeg_d, blocksLaunched * sizeof(short), cudaMemcpyDeviceToHost));
+        cout <<"this 1 copied back"<<endl;
     cudaErrchk(
         cudaMemcpy(alBbeg, alBbeg_d, blocksLaunched * sizeof(short), cudaMemcpyDeviceToHost));
+          cout <<"this 2 copied back"<<endl;
     cudaErrchk(
         cudaMemcpy(alAend, alAend_d, blocksLaunched * sizeof(short), cudaMemcpyDeviceToHost));
     cudaErrchk(
-        cudaMemcpy(alBend, alBend_d, blocksLaunched * sizeof(short), cudaMemcpyDeviceToHost));
+        cudaMemcpy(alBend, alBend_d, blocksLaunched * sizeof(short), cudaMemcpyDeviceToHost)); // this does not cause the error the other three lines do.
 
     //}
-
+    alAbeg += stringsPerIt;//perGPUIts;//*stringsPerIt;
+    alBbeg += stringsPerIt;//;//*stringsPerIt;
+    alAend += stringsPerIt;//;//*stringsPerIt;
+    alBend += stringsPerIt;//;//*stringsPerIt;
     cudaErrchk(cudaFree(strA_d));
     cudaErrchk(cudaFree(strB_d));
     cudaErrchk(cudaFree(I_i));
