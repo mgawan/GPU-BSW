@@ -70,21 +70,24 @@ long long totMemEst = largestA*G_sequencesA.size() + largestB*G_sequencesB.size(
 cout <<"totMemReq:"<<totMemEst<<endl;
 
 // determining number of iterations required on a single GPUassert
-int its = 0;
 long long estMem = totMemEst;
-while(estMem > (prop[0].totalGlobalMem*0.90)){
-  its++;
-  estMem /= its;
-}
+int its = ceil(estMem/(prop[0].totalGlobalMem*0.95));
+
+// while(estMem > (prop[0].totalGlobalMem*0.90)){
+//   its++;
+//   estMem /= its;
+// }
 
 
 
 cout <<"largestA:"<<largestA<<" largestB:"<<largestB<<endl;
-
-//#pragma omp parallel
-//{
+  double totalTime = 0;
+  auto start    = NOW;
+#pragma omp parallel
+{
+double myTotalTime = 0;
   int totThreads = omp_get_num_threads();
-  cout <<"total threads:"<< totThreads<<endl;
+//  cout <<"total threads:"<< totThreads<<endl;
   int my_cpu_id = omp_get_thread_num();
   cudaSetDevice(my_cpu_id);
   int myGPUid;
@@ -94,8 +97,11 @@ cout <<"largestA:"<<largestA<<" largestB:"<<largestB<<endl;
   //vector<string> sequencesA, sequencesB;
   unsigned leftOvers = NBLOCKS%its;
   unsigned stringsPerIt = NBLOCKS/its;
+  short *I_i, *I_j;  // device pointers for traceback matrices
+                     // double *matrix, *Ematrix, *Fmatrix;
 
-  cout <<"Total iterations:"<<its<<endl;
+  short *alAbeg_d, *alBbeg_d, *alAend_d, *alBend_d;
+cout <<"Total iterations:"<<its<<endl;
   cout <<"Alignments Per Iteration:"<<stringsPerIt<<endl;
   cout <<"Lef over:"<<leftOvers<<endl;
     short *alAbeg = new short[NBLOCKS];
@@ -109,7 +115,25 @@ cout <<"largestA:"<<largestA<<" largestB:"<<largestB<<endl;
     short *test_Bend = alBend;
 
 
+    thrust::host_vector<int>        offsetA(stringsPerIt+leftOvers);
+    thrust::host_vector<int>        offsetB(stringsPerIt+leftOvers);
+    thrust::device_vector<unsigned> vec_offsetA_d(stringsPerIt+leftOvers);
+    thrust::device_vector<unsigned> vec_offsetB_d(stringsPerIt+leftOvers);
 
+    unsigned* offsetA_d = thrust::raw_pointer_cast(&vec_offsetA_d[0]);
+    unsigned* offsetB_d = thrust::raw_pointer_cast(&vec_offsetB_d[0]);
+
+
+    cudaErrchk(cudaMalloc(&I_i, maxMatrixSize*(stringsPerIt+leftOvers)* sizeof(short)));
+    cudaErrchk(cudaMalloc(&I_j, maxMatrixSize*(stringsPerIt+leftOvers)* sizeof(short)));
+
+      // copy back
+      cudaErrchk(cudaMalloc(&alAbeg_d, (stringsPerIt+leftOvers) * sizeof(short)));
+      cudaErrchk(cudaMalloc(&alBbeg_d, (stringsPerIt+leftOvers) * sizeof(short)));
+      cudaErrchk(cudaMalloc(&alAend_d, (stringsPerIt+leftOvers) * sizeof(short)));
+      cudaErrchk(cudaMalloc(&alBend_d, (stringsPerIt+leftOvers) * sizeof(short)));
+
+  auto start2    = NOW;
   for(int perGPUIts = 0; perGPUIts < its; perGPUIts++){
     int blocksLaunched = 0;
     vector<string>::const_iterator beginAVec;
@@ -134,14 +158,14 @@ cout <<"largestA:"<<largestA<<" largestB:"<<largestB<<endl;
     vector<string> sequencesA(beginAVec,endAVec);
     vector<string> sequencesB(beginBVec, endBVec);
 
-    cout <<"vecAsize:"<<sequencesA.size()<<endl;
-    cout <<"vecBsize:"<<sequencesB.size()<<endl;
+    //cout <<"vecAsize:"<<sequencesA.size()<<endl;
+  //  cout <<"vecBsize:"<<sequencesB.size()<<endl;
 
 //  sequencesB = G_sequencesB;
-    thrust::host_vector<int>        offsetA(sequencesA.size());
-    thrust::host_vector<int>        offsetB(sequencesB.size());
-    thrust::device_vector<unsigned> vec_offsetA_d(sequencesA.size());
-    thrust::device_vector<unsigned> vec_offsetB_d(sequencesB.size());
+    // thrust::host_vector<int>        offsetA(sequencesA.size());
+    // thrust::host_vector<int>        offsetB(sequencesB.size());
+    // thrust::device_vector<unsigned> vec_offsetA_d(sequencesA.size());
+    // thrust::device_vector<unsigned> vec_offsetB_d(sequencesB.size());
 
     //thrust::host_vector<unsigned>   offsetMatrix(NBLOCKS);        //*sizeof(unsigned));
     //thrust::device_vector<unsigned> vec_offsetMatrix_d(NBLOCKS);  //*sizeof(unsigned));
@@ -150,7 +174,7 @@ cout <<"largestA:"<<largestA<<" largestB:"<<largestB<<endl;
     // {
     //     offsetMatrix[i] = (sequencesA[i].size() + 1) * (sequencesB[i].size() + 1);
     // }
-cout <<"Asize:"<<sequencesA.size()<<endl;
+//cout <<"Asize:"<<sequencesA.size()<<endl;
 
     for(int i = 0; i < sequencesA.size(); i++)
     {
@@ -162,8 +186,8 @@ cout <<"Asize:"<<sequencesA.size()<<endl;
         offsetB[i] = sequencesB[i].size();
     }
 
+  //auto start    = NOW;
 
-  auto start    = NOW;
 for(int i = 0; i < 1; i++){
 
     vec_offsetA_d = offsetA;
@@ -179,8 +203,8 @@ for(int i = 0; i < 1; i++){
 
 //cout << "totCharsA:"<<totalLengthA<<endl;
 //cout << "totCharsB:"<<totalLengthB<<endl;
-    unsigned* offsetA_d = thrust::raw_pointer_cast(&vec_offsetA_d[0]);
-    unsigned* offsetB_d = thrust::raw_pointer_cast(&vec_offsetB_d[0]);
+    // unsigned* offsetA_d = thrust::raw_pointer_cast(&vec_offsetA_d[0]);
+    // unsigned* offsetB_d = thrust::raw_pointer_cast(&vec_offsetB_d[0]);
 
     unsigned offsetSumA = 0;
     unsigned offsetSumB = 0;
@@ -207,10 +231,10 @@ for(int i = 0; i < 1; i++){
   //  unsigned* offsetMatrix_d    = thrust::raw_pointer_cast(&vec_offsetMatrix_d[0]);
 
     char * strA_d, *strB_d;
-    short *I_i, *I_j;  // device pointers for traceback matrices
-                       // double *matrix, *Ematrix, *Fmatrix;
-
-    short *alAbeg_d, *alBbeg_d, *alAend_d, *alBend_d;
+    // short *I_i, *I_j;  // device pointers for traceback matrices
+    //                    // double *matrix, *Ematrix, *Fmatrix;
+    //
+    // short *alAbeg_d, *alBbeg_d, *alAend_d, *alBend_d;
     //unsigned *offsetMatrix_d;
     // cout << "allocating memory" << endl;
 
@@ -222,15 +246,19 @@ for(int i = 0; i < 1; i++){
 
   //  cudaErrchk(cudaMalloc(&I_i, dp_matrices_cells * sizeof(short)));
   //  cudaErrchk(cudaMalloc(&I_j, dp_matrices_cells * sizeof(short)));
+// cout <<"gpu its:"<<perGPUIts<<endl;
+//   size_t free, total;
+//   cudaMemGetInfo	(	&free, &total	);
+//  cout <<"free memory percent: "<<((float)free/total)<<" totalMem:"<<total<<endl;
 
-  cudaErrchk(cudaMalloc(&I_i, maxMatrixSize*blocksLaunched* sizeof(short)));
-  cudaErrchk(cudaMalloc(&I_j, maxMatrixSize*blocksLaunched* sizeof(short)));
-
-    // copy back
-    cudaErrchk(cudaMalloc(&alAbeg_d, blocksLaunched * sizeof(short)));
-    cudaErrchk(cudaMalloc(&alBbeg_d, blocksLaunched * sizeof(short)));
-    cudaErrchk(cudaMalloc(&alAend_d, blocksLaunched * sizeof(short)));
-    cudaErrchk(cudaMalloc(&alBend_d, blocksLaunched * sizeof(short)));
+  // cudaErrchk(cudaMalloc(&I_i, maxMatrixSize*blocksLaunched* sizeof(short)));
+  // cudaErrchk(cudaMalloc(&I_j, maxMatrixSize*blocksLaunched* sizeof(short)));
+  //
+  //   // copy back
+  //   cudaErrchk(cudaMalloc(&alAbeg_d, blocksLaunched * sizeof(short)));
+  //   cudaErrchk(cudaMalloc(&alBbeg_d, blocksLaunched * sizeof(short)));
+  //   cudaErrchk(cudaMalloc(&alAend_d, blocksLaunched * sizeof(short)));
+  //   cudaErrchk(cudaMalloc(&alBend_d, blocksLaunched * sizeof(short)));
 
     //	for(int iter = 0; iter < 10; iter++){
 
@@ -256,20 +284,18 @@ for(int i = 0; i < 1; i++){
         // offset pouinters for correct copy back
 
 
-        cout <<"blocksLaunched:"<<blocksLaunched<<endl;
+      //  cout <<"blocksLaunched:"<<blocksLaunched<<endl;
 
-        cout <<"alAbeg:"<<alAbeg<<endl;
+    //    cout <<"alAbeg:"<<alAbeg<<endl;
 
-        size_t free, total;
-        cudaMemGetInfo	(	&free, &total	);
-        cout <<"free memory percent: "<<((float)free/total)<<" totalMem:"<<total<<endl;
+
 
     cudaErrchk(
         cudaMemcpy(alAbeg, alAbeg_d, blocksLaunched * sizeof(short), cudaMemcpyDeviceToHost));
-        cout <<"this 1 copied back"<<endl;
+      //  cout <<"this 1 copied back"<<endl;
     cudaErrchk(
         cudaMemcpy(alBbeg, alBbeg_d, blocksLaunched * sizeof(short), cudaMemcpyDeviceToHost));
-          cout <<"this 2 copied back"<<endl;
+      //    cout <<"this 2 copied back"<<endl;
     cudaErrchk(
         cudaMemcpy(alAend, alAend_d, blocksLaunched * sizeof(short), cudaMemcpyDeviceToHost));
     cudaErrchk(
@@ -282,55 +308,93 @@ for(int i = 0; i < 1; i++){
     alBend += stringsPerIt;//;//*stringsPerIt;
     cudaErrchk(cudaFree(strA_d));
     cudaErrchk(cudaFree(strB_d));
-    cudaErrchk(cudaFree(I_i));
-    cudaErrchk(cudaFree(I_j));
+    // cudaErrchk(cudaFree(I_i));
+    // cudaErrchk(cudaFree(I_j));
+    //
+    // cudaErrchk(cudaFree(alAbeg_d));
+    // cudaErrchk(cudaFree(alBbeg_d));
+    // cudaErrchk(cudaFree(alAend_d));
+    // cudaErrchk(cudaFree(alBend_d));
 
-    cudaErrchk(cudaFree(alAbeg_d));
-    cudaErrchk(cudaFree(alBbeg_d));
-    cudaErrchk(cudaFree(alAend_d));
-    cudaErrchk(cudaFree(alBend_d));
+    // if(perGPUIts%3 == 0){
+    //   auto                     end  = NOW;
+    //   chrono::duration<double> diff = end - start;
+    //   cout << "perGPUIts:"<<perGPUIts<<" time:"<<diff.count()<<endl;
+    // }
+
+  //  auto                     end  = NOW;
+  //  chrono::duration<double> diff = end - start;
+  //  myTotalTime +=diff.count();
   }
-    auto                     end  = NOW;
-    chrono::duration<double> diff = end - start;
-    cout << "time = " << diff.count() << endl;
 
-    string rstLine;
-    ifstream rst_file(argv[3]);
-    int k = 0, errors=0;
-    if(rst_file.is_open())
-    {
-    while(getline(rst_file,rstLine))
-    {
-    string in = rstLine.substr(rstLine.find(":")+1, rstLine.size()-1);
-    vector<int> valsVec;
 
-    stringstream myStream(in);
-
-    int val;
-    while(myStream >> val){
-      valsVec.push_back(val);
-      if(myStream.peek() == ',')
-        myStream.ignore();
-    }
-
-   int ref_st = valsVec[0];
-   int ref_end = valsVec[1];
-   int que_st = valsVec[2];
-   int que_end = valsVec[3];
-
-   if(test_Abeg[k] != ref_st || test_Aend[k] != ref_end || test_Bbeg[k] != que_st || test_Bend[k] != que_end){
-  //  cout << "k:"<<k<<" startA=" << alAbeg[k] << ", endA=" << alAend[k]<<" startB=" << alBbeg[k] << ", endB=" << alBend[k]<<endl;
-  //      cout << "corr:"<<k<<" corr_strtA=" << ref_st << ", corr_endA=" << ref_end<<" corr_startB=" << que_st << ", corr_endB=" << que_end<<endl;
-     errors++;
-   }
-  //  cout <<ref_st<<" "<<ref_end<<" "<<ref_st<<" "<<ref_end<<endl;
-k++;
-    }
-    cout <<"total errors:"<<errors<<endl;
-    }
+    //cout << "time = " << diff.count() <<" cpu_id:"<<my_cpu_id<< endl;
+//
+//     string rstLine;
+//     ifstream rst_file(argv[3]);
+//     int k = 0, errors=0;
+//     if(rst_file.is_open())
+//     {
+//     while(getline(rst_file,rstLine))
+//     {
+//     string in = rstLine.substr(rstLine.find(":")+1, rstLine.size()-1);
+//     vector<int> valsVec;
+//
+//     stringstream myStream(in);
+//
+//     int val;
+//     while(myStream >> val){
+//       valsVec.push_back(val);
+//       if(myStream.peek() == ',')
+//         myStream.ignore();
+//     }
+//
+//    int ref_st = valsVec[0];
+//    int ref_end = valsVec[1];
+//    int que_st = valsVec[2];
+//    int que_end = valsVec[3];
+//
+//    if(test_Abeg[k] != ref_st || test_Aend[k] != ref_end || test_Bbeg[k] != que_st || test_Bend[k] != que_end){
+//   //  cout << "k:"<<k<<" startA=" << alAbeg[k] << ", endA=" << alAend[k]<<" startB=" << alBbeg[k] << ", endB=" << alBend[k]<<endl;
+//   //      cout << "corr:"<<k<<" corr_strtA=" << ref_st << ", corr_endA=" << ref_end<<" corr_startB=" << que_st << ", corr_endB=" << que_end<<endl;
+//      errors++;
+//    }
+//   //  cout <<ref_st<<" "<<ref_end<<" "<<ref_st<<" "<<ref_end<<endl;
+// k++;
+//     }
+//     cout <<"total errors:"<<errors<<" cpu_id:"<<my_cpu_id<<endl;
+//     }
 
 }// for iterations end here
-//}// paralle pragma ends
+ auto                     end1  = NOW;
+ chrono::duration<double> diff2 = end1 - start2;
+ cout <<"thread:"<<my_cpu_id<<" time:"<<diff2.count()<<endl;
+cudaErrchk(cudaFree(I_i));
+cudaErrchk(cudaFree(I_j));
+
+cudaErrchk(cudaFree(alAbeg_d));
+cudaErrchk(cudaFree(alBbeg_d));
+cudaErrchk(cudaFree(alAend_d));
+cudaErrchk(cudaFree(alBend_d));
+// auto                     end  = NOW;
+// chrono::duration<double> diff = end - start;
+// #pragma omp critical
+// {
+// totalTime = (diff.count() > totalTime)?diff.count():totalTime;
+// }
+//totalTime = (myTotalTime > totalTime)?myTotalTime:totalTime;
+#pragma omp barrier
+}// paralle pragma ends
+
+ auto                     end  = NOW;
+ chrono::duration<double> diff = end - start;
+
+cout <<"total time:"<<diff.count() <<endl;
+//auto                     end  = NOW;
+//chrono::duration<double> diff = end - start;
+//cout <<"total Time:"<<diff.count()<< endl;
+
+//totalTime += diff.count();
 //verifying correctness
 
 // int error = 0;
