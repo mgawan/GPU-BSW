@@ -59,16 +59,13 @@ blockShuffleReduce(short myVal, short& myIndex, short& myIndex2, unsigned length
         locInds2[warpId] = myInd2;
 
     __syncthreads();
-float check = ((float)blockDim.x / 32);
-float myt = threadIdx.x;
-    if(myt < check)/////******//////
+unsigned check = ((32+ blockDim.x -1) / 32);
+//float myt = threadIdx.x;
+    if(threadIdx.x < check)/////******//////
     {
-
         myVal  = locTots[threadIdx.x];
         myInd  = locInds[threadIdx.x];
         myInd2 = locInds2[threadIdx.x];
-      //  if(blockIdx.x == 0)
-        //  printf("max:%d, thread::%d, check:%f \n",myVal, threadIdx.x, check);
     }
     else
     {

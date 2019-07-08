@@ -63,11 +63,20 @@ if(seq.size() > largestB){
 }
 }
 unsigned NBLOCKS = G_sequencesA.size();
+
 cout <<"strings read:"<<NBLOCKS<<endl;
 unsigned maxMatrixSize = (largestA+1)*(largestB+1);
-long long totMemEst = largestA*G_sequencesA.size() + largestB*G_sequencesB.size() + maxMatrixSize*G_sequencesA.size()*sizeof(short)*2 + G_sequencesA.size()*sizeof(short)*4;
 
-cout <<"totMemReq:"<<totMemEst<<endl;
+//number of alignments per device
+
+unsigned alignmentsPerDevice = NBLOCKS/deviceCount;
+unsigned leftOver_device = NBLOCKS%deviceCount;
+unsigned maxAligns = alignmentsPerDevice + leftOver_device;
+cout << "here:"<<alignmentsPerDevice<<" left:"<<leftOver_device<<endl;
+
+long long totMemEst = largestA*maxAligns + largestB*maxAligns + maxMatrixSize*maxAligns*sizeof(short)*2 + maxAligns*sizeof(short)*4;
+// mem est per device
+cout <<"totMemReq Per Device:"<<totMemEst<<endl;
 
 // determining number of iterations required on a single GPUassert
 long long estMem = totMemEst;
@@ -83,8 +92,20 @@ int its = ceil(estMem/(prop[0].totalGlobalMem*0.95));
 cout <<"largestA:"<<largestA<<" largestB:"<<largestB<<endl;
   double totalTime = 0;
   auto start    = NOW;
+
+  short *g_alAbeg = new short[NBLOCKS];
+  short *g_alBbeg = new short[NBLOCKS];
+  short *g_alAend = new short[NBLOCKS];
+  short *g_alBend = new short[NBLOCKS]; // memory on CPU for copying the results
+
+  short *test_Abeg = g_alAbeg;
+  short *test_Bbeg = g_alBbeg;
+  short *test_Aend = g_alAend;
+  short *test_Bend = g_alBend;
+
 #pragma omp parallel
 {
+
 double myTotalTime = 0;
   int totThreads = omp_get_num_threads();
 //  cout <<"total threads:"<< totThreads<<endl;
@@ -92,28 +113,33 @@ double myTotalTime = 0;
   cudaSetDevice(my_cpu_id);
   int myGPUid;
   cudaGetDevice(&myGPUid);
-
+  int BLOCKS_l = alignmentsPerDevice;
+  if(my_cpu_id == deviceCount -1)
+    BLOCKS_l += leftOver_device;
   cout <<" gpuid:"<<myGPUid<<" cpuID:"<<my_cpu_id<<endl;
   //vector<string> sequencesA, sequencesB;
-  unsigned leftOvers = NBLOCKS%its;
-  unsigned stringsPerIt = NBLOCKS/its;
+  unsigned leftOvers = BLOCKS_l%its;
+  unsigned stringsPerIt = BLOCKS_l/its;
   short *I_i, *I_j;  // device pointers for traceback matrices
                      // double *matrix, *Ematrix, *Fmatrix;
 
   short *alAbeg_d, *alBbeg_d, *alAend_d, *alBend_d;
-cout <<"Total iterations:"<<its<<endl;
-  cout <<"Alignments Per Iteration:"<<stringsPerIt<<endl;
-  cout <<"Lef over:"<<leftOvers<<endl;
-    short *alAbeg = new short[NBLOCKS];
-    short *alBbeg = new short[NBLOCKS];
-    short *alAend = new short[NBLOCKS];
-    short *alBend = new short[NBLOCKS]; // memory on CPU for copying the results
-
-    short *test_Abeg = alAbeg;
-    short *test_Bbeg = alBbeg;
-    short *test_Aend = alAend;
-    short *test_Bend = alBend;
-
+// cout <<"Total iterations:"<<its<<endl;
+//   cout <<"Alignments Per Iteration:"<<stringsPerIt<<endl;
+//   cout <<"Lef over:"<<leftOvers<<endl;
+    short *alAbeg = g_alAbeg + my_cpu_id*BLOCKS_l;
+    short *alBbeg = g_alBbeg + my_cpu_id*BLOCKS_l;
+    short *alAend = g_alAend + my_cpu_id*BLOCKS_l;
+    short *alBend = g_alBend + my_cpu_id*BLOCKS_l; // memory on CPU for copying the results
+    //
+    // short *test_Abeg = alAbeg;
+    // short *test_Bbeg = alBbeg;
+    // short *test_Aend = alAend;
+    // short *test_Bend = alBend;
+#pragma omp critical
+{
+  cout <<"cpu_id:"<<my_cpu_id<<" myAlignments:"<<BLOCKS_l<<" its:"<<its<<" alignments per its:"<<stringsPerIt<<endl;
+}
 
     thrust::host_vector<int>        offsetA(stringsPerIt+leftOvers);
     thrust::host_vector<int>        offsetB(stringsPerIt+leftOvers);
@@ -329,41 +355,8 @@ for(int i = 0; i < 1; i++){
 
 
     //cout << "time = " << diff.count() <<" cpu_id:"<<my_cpu_id<< endl;
-//
-//     string rstLine;
-//     ifstream rst_file(argv[3]);
-//     int k = 0, errors=0;
-//     if(rst_file.is_open())
-//     {
-//     while(getline(rst_file,rstLine))
-//     {
-//     string in = rstLine.substr(rstLine.find(":")+1, rstLine.size()-1);
-//     vector<int> valsVec;
-//
-//     stringstream myStream(in);
-//
-//     int val;
-//     while(myStream >> val){
-//       valsVec.push_back(val);
-//       if(myStream.peek() == ',')
-//         myStream.ignore();
-//     }
-//
-//    int ref_st = valsVec[0];
-//    int ref_end = valsVec[1];
-//    int que_st = valsVec[2];
-//    int que_end = valsVec[3];
-//
-//    if(test_Abeg[k] != ref_st || test_Aend[k] != ref_end || test_Bbeg[k] != que_st || test_Bend[k] != que_end){
-//   //  cout << "k:"<<k<<" startA=" << alAbeg[k] << ", endA=" << alAend[k]<<" startB=" << alBbeg[k] << ", endB=" << alBend[k]<<endl;
-//   //      cout << "corr:"<<k<<" corr_strtA=" << ref_st << ", corr_endA=" << ref_end<<" corr_startB=" << que_st << ", corr_endB=" << que_end<<endl;
-//      errors++;
-//    }
-//   //  cout <<ref_st<<" "<<ref_end<<" "<<ref_st<<" "<<ref_end<<endl;
-// k++;
-//     }
-//     cout <<"total errors:"<<errors<<" cpu_id:"<<my_cpu_id<<endl;
-//     }
+
+
 
 }// for iterations end here
  auto                     end1  = NOW;
@@ -385,7 +378,40 @@ cudaErrchk(cudaFree(alBend_d));
 //totalTime = (myTotalTime > totalTime)?myTotalTime:totalTime;
 #pragma omp barrier
 }// paralle pragma ends
+string rstLine;
+ifstream rst_file(argv[3]);
+int k = 0, errors=0;
+if(rst_file.is_open())
+{
+while(getline(rst_file,rstLine))
+{
+string in = rstLine.substr(rstLine.find(":")+1, rstLine.size()-1);
+vector<int> valsVec;
 
+stringstream myStream(in);
+
+int val;
+while(myStream >> val){
+  valsVec.push_back(val);
+  if(myStream.peek() == ',')
+    myStream.ignore();
+}
+
+int ref_st = valsVec[0];
+int ref_end = valsVec[1];
+int que_st = valsVec[2];
+int que_end = valsVec[3];
+
+if(test_Abeg[k] != ref_st || test_Aend[k] != ref_end || test_Bbeg[k] != que_st || test_Bend[k] != que_end){
+//  cout << "k:"<<k<<" startA=" << alAbeg[k] << ", endA=" << alAend[k]<<" startB=" << alBbeg[k] << ", endB=" << alBend[k]<<endl;
+//      cout << "corr:"<<k<<" corr_strtA=" << ref_st << ", corr_endA=" << ref_end<<" corr_startB=" << que_st << ", corr_endB=" << que_end<<endl;
+ errors++;
+}
+//  cout <<ref_st<<" "<<ref_end<<" "<<ref_st<<" "<<ref_end<<endl;
+k++;
+}
+cout <<"total errors:"<<errors<<endl;
+}
  auto                     end  = NOW;
  chrono::duration<double> diff = end - start;
 
