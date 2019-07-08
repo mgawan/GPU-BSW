@@ -66,18 +66,19 @@ unsigned NBLOCKS = G_sequencesA.size();
 
 cout <<"strings read:"<<NBLOCKS<<endl;
 unsigned maxMatrixSize = (largestA+1)*(largestB+1);
-
+long long totMemEst1 = largestA*(long)NBLOCKS+ largestB*(long)NBLOCKS + maxMatrixSize*(long)NBLOCKS*sizeof(short)*2 + (long)NBLOCKS*sizeof(short)*4;
 //number of alignments per device
+
 
 unsigned alignmentsPerDevice = NBLOCKS/deviceCount;
 unsigned leftOver_device = NBLOCKS%deviceCount;
 unsigned maxAligns = alignmentsPerDevice + leftOver_device;
-cout << "here:"<<alignmentsPerDevice<<" left:"<<leftOver_device<<endl;
-
-long long totMemEst = largestA*maxAligns + largestB*maxAligns + maxMatrixSize*maxAligns*sizeof(short)*2 + maxAligns*sizeof(short)*4;
+cout << "here:"<<NBLOCKS<<endl;
+cout <<"lef-over:"<<leftOver_device<<endl;
+long long totMemEst = largestA*(long)maxAligns + largestB*(long)maxAligns + maxMatrixSize*(long)maxAligns*sizeof(short)*2 + (long)maxAligns*sizeof(short)*4;
 // mem est per device
-cout <<"totMemReq Per Device:"<<totMemEst<<endl;
-
+cout <<"New mem st:"<<totMemEst<<endl;
+cout << "totIts1:"<<totMemEst1/totMemEst<<endl;
 // determining number of iterations required on a single GPUassert
 long long estMem = totMemEst;
 int its = ceil(estMem/(prop[0].totalGlobalMem*0.95));
@@ -138,7 +139,9 @@ double myTotalTime = 0;
     // short *test_Bend = alBend;
 #pragma omp critical
 {
-  cout <<"cpu_id:"<<my_cpu_id<<" myAlignments:"<<BLOCKS_l<<" its:"<<its<<" alignments per its:"<<stringsPerIt<<endl;
+  cout <<"cpu_id:"<<my_cpu_id<<" myAlignments:"<<BLOCKS_l<<" its:"<<its<<" alignments per its:"<<stringsPerIt<<"pointer:"<<alAbeg<<endl;
+
+
 }
 
     thrust::host_vector<int>        offsetA(stringsPerIt+leftOvers);
@@ -403,9 +406,10 @@ int que_st = valsVec[2];
 int que_end = valsVec[3];
 
 if(test_Abeg[k] != ref_st || test_Aend[k] != ref_end || test_Bbeg[k] != que_st || test_Bend[k] != que_end){
-//  cout << "k:"<<k<<" startA=" << alAbeg[k] << ", endA=" << alAend[k]<<" startB=" << alBbeg[k] << ", endB=" << alBend[k]<<endl;
-//      cout << "corr:"<<k<<" corr_strtA=" << ref_st << ", corr_endA=" << ref_end<<" corr_startB=" << que_st << ", corr_endB=" << que_end<<endl;
+//  cout << "k:"<<k<<" startA=" << g_alAbeg[k] << ", endA=" << g_alAend[k]<<" startB=" << g_alBbeg[k] << ", endB=" << g_alBend[k]<<endl;
+  //    cout << "corr:"<<k<<" corr_strtA=" << ref_st << ", corr_endA=" << ref_end<<" corr_startB=" << que_st << ", corr_endB=" << que_end<<endl;
  errors++;
+ //cout <<"error at:"<<k<<endl;
 }
 //  cout <<ref_st<<" "<<ref_end<<" "<<ref_st<<" "<<ref_end<<endl;
 k++;
