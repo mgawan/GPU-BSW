@@ -10,12 +10,11 @@ warpReduceMax(short val, short& myIndex, short& myIndex2, unsigned lengthSeqB)
     short newInd2  = 0;
     short ind      = myIndex;
     short ind2     = myIndex2;
-    myMax         = val;
-    unsigned mask = __ballot_sync(0xffffffff, threadIdx.x <lengthSeqB);//blockDim.x
-   //unsigned newmask;
+    myMax          = val;
+    unsigned mask = __ballot_sync(0xffffffff, threadIdx.x < lengthSeqB);  // blockDim.x
+    // unsigned newmask;
     for(int offset = warpSize / 2; offset > 0; offset /= 2)
     {
-
         val     = max(val, __shfl_down_sync(mask, val, offset));
         newInd  = __shfl_down_sync(mask, ind, offset);
         newInd2 = __shfl_down_sync(mask, ind2, offset);
@@ -49,8 +48,6 @@ blockShuffleReduce(short myVal, short& myIndex, short& myIndex2, unsigned length
     myVal                   = warpReduceMax(myVal, myInd, myInd2, lengthSeqB);
 
 
-  //  if(laneId == 0 && blockIdx.x == 0)
-  //   printf("max:%d, warp::%d \n",myVal, warpId);
     if(laneId == 0)
         locTots[warpId] = myVal;
     if(laneId == 0)
@@ -59,9 +56,11 @@ blockShuffleReduce(short myVal, short& myIndex, short& myIndex2, unsigned length
         locInds2[warpId] = myInd2;
 
     __syncthreads();
-unsigned check = ((32+ blockDim.x -1) / 32);
-//float myt = threadIdx.x;
-    if(threadIdx.x < check)/////******//////
+    unsigned check =
+        ((32 + blockDim.x - 1) / 32);  // mimicing the ceil function for floats
+                                       // float check = ((float)blockDim.x / 32);
+
+    if(threadIdx.x < check)  /////******//////
     {
         myVal  = locTots[threadIdx.x];
         myInd  = locInds[threadIdx.x];
@@ -77,10 +76,7 @@ unsigned check = ((32+ blockDim.x -1) / 32);
 
     if(warpId == 0)
     {
-    //  if(blockIdx.x == 0)
-      // printf("max:%d, thread::%d \n",myVal, threadIdx.x);
-
-        myVal    = warpReduceMax(myVal, myInd, myInd2,lengthSeqB);
+        myVal    = warpReduceMax(myVal, myInd, myInd2, lengthSeqB);
         myIndex  = myInd;
         myIndex2 = myInd2;
     }
@@ -108,7 +104,6 @@ traceBack(short current_i, short current_j, short* seqA_align_begin,
           short* seqB_align_begin, const char* seqA, const char* seqB, short* I_i,
           short* I_j, unsigned lengthSeqB, unsigned lengthSeqA, unsigned int* diagOffset)
 {
-
     int            myId = blockIdx.x;
     unsigned short current_diagId;     // = current_i+current_j;
     unsigned short current_locOffset;  // = 0;
@@ -125,11 +120,11 @@ traceBack(short current_i, short current_j, short* seqA_align_begin,
         current_locOffset    = current_j - myOff;
     }
 
-    //if(myId == 0)
-    //printf("diagID:%d locoffset:%d current_i:%d, current_j:%d\n",current_diagId ,current_locOffset, current_i, current_j);
+    // if(myId == 0)
+    // printf("diagID:%d locoffset:%d current_i:%d, current_j:%d\n",current_diagId
+    // ,current_locOffset, current_i, current_j);
     short next_i = I_i[diagOffset[current_diagId] + current_locOffset];
     short next_j = I_j[diagOffset[current_diagId] + current_locOffset];
-
 
     while(((current_i != next_i) || (current_j != next_j)) && (next_j != 0) &&
           (next_i != 0))
@@ -190,18 +185,18 @@ align_sequences_gpu(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA
         matrixOffset = 0;
         seqA         = seqA_array;
         seqB         = seqB_array;
-        I_i          = I_i_array+(myId*maxMatrixSize);
-        I_j          = I_j_array+(myId*maxMatrixSize);
+        I_i          = I_i_array + (myId * maxMatrixSize);
+        I_j          = I_j_array + (myId * maxMatrixSize);
     }
     else
     {
-        lengthSeqA   = prefix_lengthA[myId] - prefix_lengthA[myId - 1];
-        lengthSeqB   = prefix_lengthB[myId] - prefix_lengthB[myId - 1];
-        //matrixOffset = prefix_matrices[myId - 1];
-        seqA         = seqA_array + prefix_lengthA[myId - 1];
-        seqB         = seqB_array + prefix_lengthB[myId - 1];
-        I_i          = I_i_array +(myId*maxMatrixSize); //+ matrixOffset;
-        I_j          = I_j_array +(myId*maxMatrixSize);
+        lengthSeqA = prefix_lengthA[myId] - prefix_lengthA[myId - 1];
+        lengthSeqB = prefix_lengthB[myId] - prefix_lengthB[myId - 1];
+        // matrixOffset = prefix_matrices[myId - 1];
+        seqA = seqA_array + prefix_lengthA[myId - 1];
+        seqB = seqB_array + prefix_lengthB[myId - 1];
+        I_i  = I_i_array + (myId * maxMatrixSize);  //+ matrixOffset;
+        I_j  = I_j_array + (myId * maxMatrixSize);
     }
 
     short* curr_H =
@@ -222,17 +217,12 @@ align_sequences_gpu(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA
     short* prev_prev_F = &prev_F[lengthSeqB + 1];
     totBytes += ((lengthSeqB + 1) + (lengthSeqB + 1) + (lengthSeqB + 1)) * sizeof(short);
 
-
     char* myLocString = (char*) &prev_prev_F[lengthSeqB + 1];
     totBytes += (lengthSeqB + 1) * sizeof(short) + (lengthSeqA) * sizeof(char);
 
 
-    // if(myTId == 0 && myId == 0)
-    // printf("outalign: %d locAlign: %d", outalign, totBytes);
-    unsigned      alignmentPad = 4+(4 - totBytes % 4);
-  //  if(myId == 0 && myTId == 0)
-  //  printf("totBytes %d\n pading:%d\n", totBytes, alignmentPad);
-    unsigned int* diagOffset   = (unsigned int*) &myLocString[lengthSeqA + alignmentPad];
+    unsigned alignmentPad = 4 + (4 - totBytes % 4);
+    unsigned int* diagOffset = (unsigned int*) &myLocString[lengthSeqA + alignmentPad];
     // char* v = is_valid;
 
     __syncthreads();
@@ -354,7 +344,6 @@ align_sequences_gpu(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA
 
             curr_H[j] = findMax(traceback, 4, &ind);
 
-
             unsigned short diagId    = i + j;
             unsigned short locOffset = 0;
             if(diagId < lengthSeqA + 1)
@@ -369,8 +358,7 @@ align_sequences_gpu(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA
 
             I_i[diagOffset[diagId] + locOffset] =
                 i + iVal[ind];  // coalesced accesses, need to change
-            I_j[diagOffset[diagId] + locOffset] =
-                j + jVal[ind];
+            I_j[diagOffset[diagId] + locOffset] = j + jVal[ind];
 
             thread_max_i = (thread_max >= curr_H[j]) ? thread_max_i : i;
             thread_max_j = (thread_max >= curr_H[j]) ? thread_max_j : myTId + 1;
@@ -380,15 +368,16 @@ align_sequences_gpu(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA
         }
         __syncthreads();
     }
-  __syncthreads();
+    __syncthreads();
 
-  thread_max = blockShuffleReduce(thread_max, thread_max_i, thread_max_j, lengthSeqB);  // thread 0 will have the correct values
+    thread_max = blockShuffleReduce(thread_max, thread_max_i, thread_max_j,
+                                    lengthSeqB);  // thread 0 will have the correct values
 
-__syncthreads();
+    __syncthreads();
 
     if(myTId == 0)
     {
-      //if(myId == 0)printf("max:%d thread_i:%d\n", thread_max, thread_max_i );
+        // if(myId == 0)printf("max:%d thread_i:%d\n", thread_max, thread_max_i );
         i_max           = thread_max_i;
         j_max           = thread_max_j;
         short current_i = i_max, current_j = j_max;
@@ -398,5 +387,5 @@ __syncthreads();
         traceBack(current_i, current_j, seqA_align_begin, seqB_align_begin, seqA, seqB,
                   I_i, I_j, lengthSeqB, lengthSeqA, diagOffset);
     }
-  //  __syncthreads();
+    //  __syncthreads();
 }
