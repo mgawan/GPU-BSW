@@ -23,9 +23,8 @@ main(int argc, char* argv[])
 
     for(int i = 0; i < deviceCount; i++)
     {
-        cout << "total Global Memory for Device " << i << ":" << prop[i].totalGlobalMem
-             << endl;
-        cout << "Compute version of device " << i << ":" << prop[i].major << endl;
+        cout << "total Global Memory available on Device: " << i
+             << " is:" << prop[i].totalGlobalMem << endl;
     }
 
     vector<string> G_sequencesA,
@@ -66,35 +65,24 @@ main(int argc, char* argv[])
     }
     unsigned NBLOCKS = G_sequencesA.size();
 
-    cout << "strings read:" << NBLOCKS << endl;
-    unsigned  maxMatrixSize = (largestA + 1) * (largestB + 1);
-    long long totMemEst1    = largestA * (long) NBLOCKS + largestB * (long) NBLOCKS +
-                           maxMatrixSize * (long) NBLOCKS * sizeof(short) * 2 +
-                           (long) NBLOCKS * sizeof(short) * 4;
+    cout << "total alignments input:" << NBLOCKS << endl;
+    unsigned maxMatrixSize = (largestA + 1) * (largestB + 1);
+    cout << "length of Longest Ref String:" << largestA
+         << "\nlength of longest Query String:" << largestB << endl;
     // number of alignments per device
 
     unsigned alignmentsPerDevice = NBLOCKS / deviceCount;
     unsigned leftOver_device     = NBLOCKS % deviceCount;
     unsigned maxAligns           = alignmentsPerDevice + leftOver_device;
-    cout << "here:" << NBLOCKS << endl;
-    cout << "lef-over:" << leftOver_device << endl;
+
     long long totMemEst = largestA * (long) maxAligns + largestB * (long) maxAligns +
                           maxMatrixSize * (long) maxAligns * sizeof(short) * 2 +
                           (long) maxAligns * sizeof(short) * 4;
     // mem est per device
-    cout << "New mem st:" << totMemEst << endl;
-    cout << "totIts1:" << totMemEst1 / totMemEst << endl;
+    cout << "Max Alignments Per Device:" << maxAligns << endl;
     // determining number of iterations required on a single GPUassert
     long long estMem = totMemEst;
     int       its    = ceil(estMem / (prop[0].totalGlobalMem * 0.95));
-
-    // while(estMem > (prop[0].totalGlobalMem*0.90)){
-    //   its++;
-    //   estMem /= its;
-    // }
-
-    cout << "largestA:" << largestA << " largestB:" << largestB << endl;
-    double totalTime = 0;
 
     short* g_alAbeg = new short[NBLOCKS];
     short* g_alBbeg = new short[NBLOCKS];
@@ -108,8 +96,7 @@ main(int argc, char* argv[])
     auto   start     = NOW;
 #pragma omp parallel
     {
-        double myTotalTime = 0;
-        int    totThreads  = omp_get_num_threads();
+        int totThreads = omp_get_num_threads();
         //  cout <<"total threads:"<< totThreads<<endl;
         int my_cpu_id = omp_get_thread_num();
         cudaSetDevice(my_cpu_id);
@@ -118,8 +105,7 @@ main(int argc, char* argv[])
         int BLOCKS_l = alignmentsPerDevice;
         if(my_cpu_id == deviceCount - 1)
             BLOCKS_l += leftOver_device;
-        // cout <<" gpuid:"<<myGPUid<<" cpuID:"<<my_cpu_id<<endl;
-        // vector<string> sequencesA, sequencesB;
+
         unsigned leftOvers    = BLOCKS_l % its;
         unsigned stringsPerIt = BLOCKS_l / its;
         short *  I_i, *I_j;  // device pointers for traceback matrices
@@ -133,14 +119,6 @@ main(int argc, char* argv[])
         short* alBend =
             g_alBend +
             my_cpu_id * alignmentsPerDevice;  // memory on CPU for copying the results
-
-        // #pragma omp critical
-        // {
-        //   cout <<"cpu_id:"<<my_cpu_id<<" myAlignments:"<<BLOCKS_l<<" its:"<<its<<"
-        //   alignments per its:"<<stringsPerIt<<"offset:"<<my_cpu_id*BLOCKS_l<<endl;
-        //
-        //
-        // }
 
         thrust::host_vector<int>        offsetA(stringsPerIt + leftOvers);
         thrust::host_vector<int>        offsetB(stringsPerIt + leftOvers);
@@ -160,7 +138,7 @@ main(int argc, char* argv[])
         cudaErrchk(cudaMalloc(&alBbeg_d, (stringsPerIt + leftOvers) * sizeof(short)));
         cudaErrchk(cudaMalloc(&alAend_d, (stringsPerIt + leftOvers) * sizeof(short)));
         cudaErrchk(cudaMalloc(&alBend_d, (stringsPerIt + leftOvers) * sizeof(short)));
-
+        cout << "Iterations per GPU:"<<its<<endl;
         auto start2 = NOW;
         for(int perGPUIts = 0; perGPUIts < its; perGPUIts++)
         {
@@ -297,7 +275,7 @@ main(int argc, char* argv[])
         }  // for iterations end here
         auto                     end1  = NOW;
         chrono::duration<double> diff2 = end1 - start2;
-        cout << "thread:" << my_cpu_id << " time:" << diff2.count() << endl;
+        cout << "Device: " << my_cpu_id << " Total Time:" << diff2.count() << endl;
         cudaErrchk(cudaFree(I_i));
         cudaErrchk(cudaFree(I_j));
 
@@ -312,7 +290,7 @@ main(int argc, char* argv[])
     auto                     end  = NOW;
     chrono::duration<double> diff = end - start;
 
-    cout << "total time:" << diff.count() << endl;
+    cout << "Total time:" << diff.count() << endl;
     string   rstLine;
     ifstream rst_file(argv[3]);
     int      k = 0, errors = 0;
@@ -353,7 +331,8 @@ main(int argc, char* argv[])
             //  cout <<ref_st<<" "<<ref_end<<" "<<ref_st<<" "<<ref_end<<endl;
             k++;
         }
-        cout << "total errors:" << errors << endl;
+        if(errors == 0)
+            cout << "VERIFICATION TEST PASSED" << endl;
     }
 
     return 0;

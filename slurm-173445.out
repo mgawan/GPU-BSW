@@ -1,0 +1,21 @@
+==175667== NVPROF is profiling process 175667, command: ./program_gpu ./test_data/ref_file_30000.txt ./test_data/que_file_30000.txt ./test_data/results_30000
+==175667== Some kernel(s) will be replayed on device 0 in order to collect all events/metrics.
+==175667== Profiling application: ./program_gpu ./test_data/ref_file_30000.txt ./test_data/que_file_30000.txt ./test_data/results_30000
+==175667== Profiling result:
+==175667== Metric result:
+Invocations                               Metric Name                            Metric Description         Min         Max         Avg
+Device "Tesla V100-SXM2-16GB (0)"
+    Kernel: align_sequences_gpu(char*, char*, unsigned int*, unsigned int*, unsigned int, short*, short*, short*, short*, short*, short*)
+          1                              inst_integer                          Integer Instructions  7.3448e+12  7.3448e+12  7.3448e+12
+          1                             flop_count_sp   Floating Point Operations(Single Precision)           0           0           0
+          1                                inst_fp_64                       FP Instructions(Double)           0           0           0
+          1                                inst_fp_32                       FP Instructions(Single)           0           0           0
+          1                             flop_count_dp   Floating Point Operations(Double Precision)           0           0           0
+          1                          gld_transactions                      Global Load Transactions    10259992    10259992    10259992
+          1                          gst_transactions                     Global Store Transactions   729015000   729015000   729015000
+          1                    dram_read_transactions               Device Memory Read Transactions    76605118    76605118    76605118
+          1                   dram_write_transactions              Device Memory Write Transactions   600669242   600669242   600669242
+          1                      l2_read_transactions                          L2 Read Transactions     7207296     7207296     7207296
+          1                     l2_write_transactions                         L2 Write Transactions   883487003   883487003   883487003
+          1                  shared_load_transactions                      Shared Load Transactions  1411177204  1411177204  1411177204
+          1                 shared_store_transactions                     Shared Store Transactions  1.0779e+11  1.0779e+11  1.0779e+11

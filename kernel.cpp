@@ -11,7 +11,7 @@ warpReduceMax(short val, short& myIndex, short& myIndex2, unsigned lengthSeqB)
     short ind      = myIndex;
     short ind2     = myIndex2;
     myMax          = val;
-    unsigned mask = __ballot_sync(0xffffffff, threadIdx.x < lengthSeqB);  // blockDim.x
+    unsigned mask  = __ballot_sync(0xffffffff, threadIdx.x < lengthSeqB);  // blockDim.x
     // unsigned newmask;
     for(int offset = warpSize / 2; offset > 0; offset /= 2)
     {
@@ -46,7 +46,6 @@ blockShuffleReduce(short myVal, short& myIndex, short& myIndex2, unsigned length
     short            myInd  = myIndex;
     short            myInd2 = myIndex2;
     myVal                   = warpReduceMax(myVal, myInd, myInd2, lengthSeqB);
-
 
     if(laneId == 0)
         locTots[warpId] = myVal;
@@ -168,7 +167,6 @@ align_sequences_gpu(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA
     //	printf("block3 lenA:%d",prefix_lengthA[myId]);
     unsigned lengthSeqA;
     unsigned lengthSeqB;
-    unsigned matrixOffset;
     // local pointers
     char*    seqA;
     char*    seqB;
@@ -182,7 +180,6 @@ align_sequences_gpu(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA
     {
         lengthSeqA   = prefix_lengthA[0];
         lengthSeqB   = prefix_lengthB[0];
-        matrixOffset = 0;
         seqA         = seqA_array;
         seqB         = seqB_array;
         I_i          = I_i_array + (myId * maxMatrixSize);
@@ -192,10 +189,9 @@ align_sequences_gpu(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA
     {
         lengthSeqA = prefix_lengthA[myId] - prefix_lengthA[myId - 1];
         lengthSeqB = prefix_lengthB[myId] - prefix_lengthB[myId - 1];
-        // matrixOffset = prefix_matrices[myId - 1];
         seqA = seqA_array + prefix_lengthA[myId - 1];
         seqB = seqB_array + prefix_lengthB[myId - 1];
-        I_i  = I_i_array + (myId * maxMatrixSize);  //+ matrixOffset;
+        I_i  = I_i_array + (myId * maxMatrixSize);  
         I_j  = I_j_array + (myId * maxMatrixSize);
     }
 
@@ -220,9 +216,8 @@ align_sequences_gpu(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA
     char* myLocString = (char*) &prev_prev_F[lengthSeqB + 1];
     totBytes += (lengthSeqB + 1) * sizeof(short) + (lengthSeqA) * sizeof(char);
 
-
-    unsigned alignmentPad = 4 + (4 - totBytes % 4);
-    unsigned int* diagOffset = (unsigned int*) &myLocString[lengthSeqA + alignmentPad];
+    unsigned      alignmentPad = 4 + (4 - totBytes % 4);
+    unsigned int* diagOffset   = (unsigned int*) &myLocString[lengthSeqA + alignmentPad];
     // char* v = is_valid;
 
     __syncthreads();
