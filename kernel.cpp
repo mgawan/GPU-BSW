@@ -178,21 +178,21 @@ align_sequences_gpu(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA
 
     if(myId == 0)
     {
-        lengthSeqA   = prefix_lengthA[0];
-        lengthSeqB   = prefix_lengthB[0];
-        seqA         = seqA_array;
-        seqB         = seqB_array;
-        I_i          = I_i_array + (myId * maxMatrixSize);
-        I_j          = I_j_array + (myId * maxMatrixSize);
+        lengthSeqA = prefix_lengthA[0];
+        lengthSeqB = prefix_lengthB[0];
+        seqA       = seqA_array;
+        seqB       = seqB_array;
+        I_i        = I_i_array + (myId * maxMatrixSize);
+        I_j        = I_j_array + (myId * maxMatrixSize);
     }
     else
     {
         lengthSeqA = prefix_lengthA[myId] - prefix_lengthA[myId - 1];
         lengthSeqB = prefix_lengthB[myId] - prefix_lengthB[myId - 1];
-        seqA = seqA_array + prefix_lengthA[myId - 1];
-        seqB = seqB_array + prefix_lengthB[myId - 1];
-        I_i  = I_i_array + (myId * maxMatrixSize);  
-        I_j  = I_j_array + (myId * maxMatrixSize);
+        seqA       = seqA_array + prefix_lengthA[myId - 1];
+        seqB       = seqB_array + prefix_lengthB[myId - 1];
+        I_i        = I_i_array + (myId * maxMatrixSize);
+        I_j        = I_j_array + (myId * maxMatrixSize);
     }
 
     short* curr_H =

@@ -1,6 +1,5 @@
 #ifndef KERNEL_HPP
 #define KERNEL_HPP
-#include <chrono>
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
@@ -11,22 +10,7 @@
 //#define NBLOCKS 15000
 #define MATCH 15
 #define MISMATCH -3
-#define NOW std::chrono::high_resolution_clock::now()
 
-#define cudaErrchk(ans)                                                                  \
-    {                                                                                    \
-        gpuAssert((ans), __FILE__, __LINE__);                                            \
-    }
-inline void
-gpuAssert(cudaError_t code, const char* file, int line, bool abort = true)
-{
-    if(code != cudaSuccess)
-    {
-        fprintf(stderr, "GPUassert: %s %s %d\n", cudaGetErrorString(code), file, line);
-        if(abort)
-            exit(code);
-    }
-}
 __inline__ __device__ short
 warpReduceMax(short val, short& myIndex, short& myIndex2);
 
