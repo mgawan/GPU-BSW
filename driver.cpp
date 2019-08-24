@@ -185,8 +185,11 @@ callAlignKernel(std::vector<std::string> reads, std::vector<std::string> contigs
             cudaErrchk(cudaMemcpy(strB_d, strB, totalLengthB * sizeof(char),
                                   cudaMemcpyHostToDevice));
 
-            unsigned totShmem = 3 * 3 * (maxReadSize + 1) * sizeof(short) +
-                                3 * maxReadSize + (maxReadSize & 1) + maxContigSize;
+           unsigned maxSize = (maxReadSize > maxContigSize) ? maxReadSize : maxContigSize;
+           unsigned minSize = (maxReadSize < maxContigSize) ? maxReadSize : maxContigSize;
+
+            unsigned totShmem = 3 * 3 * (minSize + 1) * sizeof(short) +
+                                3 * minSize + (minSize & 1) + maxSize;
 
             unsigned alignmentPad = 4 + (4 - totShmem % 4);
             size_t   ShmemBytes =
@@ -197,9 +200,10 @@ callAlignKernel(std::vector<std::string> reads, std::vector<std::string> contigs
                                      cudaFuncAttributeMaxDynamicSharedMemorySize,
                                      ShmemBytes);
 
-            align_sequences_gpu<<<blocksLaunched, maxReadSize, ShmemBytes>>>(
+            align_sequences_gpu<<<blocksLaunched, minSize, ShmemBytes>>>(
                 strA_d, strB_d, offsetA_d, offsetB_d, maxMatrixSize, I_i, I_j, alAbeg_d,
                 alAend_d, alBbeg_d, alBend_d);
+                std::cout <<"threads:"<<minSize<<std::endl;
 
             cudaErrchk(cudaMemcpy(alAbeg, alAbeg_d, blocksLaunched * sizeof(short),
                                   cudaMemcpyDeviceToHost));

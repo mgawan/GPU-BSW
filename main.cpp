@@ -28,7 +28,7 @@ main(int argc, char* argv[])
 
     string   myInLine;
     ifstream ref_file(argv[1]);
-    ifstream quer_file(argv[2]);  
+    ifstream quer_file(argv[2]);
     unsigned largestA = 0, largestB = 0;
 
     int totSizeA = 0, totSizeB = 0;
@@ -68,6 +68,10 @@ main(int argc, char* argv[])
     callAlignKernel(G_sequencesB, G_sequencesA, largestB, largestA, G_sequencesA.size(),
                     &g_alAbeg, &g_alBbeg, &g_alAend, &g_alBend, argv[3]);
 
+    // cout <<"start ref:"<<g_alAbeg[0]<<" end ref:"<<g_alAend[0]<<endl;
+    // cout <<"start que:"<<g_alBbeg[0]<<" end que:"<<g_alBend[0]<<endl;
+    // cout <<"start ref:"<<g_alAbeg[1]<<" end ref:"<<g_alAend[1]<<endl;
+    // cout <<"start que:"<<g_alBbeg[1]<<" end que:"<<g_alBend[1]<<endl;
     verificationTest(argv[3], g_alAbeg, g_alBbeg, g_alAend, g_alBend);
 
     return 0;
