@@ -30,8 +30,7 @@ traceBack(short current_i, short current_j, short* seqA_align_begin,
 
 __global__ void
 align_sequences_gpu(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA,
-                    unsigned* prefix_lengthB, unsigned maxMatrixSize, short* I_i_array,
-                    short* I_j_array, short* seqA_align_begin, short* seqA_align_end,
+                    unsigned* prefix_lengthB, short* seqA_align_begin, short* seqA_align_end,
                     short* seqB_align_begin, short* seqB_align_end);
 
 #endif

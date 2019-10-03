@@ -122,9 +122,7 @@ traceBack(short current_i, short current_j, short* seqA_align_begin,
         current_locOffset    = current_j - myOff;
     }
 
-    // if(myId == 0)
-    // printf("diagID:%d locoffset:%d current_i:%d, current_j:%d\n",current_diagId
-    // ,current_locOffset, current_i, current_j);
+
     short next_i = I_i[diagOffset[current_diagId] + current_locOffset];
     short next_j = I_j[diagOffset[current_diagId] + current_locOffset];
 
@@ -165,8 +163,7 @@ if(lengthSeqA < lengthSeqB){
 
 __global__ void
 align_sequences_gpu(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA,
-                    unsigned* prefix_lengthB, unsigned maxMatrixSize, short* I_i_array,
-                    short* I_j_array, short* seqA_align_begin, short* seqA_align_end,
+                    unsigned* prefix_lengthB,  short* seqA_align_begin, short* seqA_align_end,
                     short* seqB_align_begin, short* seqB_align_end)
 {
     int myId  = blockIdx.x;
@@ -179,7 +176,6 @@ align_sequences_gpu(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA
     // local pointers
     char*    seqA;
     char*    seqB;
-    short *  I_i, *I_j;
     unsigned totBytes = 0;
 
     extern __shared__ char is_valid_array[];
@@ -191,8 +187,6 @@ align_sequences_gpu(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA
         lengthSeqB = prefix_lengthB[0];
         seqA       = seqA_array;
         seqB       = seqB_array;
-        I_i        = I_i_array + (myId * maxMatrixSize);
-        I_j        = I_j_array + (myId * maxMatrixSize);
     }
     else
     {
@@ -200,8 +194,6 @@ align_sequences_gpu(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA
         lengthSeqB = prefix_lengthB[myId] - prefix_lengthB[myId - 1];
         seqA       = seqA_array + prefix_lengthA[myId - 1];
         seqB       = seqB_array + prefix_lengthB[myId - 1];
-        I_i        = I_i_array + (myId * maxMatrixSize);
-        I_j        = I_j_array + (myId * maxMatrixSize);
     }
 
     unsigned maxSize = lengthSeqA > lengthSeqB ? lengthSeqA : lengthSeqB;
@@ -229,7 +221,7 @@ align_sequences_gpu(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA
     totBytes += (minSize + 1) * sizeof(short) + (maxSize) * sizeof(char);
 
     unsigned      alignmentPad = 4 + (4 - totBytes % 4);
-    unsigned int* diagOffset   = (unsigned int*) &myLocString[maxSize + alignmentPad];
+    // unsigned int* diagOffset   = (unsigned int*) &myLocString[maxSize + alignmentPad];
     // char* v = is_valid;
 
 
@@ -242,8 +234,8 @@ align_sequences_gpu(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA
 
     memset(curr_H, 0, 9 * (minSize + 1) * sizeof(short));
 
-    __shared__ int i_max;
-    __shared__ int j_max;
+    // __shared__ int i_max;
+    // __shared__ int j_max;
     int            j            = myTId + 1;
       char myColumnChar;
     if(lengthSeqA < lengthSeqB){
@@ -260,25 +252,21 @@ align_sequences_gpu(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA
           myLocString[i] = seqA[i];
       }
       }
-    ///////////locsl dtring read in
-    // for(int i = myTId; i < lengthSeqA; i += 32)
-    // {
-    //     myLocString[i] = seqA[i];
-    // }
+
 
     __syncthreads();
 
     short            traceback[4];
-    __shared__ short iVal[4];  //= {-1,-1,0,0};
-    iVal[0] = -1;
-    iVal[1] = -1;
-    iVal[2] = 0;
-    iVal[3] = 0;
-    __shared__ short jVal[4];  //= {-1,0,-1,0};
-    jVal[0] = -1;
-    jVal[1] = 0;
-    jVal[2] = -1;
-    jVal[3] = 0;
+    // __shared__ short iVal[4];  //= {-1,-1,0,0};
+    // iVal[0] = -1;
+    // iVal[1] = -1;
+    // iVal[2] = 0;
+    // iVal[3] = 0;
+    // __shared__ short jVal[4];  //= {-1,0,-1,0};
+    // jVal[0] = -1;
+    // jVal[1] = 0;
+    // jVal[2] = -1;
+    // jVal[3] = 0;
 
     int ind;
 
@@ -288,31 +276,7 @@ align_sequences_gpu(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA
     short thread_max_j = 0;
 
     short* tmp_ptr;
-    int    locSum = 0;
-    // for(int diag = 0; diag < lengthSeqA + lengthSeqB - 1; diag++)
-    // {
-    //     int locDiagId = diag + 1;
-    //     if(myTId == 0)
-    //     {  // this computes the prefixSum for diagonal offset look up table.
-    //         if(locDiagId <= minSize + 1)
-    //         {
-    //             locSum += locDiagId;
-    //             diagOffset[locDiagId] = locSum;
-    //         }
-    //         else if(locDiagId > maxSize + 1)
-    //         {
-    //             locSum += (minSize + 1) - (locDiagId - (maxSize + 1));
-    //             diagOffset[locDiagId] = locSum;
-    //         }
-    //         else
-    //         {
-    //             locSum += minSize + 1;
-    //             diagOffset[locDiagId] = locSum;
-    //         }
-    //         diagOffset[lengthSeqA + lengthSeqB] = locSum + 2;
-    //         // printf("diag:%d\tlocSum:%d\n",diag,diagOffset[locDiagId]);
-    //     }
-    // }
+
     __syncthreads();
     for(int diag = 0; diag < lengthSeqA + lengthSeqB - 1; diag++)
     {  // iterate for the number of anti-diagonals
@@ -352,7 +316,7 @@ align_sequences_gpu(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA
             curr_F[j] = (fVal > hfVal) ? fVal : hfVal;
             curr_E[j] = (eVal > heVal) ? eVal : heVal;
 
-        //    (myLocString[i-1] == myColumnChar)?MATCH:MISMATCH
+
 
             traceback[0] =
                 prev_prev_H[j - 1] +
@@ -365,22 +329,7 @@ align_sequences_gpu(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA
 
             curr_H[j] = findMax(traceback, 4, &ind);
             //
-            // unsigned short diagId    = i + j;
-            // unsigned short locOffset = 0;
-            // if(diagId < maxSize + 1)
-            // {
-            //     locOffset = j;
-            // }
-            // else
-            // {
-            //     unsigned short myOff = diagId - maxSize;
-            //     locOffset            = j - myOff;
-            // }
-            //
-            // I_i[diagOffset[diagId] + locOffset] =
-            //     i + iVal[ind];  // coalesced accesses, need to change
-            // I_j[diagOffset[diagId] + locOffset] = j + jVal[ind];
-            //
+
             thread_max_i = (thread_max >= curr_H[j]) ? thread_max_i : i;
             thread_max_j = (thread_max >= curr_H[j]) ? thread_max_j : myTId + 1;
             thread_max   = (thread_max >= curr_H[j]) ? thread_max : curr_H[j];
@@ -398,12 +347,8 @@ align_sequences_gpu(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA
 
     if(myTId == 0)
     {
-        //  if(myId == 0)printf("max score fwd:%d\n", thread_max );
-      //  i_max           = thread_max_i;
-      //  j_max           = thread_max_j;
 
 
-    //    short current_i = i_max, current_j = j_max;
         if(lengthSeqA < lengthSeqB){
           seqB_align_end[myId] = thread_max_i;
           seqA_align_end[myId] = thread_max_j;
@@ -411,9 +356,6 @@ align_sequences_gpu(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA
         seqA_align_end[myId] = thread_max_i;
         seqB_align_end[myId] = thread_max_j;
         }
-      //  traceBack(current_i, current_j, seqA_align_begin, seqB_align_begin, seqA, seqB,
-      //            I_i, I_j, lengthSeqB, lengthSeqA, diagOffset);
-  //  }
 
 }
 __syncthreads();
@@ -421,72 +363,51 @@ __syncthreads();
 //**************************************//
 j            = myTId + 1;
 
- lengthSeqA = seqA_align_end[myId];
- lengthSeqB = seqB_align_end[myId];
-int seqAend = lengthSeqA -1;
-int seqBend = lengthSeqB -1;
+ int newlengthSeqA = seqA_align_end[myId];
+ int newlengthSeqB = seqB_align_end[myId];
+int seqAend = newlengthSeqA -1;
+int seqBend = newlengthSeqB -1;
 __syncthreads();
-  //if(myId == 0 && myTId == 0)printf("seqA end:%d seqB end: %d thread:%d block: %d\n",seqA_align_end[myId], seqB_align_end[myId], myTId,myId );
 
-  // if(myId == 0 && myTId == 0){
-  //   for(int l = 0; l < lengthSeqB; l++){
-  //     printf("%c",seqB[l]);
-  //   }
-  //   printf("\n");
-  // }
-__syncthreads();
+
 if(lengthSeqA < lengthSeqB){
-  if(myTId < lengthSeqA)
+  if(myTId < newlengthSeqA)
     seqA[seqAend - (j-1)] = myColumnChar;
-  //printf("thread:%d char:%c charNew:%c\n",j-1,myColumnChar,seqA[seqAend - (j-1)]);
 
-  for(int i = myTId; i < lengthSeqB; i+=32){
+  for(int i = myTId; i < newlengthSeqB; i+=32){
     seqB[seqBend - i] = myLocString[i];
   }
 
 }else{
-  if(myTId < lengthSeqB)
+  if(myTId < newlengthSeqB)
   seqB[seqBend - (j-1)] = myColumnChar;
-    //printf("thread:%d char:%c charNew:%c\n",j-1,myColumnChar,seqB[seqAend - (j-1)]);
 
-  for(int i = myTId; i < lengthSeqA; i+=32){
+
+  for(int i = myTId; i < newlengthSeqA; i+=32){
     seqA[seqAend - i] = myLocString[i];
   }
 }
 
 __syncthreads();
 
-// if(myId == 0 && myTId == 0){
-//   for(int l = 0; l < lengthSeqA; l++){
-//     printf("%c",seqA[l]);
-//   }
-//   printf("\n");
-// }
-//
-// __syncthreads();
 
-
-
-maxSize = lengthSeqA > lengthSeqB ? lengthSeqA : lengthSeqB;
-minSize = lengthSeqA < lengthSeqB ? lengthSeqA : lengthSeqB;
+maxSize = newlengthSeqA > newlengthSeqB ? newlengthSeqA : newlengthSeqB;
+minSize = newlengthSeqA < newlengthSeqB ? newlengthSeqA : newlengthSeqB;
 __syncthreads();
      curr_H =
         (short*) (&is_valid_array[3 * minSize +
                                   (minSize & 1)]);  // point where the valid_array ends
      prev_H      = &curr_H[minSize + 1];      // where the curr_H array ends
      prev_prev_H = &prev_H[minSize + 1];
-  //  totBytes += (3 * minSize + (minSize & 1)) * sizeof(char) +
-  //              ((minSize + 1) + (minSize + 1)) * sizeof(short);
+
 
      curr_E      = &prev_prev_H[minSize + 1];
      prev_E      = &curr_E[minSize + 1];
      prev_prev_E = &prev_E[minSize + 1];
-    //totBytes += ((minSize + 1) + (minSize + 1) + (minSize + 1)) * sizeof(short);
 
      curr_F      = &prev_prev_E[minSize + 1];
      prev_F      = &curr_F[minSize + 1];
      prev_prev_F = &prev_F[minSize + 1];
-  //  totBytes += ((minSize + 1) + (minSize + 1) + (minSize + 1)) * sizeof(short);
 
      myLocString = (char*) &prev_prev_F[minSize + 1];
 __syncthreads();
@@ -502,17 +423,17 @@ __syncthreads();
 __syncthreads();
 
 if(lengthSeqA < lengthSeqB){
-   if(j < lengthSeqA);
+   if(j < newlengthSeqA);
     myColumnChar = seqA[j - 1];  // read only once
-  for(int i = myTId; i < lengthSeqB; i += 32)
+  for(int i = myTId; i < newlengthSeqB; i += 32)
   {
       myLocString[i] = seqB[i]; // locString contains reference/longer string
   }
   }
 else{
-  if(j < lengthSeqB);
+  if(j < newlengthSeqB);
    myColumnChar = seqB[j - 1];
-  for(int i = myTId; i < lengthSeqA; i += 32)
+  for(int i = myTId; i < newlengthSeqA; i += 32)
   {
       myLocString[i] = seqA[i];
   }
@@ -531,7 +452,7 @@ __syncthreads();
   //  locSum = 0;
 
   //    __syncthreads();
-      for(int diag = 0; diag < lengthSeqA + lengthSeqB - 1; diag++)
+      for(int diag = 0; diag < newlengthSeqA + newlengthSeqB - 1; diag++)
       {  // iterate for the number of anti-diagonals
 
           is_valid = is_valid - (diag < minSize || diag >= maxSize);
@@ -581,23 +502,7 @@ __syncthreads();
               traceback[3] = 0;
 
               curr_H[j] = findMax(traceback, 4, &ind);
-              //
-              // unsigned short diagId    = i + j;
-              // unsigned short locOffset = 0;
-              // if(diagId < maxSize + 1)
-              // {
-              //     locOffset = j;
-              // }
-              // else
-              // {
-              //     unsigned short myOff = diagId - maxSize;
-              //     locOffset            = j - myOff;
-              // }
-              //
-              // I_i[diagOffset[diagId] + locOffset] =
-              //     i + iVal[ind];  // coalesced accesses, need to change
-              // I_j[diagOffset[diagId] + locOffset] = j + jVal[ind];
-              //
+
               thread_max_i = (thread_max >= curr_H[j]) ? thread_max_i : i;
               thread_max_j = (thread_max >= curr_H[j]) ? thread_max_j : myTId + 1;
               thread_max   = (thread_max >= curr_H[j]) ? thread_max : curr_H[j];
@@ -614,50 +519,16 @@ __syncthreads();
       __syncthreads();
 
 
-          // if(lengthSeqA < lengthSeqB){
-          //   seqB_align_begin[myId] = (lengthSeqB-1) - thread_max_i;
-          //   seqA_align_begin[myId] = (lengthSeqA-1) - thread_max_j;
-          // }else{
-          // seqA_align_begin[myId] = (lengthSeqA-1) - thread_max_i;
-          // seqB_align_begin[myId] = (lengthSeqB-1) - thread_max_j;
-          // }
-
           if(myTId == 0)
           {
-            //  if(myId == 0)printf("max score rev:%d\n", thread_max );
-            //   if(myId == 0)printf("max:%d thread_i:%d thread_j:%d\n", thread_max, thread_max_i, thread_max_j );
-              // i_max           = thread_max_i;
-              // j_max           = thread_max_j;
-              // short current_i = i_max, current_j = j_max;
               if(lengthSeqA < lengthSeqB){
-                seqB_align_begin[myId] = lengthSeqB - (thread_max_i);
-                seqA_align_begin[myId] = lengthSeqA - (thread_max_j);
+                seqB_align_begin[myId] = newlengthSeqB - (thread_max_i);
+                seqA_align_begin[myId] = newlengthSeqA - (thread_max_j);
               }else{
-              seqA_align_begin[myId] = lengthSeqA - (thread_max_i);
-              seqB_align_begin[myId] = lengthSeqB - (thread_max_j);
+              seqA_align_begin[myId] = newlengthSeqA - (thread_max_i);
+              seqB_align_begin[myId] = newlengthSeqB - (thread_max_j);
               }
-            //  traceBack(current_i, current_j, seqA_align_begin, seqB_align_begin, seqA, seqB,
-            //            I_i, I_j, lengthSeqB, lengthSeqA, diagOffset);
           }
            __syncthreads();
- //if(myId == 0 && myTId == 0)printf("seqA begin:%d seqB begin: %d thread:%d block: %d\n",seqA_align_begin[myId], seqB_align_begin[myId], myTId,myId );
-//*************************************//
 
-    // if(myTId == 0)
-    // {
-    //     // if(myId == 0)printf("max:%d thread_i:%d\n", thread_max, thread_max_i );
-    //     i_max           = thread_max_i;
-    //     j_max           = thread_max_j;
-    //     short current_i = i_max, current_j = j_max;
-    //     if(lengthSeqA < lengthSeqB){
-    //       seqB_align_end[myId] = current_i;
-    //       seqA_align_end[myId] = current_j;
-    //     }else{
-    //     seqA_align_end[myId] = current_i;
-    //     seqB_align_end[myId] = current_j;
-    //     }
-    //     traceBack(current_i, current_j, seqA_align_begin, seqB_align_begin, seqA, seqB,
-    //               I_i, I_j, lengthSeqB, lengthSeqA, diagOffset);
-    // }
-    //  __syncthreads();
 }
