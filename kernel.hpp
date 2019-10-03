@@ -6,9 +6,9 @@
 #include <sys/time.h>
 
 #define EXTEND_GAP -2
-#define START_GAP -2
+#define START_GAP -5
 //#define NBLOCKS 15000
-#define MATCH 15
+#define MATCH 2
 #define MISMATCH -3
 
 __inline__ __device__ short

@@ -282,6 +282,12 @@ verificationTest(char* rstFile, short* g_alAbeg, short* g_alBbeg, short* g_alAen
                g_alBend[k] != que_end)
             {
                 errors++;
+              //   std::cout<<"actualAbeg:"<<g_alAbeg[k]<<" expected:"<<ref_st<<std::endl;
+              // //  std::cout<<"actualAend:"<<g_alAend[k]<<" expected:"<<ref_end<<std::endl;
+              //   std::cout<<"actualBbeg:"<<g_alBbeg[k]<<" expected:"<<que_st<<std::endl;
+              //   std::cout<<"index:"<<k<<std::endl;
+              //  std::cout<<"actualBend:"<<g_alBend[k]<<" expected:"<<que_end<<std::endl;
+
             }
             k++;
         }
