@@ -220,7 +220,7 @@ align_sequences_gpu(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA
     char* myLocString = (char*) &prev_prev_F[minSize + 1];
     totBytes += (minSize + 1) * sizeof(short) + (maxSize) * sizeof(char);
 
-    unsigned      alignmentPad = 4 + (4 - totBytes % 4);
+    //unsigned      alignmentPad = 4 + (4 - totBytes % 4);
     // unsigned int* diagOffset   = (unsigned int*) &myLocString[maxSize + alignmentPad];
     // char* v = is_valid;
 
