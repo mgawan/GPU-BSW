@@ -276,66 +276,93 @@ align_sequences_gpu(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA
     short thread_max_j = 0;
 
     short* tmp_ptr;
-
+    short _curr_H = 0, _curr_F = 0, _curr_E = 0;
+    short _prev_H = 0, _prev_F = 0, _prev_E = 0;
+    short _prev_prev_H = 0, _prev_prev_F = 0, _prev_prev_E = 0;
+    short _temp_Val = 0;
     __syncthreads();
     for(int diag = 0; diag < lengthSeqA + lengthSeqB - 1; diag++)
     {  // iterate for the number of anti-diagonals
 
         is_valid = is_valid - (diag < minSize || diag >= maxSize);
 
-        tmp_ptr     = prev_H;
-        prev_H      = curr_H;
-        curr_H      = prev_prev_H;
-        prev_prev_H = tmp_ptr;
+       // tmp_ptr     = prev_H;
+       // prev_H      = curr_H;
+       // curr_H      = prev_prev_H;
+       // prev_prev_H = tmp_ptr;
+	_temp_Val = _prev_H;
+	_prev_H = _curr_H;
+	_curr_H = _prev_prev_H;
+	_prev_prev_H = _temp_Val;
+	
+	_curr_H = 0;
 
-        memset(curr_H, 0, (minSize + 1) * sizeof(short));
+//        memset(curr_H, 0, (minSize + 1) * sizeof(short));
         __syncthreads();
-        tmp_ptr     = prev_E;
-        prev_E      = curr_E;
-        curr_E      = prev_prev_E;
-        prev_prev_E = tmp_ptr;
-
-        memset(curr_E, 0, (minSize + 1) * sizeof(short));
-        __syncthreads();
-        tmp_ptr     = prev_F;
-        prev_F      = curr_F;
-        curr_F      = prev_prev_F;
-        prev_prev_F = tmp_ptr;
-
-        memset(curr_F, 0, (minSize + 1) * sizeof(short));
-
+//        tmp_ptr     = prev_E;
+ //       prev_E      = curr_E;
+  //      curr_E      = prev_prev_E;
+   //     prev_prev_E = tmp_ptr;
+        _temp_Val = _prev_E;
+        _prev_E = _curr_E;
+        _curr_E = _prev_prev_E;
+        _prev_prev_E = _temp_Val;
+        //memset(curr_E, 0, (minSize + 1) * sizeof(short));
+	_curr_E = 0;       
+ __syncthreads();
+      //  tmp_ptr     = prev_F;
+       // prev_F      = curr_F;
+       // curr_F      = prev_prev_F;
+       // prev_prev_F = tmp_ptr;
+        _temp_Val = _prev_F;
+        _prev_F = _curr_F;
+        _curr_F = _prev_prev_F;
+        _prev_prev_F = _temp_Val;
+       // memset(curr_F, 0, (minSize + 1) * sizeof(short));
+	_curr_F = 0;
           __syncthreads();
 
         if(is_valid[myTId] && myTId < minSize)
         {
-            short fVal  = prev_F[j] + EXTEND_GAP;
-            short hfVal = prev_H[j] + START_GAP;
-            short eVal  = prev_E[j - 1] + EXTEND_GAP;
-            short heVal = prev_H[j - 1] + START_GAP;
+           // short fVal  = prev_F[j] + EXTEND_GAP;
+           // short hfVal = prev_H[j] + START_GAP;
+           // short eVal  = prev_E[j - 1] + EXTEND_GAP;
+           // short heVal = prev_H[j - 1] + START_GAP;
+	    unsigned mask  = __ballot_sync(0xffffffff, (is_valid[myTId] &&( myTId < minSize)));	
+	///if(threadIdx.x == blockDim.x -33)printf("mask:%x diag:%d\n",mask,diag);
+	    short fVal = _prev_F + EXTEND_GAP;
+	    short hfVal = _prev_H + START_GAP;
+	    short laneId = threadIdx.x%32;
+            short eVal = __shfl_sync(mask, _prev_E, laneId- 1, 32) + EXTEND_GAP;
+	    short heVal = __shfl_sync(mask, _prev_H, laneId - 1, 32) + START_GAP;		       
+	
+ 	//curr_F[j] = (fVal > hfVal) ? fVal : hfVal;
+		_curr_F = (fVal > hfVal) ? fVal : hfVal;
+		_curr_E = (eVal > heVal) ? eVal : heVal;           
+ //curr_E[j] = (eVal > heVal) ? eVal : heVal;
 
-            curr_F[j] = (fVal > hfVal) ? fVal : hfVal;
-            curr_E[j] = (eVal > heVal) ? eVal : heVal;
 
-
-
+	   short valPPh = __shfl_sync(mask, _prev_prev_H, laneId - 1, 32);
             traceback[0] =
-                prev_prev_H[j - 1] +
+                valPPh +
                 ((myLocString[i - 1] == myColumnChar)
                      ? MATCH
                      : MISMATCH);  // similarityScore(myLocString[i-1],myColumnChar);//seqB[j-1]
-            traceback[1] = curr_F[j];
-            traceback[2] = curr_E[j];
+            traceback[1] = _curr_F;
+            traceback[2] = _curr_E;
             traceback[3] = 0;
 
-            curr_H[j] = findMax(traceback, 4, &ind);
+            _curr_H = findMax(traceback, 4, &ind);
             //
 
-            thread_max_i = (thread_max >= curr_H[j]) ? thread_max_i : i;
-            thread_max_j = (thread_max >= curr_H[j]) ? thread_max_j : myTId + 1;
-            thread_max   = (thread_max >= curr_H[j]) ? thread_max : curr_H[j];
-
+            thread_max_i = (thread_max >= _curr_H) ? thread_max_i : i;
+            thread_max_j = (thread_max >= _curr_H) ? thread_max_j : myTId + 1;
+            thread_max   = (thread_max >= _curr_H) ? thread_max : _curr_H;
+        //    printf("thread:%d, max:%d\n",myTId, thread_max);	
+//	 if(is_valid[myTId] && myTId < minSize)	
             i++;
         }
+if(blockIdx.x==0)printf("max:%d, thread_i:%d, thread_j: %d\n", thread_max, thread_max_i, thread_max_j);
         __syncthreads();
     }
     __syncthreads();
@@ -345,6 +372,8 @@ align_sequences_gpu(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA
 
     __syncthreads();
 
+if(threadIdx.x == 0&& blockIdx.x == 0) printf("max val:%d, thread_max_i: %d, thread_max_j:%d\n",thread_max, thread_max_i, thread_max_j);
+/*
     if(myTId == 0)
     {
 
@@ -360,7 +389,7 @@ align_sequences_gpu(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA
 }
 __syncthreads();
 
-//**************************************//
+
 j            = myTId + 1;
 
  int newlengthSeqA = seqA_align_end[myId];
@@ -530,5 +559,5 @@ __syncthreads();
               }
           }
            __syncthreads();
-
+*/
 }

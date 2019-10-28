@@ -72,7 +72,7 @@ main(int argc, char* argv[])
   //   cout <<"start que:"<<g_alBbeg[0]<<" end que:"<<g_alBend[0]<<endl;
     // cout <<"start ref:"<<g_alAbeg[1]<<" end ref:"<<g_alAend[1]<<endl;
     // cout <<"start que:"<<g_alBbeg[1]<<" end que:"<<g_alBend[1]<<endl;
-   verificationTest(argv[3], g_alAbeg, g_alBbeg, g_alAend, g_alBend);
+//   verificationTest(argv[3], g_alAbeg, g_alBbeg, g_alAend, g_alBend);
 
     return 0;
 }
