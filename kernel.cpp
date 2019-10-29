@@ -280,10 +280,23 @@ align_sequences_gpu(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA
     short _prev_H = 0, _prev_F = 0, _prev_E = 0;
     short _prev_prev_H = 0, _prev_prev_F = 0, _prev_prev_E = 0;
     short _temp_Val = 0;
+   __shared__ short sh_prev_E[2];
+   __shared__ short sh_prev_H[2];
+   __shared__ short sh_prev_prev_H[2];
+  __shared__ short sh_last_prev_E , sh_last_prev_H, sh_last_prev_prev_H;
+sh_prev_E[0]=0;
+sh_prev_E[1]=0;
+sh_prev_H[0]=0;
+sh_prev_H[1]=0;
+sh_prev_prev_H[0]=0;
+sh_prev_prev_H[1] = 0;
+
+   //for(int j = 0; j < 2; j++) printf("valE:%d, valH:%d, valprevH:%d\n",sh_prev_E[j], sh_prev_H[j], sh_prev_prev_H[j]);
+
     __syncthreads();
     for(int diag = 0; diag < lengthSeqA + lengthSeqB - 1; diag++)
     {  // iterate for the number of anti-diagonals
-
+//__syncthreads();
         is_valid = is_valid - (diag < minSize || diag >= maxSize);
 
        // tmp_ptr     = prev_H;
@@ -320,11 +333,34 @@ align_sequences_gpu(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA
         _prev_prev_F = _temp_Val;
        // memset(curr_F, 0, (minSize + 1) * sizeof(short));
 	_curr_F = 0;
+            short laneId = threadIdx.x%32;
+            short warpId = threadIdx.x/32;
+           if(laneId == 31){
+        //        if(threadIdx.x == 31 || threadIdx.x == 32) printf("threadId:%d, prev_e:%d, prev_H:%d, diag:%d\n",threadIdx.x, _prev_E,_prev_H, diag);
+                sh_prev_E[warpId] = _prev_E;
+                sh_prev_H[warpId] = _prev_H;
+		sh_prev_prev_H[warpId] = _prev_prev_H;
+        }
+
+         if(threadIdx.x == blockDim.x -2){
+		sh_last_prev_E = _prev_E;
+		sh_last_prev_H = _prev_H;
+		sh_last_prev_prev_H = _prev_prev_H;
+	}
           __syncthreads();
+
+  // if((threadIdx.x == 31 || threadIdx.x == 32) && (diag == 32 || diag == 33)) printf("threadId:%d, sh_prev_E[0]:%d, she_prev_E[1]:%d diag:%d\n", threadIdx.x, sh_prev_E[0], sh_prev_E[1], diag);
 
         if(is_valid[myTId] && myTId < minSize)
         {
-           // short fVal  = prev_F[j] + EXTEND_GAP;
+
+       /*   if(laneId == 31){
+               // printf("warpId:%d, prev_e:%d,prev_h:%d, prev_prev_h:%d\n",warpId, _prev_E,_prev_H,_prev_prev_H);
+                sh_prev_E[warpId] = _prev_E;
+                sh_prev_H[warpId] = _prev_H;
+                sh_prev_prev_H[warpId] = _prev_prev_H;
+        } */ 
+// short fVal  = prev_F[j] + EXTEND_GAP;
            // short hfVal = prev_H[j] + START_GAP;
            // short eVal  = prev_E[j - 1] + EXTEND_GAP;
            // short heVal = prev_H[j - 1] + START_GAP;
@@ -332,17 +368,44 @@ align_sequences_gpu(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA
 	///if(threadIdx.x == blockDim.x -33)printf("mask:%x diag:%d\n",mask,diag);
 	    short fVal = _prev_F + EXTEND_GAP;
 	    short hfVal = _prev_H + START_GAP;
-	    short laneId = threadIdx.x%32;
-            short eVal = __shfl_sync(mask, _prev_E, laneId- 1, 32) + EXTEND_GAP;
-	    short heVal = __shfl_sync(mask, _prev_H, laneId - 1, 32) + START_GAP;		       
+	    //short laneId = threadIdx.x%32;
+	    //short warpId = threadIdx.x/32;
+	    short valeShfl = __shfl_sync(mask, _prev_E, laneId- 1, 32);
+	    short valheShfl = __shfl_sync(mask, _prev_H, laneId - 1, 32);
+	       
 	
+            short eVal =((warpId !=0 && laneId == 0)?sh_prev_E[warpId-1]: valeShfl) + EXTEND_GAP;
+	    short heVal =((warpId !=0 && laneId == 0)?sh_prev_H[warpId-1]:valheShfl) + START_GAP;
+            if(warpId == 0 && laneId == 0){
+              eVal = 0 + EXTEND_GAP;
+              heVal = 0 + START_GAP;
+            } 
+	         if(threadIdx.x == blockDim.x -1){
+                eVal = sh_last_prev_E+EXTEND_GAP;
+                heVal = sh_last_prev_H + START_GAP;
+               // sh_last_prev_prev_H = _prev_prev_H;
+        }
+          //if(threadIdx.x == 0)printf("eVal:%d, heVal:%d, diag:%d,i:%d, j:%d\n",eVal, heVal, diag, i, j);
+	//__syncthreads();
  	//curr_F[j] = (fVal > hfVal) ? fVal : hfVal;
 		_curr_F = (fVal > hfVal) ? fVal : hfVal;
 		_curr_E = (eVal > heVal) ? eVal : heVal;           
  //curr_E[j] = (eVal > heVal) ? eVal : heVal;
 
+short testShufll = __shfl_sync(mask, _prev_prev_H, laneId - 1, 32);
+	   short valPPh = (warpId !=0 && laneId == 0)?sh_prev_prev_H[warpId-1]:testShufll;
+   if(warpId == 0 && laneId == 0) valPPh = 0;
+                 if(threadIdx.x == blockDim.x -1){
+                valPPh = sh_last_prev_prev_H;// = _prev_prev_H;
+        }
+//if(threadIdx.x == 32&& i == 40)printf ("from 32 i = 1 prev_H val:%d\n",sh_prev_prev_H[0]);
+//if(threadIdx.x==31 && i==41)printf("from thrd 31 i = 2 prev_H:%d\n",_prev_prev_H);
 
-	   short valPPh = __shfl_sync(mask, _prev_prev_H, laneId - 1, 32);
+//if(threadIdx.x == 31)printf("thread:%d, valPPH:%d,eval:%d, heVal:%d, sh_prev_E:%d, sh_prev_H:%d, wapr:%d,diag:%d\n",threadIdx.x, valPPh,eVal,heVal, sh_prev_E[warpId-1], sh_prev_H[warpId-1],warpId,diag);
+                   
+//__syncthreads();
+
+     // if(threadIdx.x == 32) printf("sheVal[1]:%d, sheVal[2]:%d\n",sh_prev_E[0], sh_prev_E[1]);
             traceback[0] =
                 valPPh +
                 ((myLocString[i - 1] == myColumnChar)
@@ -353,7 +416,12 @@ align_sequences_gpu(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA
             traceback[3] = 0;
 
             _curr_H = findMax(traceback, 4, &ind);
-            //
+//	if((i==33 || i == 32 || i == 31) && (j == 33 || j == 31 || j ==32) )
+//		printf("i:%d, j:%d, myColChar:%c, myRowChar:%c, _curr_H:%d, valPPH:%d, _curr_F:%d, _curr_E:%d, testShuffl:%d, prev_prev_H:%d, sh_prev_prevH:%d\n",i,j,myLocString[i-1], myColumnChar, _curr_H, valPPh, _curr_F, _curr_E,testShufll,_prev_prev_H,sh_prev_prev_H[0]);           
+
+ //
+		//if(warpId != 0 && laneId == 0)printf("diag:%d, _curr_e:%d, curr_f:%d, curr_h:%d\n", diag, _curr_E, _curr_F, _curr_H);
+
 
             thread_max_i = (thread_max >= _curr_H) ? thread_max_i : i;
             thread_max_j = (thread_max >= _curr_H) ? thread_max_j : myTId + 1;
@@ -362,8 +430,9 @@ align_sequences_gpu(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA
 //	 if(is_valid[myTId] && myTId < minSize)	
             i++;
         }
-if(blockIdx.x==0)printf("max:%d, thread_i:%d, thread_j: %d\n", thread_max, thread_max_i, thread_max_j);
-        __syncthreads();
+__syncthreads();
+//if(blockIdx.x == 0)printf("max:%d, thread_i:%d, thread_j: %d\n", thread_max, thread_max_i, thread_max_j);
+        //__syncthreads();
     }
     __syncthreads();
 
@@ -372,7 +441,7 @@ if(blockIdx.x==0)printf("max:%d, thread_i:%d, thread_j: %d\n", thread_max, threa
 
     __syncthreads();
 
-if(threadIdx.x == 0&& blockIdx.x == 0) printf("max val:%d, thread_max_i: %d, thread_max_j:%d\n",thread_max, thread_max_i, thread_max_j);
+//if(threadIdx.x == 0) printf("max val:%d, thread_max_i: %d, thread_max_j:%d\n",thread_max, thread_max_i, thread_max_j);
 /*
     if(myTId == 0)
     {
