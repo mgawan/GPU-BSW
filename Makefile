@@ -1,5 +1,5 @@
 objects = main.o kernel.o driver.o
-ARCH = compute_35
+ARCH = compute_70
 ifeq ($(DEBUG),TRUE)
 	NVCCFLAGS = -g -G -Xcompiler -fopenmp
 else
