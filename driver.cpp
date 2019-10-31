@@ -22,8 +22,8 @@ callAlignKernel(std::vector<std::string> reads, std::vector<std::string> contigs
 
     for(int i = 0; i < deviceCount; i++)
     {
-        // std::cout << "total Global Memory available on Device: " << i
-        //      << " is:" << prop[i].totalGlobalMem << std::endl;
+        std::cout << "total Global Memory available on Device: " << i
+             << " is:" << prop[i].totalGlobalMem << std::endl;
     }
 
     unsigned NBLOCKS             = totalAlignments;
@@ -188,8 +188,8 @@ callAlignKernel(std::vector<std::string> reads, std::vector<std::string> contigs
            unsigned maxSize = (maxReadSize > maxContigSize) ? maxReadSize : maxContigSize;
            unsigned minSize = (maxReadSize < maxContigSize) ? maxReadSize : maxContigSize;
 
-            unsigned totShmem = 3 * 3 * (minSize + 1) * sizeof(short) +
-                                3 * minSize + (minSize & 1) + maxSize;
+            unsigned totShmem = 3 * 3 * (minSize + 1) * sizeof(short);// +
+                                //3 * minSize + (minSize & 1) + maxSize;
 
             unsigned alignmentPad = 4 + (4 - totShmem % 4);
             size_t   ShmemBytes = totShmem + alignmentPad; /*+ sizeof(int) * (maxContigSize + maxReadSize + 2*/

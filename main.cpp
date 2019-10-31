@@ -11,17 +11,17 @@ using namespace std;
 int
 main(int argc, char* argv[])
 {
-    int deviceCount;
-    cudaGetDeviceCount(&deviceCount);
-    cudaDeviceProp prop[deviceCount];
-    for(int i = 0; i < deviceCount; i++)
-        cudaGetDeviceProperties(&prop[i], 0);
-
-    for(int i = 0; i < deviceCount; i++)
-    {
-        cout << "total Global Memory available on Device: " << i
-             << " is:" << prop[i].totalGlobalMem << endl;
-    }
+    // int deviceCount;
+    // cudaGetDeviceCount(&deviceCount);
+    // cudaDeviceProp prop[deviceCount];
+    // for(int i = 0; i < deviceCount; i++)
+    //     cudaGetDeviceProperties(&prop[i], 0);
+    //
+    // for(int i = 0; i < deviceCount; i++)
+    // {
+    //     cout << "total Global Memory available on Device: " << i
+    //          << " is:" << prop[i].totalGlobalMem << endl;
+    // }
 
     vector<string> G_sequencesA,
         G_sequencesB;
@@ -64,7 +64,7 @@ main(int argc, char* argv[])
     short* g_alBbeg;
     short* g_alAend;
     short* g_alBend;
-
+cout <<"total alignments:"<<G_sequencesB.size()<<endl;
     callAlignKernel(G_sequencesB, G_sequencesA, largestB, largestA, G_sequencesA.size(),
                     &g_alAbeg, &g_alBbeg, &g_alAend, &g_alBend, argv[3]);
 
@@ -72,7 +72,7 @@ main(int argc, char* argv[])
   //   cout <<"start que:"<<g_alBbeg[0]<<" end que:"<<g_alBend[0]<<endl;
     // cout <<"start ref:"<<g_alAbeg[1]<<" end ref:"<<g_alAend[1]<<endl;
     // cout <<"start que:"<<g_alBbeg[1]<<" end que:"<<g_alBend[1]<<endl;
-//   verificationTest(argv[3], g_alAbeg, g_alBbeg, g_alAend, g_alBend);
+  verificationTest(argv[3], g_alAbeg, g_alBbeg, g_alAend, g_alBend);
 
     return 0;
 }
