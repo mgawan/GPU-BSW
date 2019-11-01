@@ -15,16 +15,33 @@ warpReduceMax(short val, short& myIndex, short& myIndex2, unsigned lengthSeqB)
     // unsigned newmask;
     for(int offset = warpSize / 2; offset > 0; offset /= 2)
     {
-        val     = max(val, __shfl_down_sync(mask, val, offset));
+        // val     = max(val, __shfl_down_sync(mask, val, offset));
+        // newInd  = __shfl_down_sync(mask, ind, offset);
+        // newInd2 = __shfl_down_sync(mask, ind2, offset);
+        int tempVal = __shfl_down_sync(mask, val, offset);
+        val     = max(val,tempVal);
         newInd  = __shfl_down_sync(mask, ind, offset);
         newInd2 = __shfl_down_sync(mask, ind2, offset);
       //  __syncthreads();
 
+        // if(val != myMax)
+        // {
+        //     ind   = newInd;
+        //     ind2  = newInd2;
+        //     myMax = val;
+        // }
         if(val != myMax)
         {
             ind   = newInd;
             ind2  = newInd2;
             myMax = val;
+        }else if((val == tempVal) )
+        {
+        //  printf("elif, val:%d, ind:%d, ind2:%d \n", val, ind, ind2);
+          if(newInd < ind){
+            ind = newInd;
+            ind2 = newInd2;
+          }
         }
       //  __syncthreads();
     }
