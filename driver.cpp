@@ -23,19 +23,19 @@ callAlignKernel(std::vector<std::string> reads, std::vector<std::string> contigs
     for(int i = 0; i < deviceCount; i++)
     {
         std::cout << "total Global Memory available on Device: " << i
-             << " is:" << prop[i].totalGlobalMem << std::endl;
+                  << " is:" << prop[i].totalGlobalMem << std::endl;
     }
 
-    unsigned NBLOCKS             = totalAlignments;
-  //  unsigned maxMatrixSize       = (maxContigSize + 1) * (maxReadSize + 1);
+    unsigned NBLOCKS = totalAlignments;
+
     unsigned alignmentsPerDevice = NBLOCKS / deviceCount;
     unsigned leftOver_device     = NBLOCKS % deviceCount;
     unsigned maxAligns           = alignmentsPerDevice + leftOver_device;
 
     long long totMemEst = maxContigSize * (long) maxAligns +
                           maxReadSize * (long) maxAligns /*+
-                          maxMatrixSize * (long) maxAligns * sizeof(short) * 2*/ +
-                          (long) maxAligns * sizeof(short) * 4;
+                          maxMatrixSize * (long) maxAligns * sizeof(short) * 2*/
+                          + (long) maxAligns * sizeof(short) * 4;
 
     long long estMem = totMemEst;
     int       its    = ceil(estMem / (prop[0].totalGlobalMem * 0.95));
@@ -58,8 +58,6 @@ callAlignKernel(std::vector<std::string> reads, std::vector<std::string> contigs
 
         unsigned leftOvers    = BLOCKS_l % its;
         unsigned stringsPerIt = BLOCKS_l / its;
-    //    short *  I_i, *I_j;  // device pointers for traceback matrices
-                             // double *matrix, *Ematrix, *Fmatrix;
 
         short *alAbeg_d, *alBbeg_d, *alAend_d, *alBend_d;
 
@@ -77,11 +75,6 @@ callAlignKernel(std::vector<std::string> reads, std::vector<std::string> contigs
 
         unsigned* offsetA_d = thrust::raw_pointer_cast(&vec_offsetA_d[0]);
         unsigned* offsetB_d = thrust::raw_pointer_cast(&vec_offsetB_d[0]);
-
-        // cudaErrchk(
-        //     cudaMalloc(&I_i, maxMatrixSize * (stringsPerIt + leftOvers) * sizeof(short)));
-        // cudaErrchk(
-        //     cudaMalloc(&I_j, maxMatrixSize * (stringsPerIt + leftOvers) * sizeof(short)));
 
         // // copy back
         cudaErrchk(cudaMalloc(&alAbeg_d, (stringsPerIt + leftOvers) * sizeof(short)));
@@ -185,14 +178,19 @@ callAlignKernel(std::vector<std::string> reads, std::vector<std::string> contigs
             cudaErrchk(cudaMemcpy(strB_d, strB, totalLengthB * sizeof(char),
                                   cudaMemcpyHostToDevice));
 
-           unsigned maxSize = (maxReadSize > maxContigSize) ? maxReadSize : maxContigSize;
-           unsigned minSize = (maxReadSize < maxContigSize) ? maxReadSize : maxContigSize;
+            unsigned maxSize =
+                (maxReadSize > maxContigSize) ? maxReadSize : maxContigSize;
+            unsigned minSize =
+                (maxReadSize < maxContigSize) ? maxReadSize : maxContigSize;
 
-            unsigned totShmem = 3 * 3 * (minSize + 1) * sizeof(short);// +
-                                //3 * minSize + (minSize & 1) + maxSize;
+            unsigned totShmem = 3 * 3 * (minSize + 1) *
+                                sizeof(short);  // +
+                                                // 3 * minSize + (minSize & 1) + maxSize;
 
             unsigned alignmentPad = 4 + (4 - totShmem % 4);
-            size_t   ShmemBytes = totShmem + alignmentPad; /*+ sizeof(int) * (maxContigSize + maxReadSize + 2*/
+            size_t   ShmemBytes =
+                totShmem +
+                alignmentPad; /*+ sizeof(int) * (maxContigSize + maxReadSize + 2*/
 
             if(ShmemBytes > 48000)
                 cudaFuncSetAttribute(align_sequences_gpu,
@@ -200,9 +198,9 @@ callAlignKernel(std::vector<std::string> reads, std::vector<std::string> contigs
                                      ShmemBytes);
 
             align_sequences_gpu<<<blocksLaunched, minSize, ShmemBytes>>>(
-                strA_d, strB_d, offsetA_d, offsetB_d, alAbeg_d,
-                alAend_d, alBbeg_d, alBend_d);
-                std::cout <<"threads:"<<minSize<<std::endl;
+                strA_d, strB_d, offsetA_d, offsetB_d, alAbeg_d, alAend_d, alBbeg_d,
+                alBend_d);
+            //  std::cout <<"threads:"<<minSize<<std::endl;
 
             cudaErrchk(cudaMemcpy(alAbeg, alAbeg_d, blocksLaunched * sizeof(short),
                                   cudaMemcpyDeviceToHost));
@@ -215,20 +213,16 @@ callAlignKernel(std::vector<std::string> reads, std::vector<std::string> contigs
                            cudaMemcpyDeviceToHost));  // this does not cause the error
                                                       // the other three lines do.
 
-            //}
-            alAbeg += stringsPerIt;  // perGPUIts;//*stringsPerIt;
-            alBbeg += stringsPerIt;  //;//*stringsPerIt;
-            alAend += stringsPerIt;  //;//*stringsPerIt;
-            alBend += stringsPerIt;  //;//*stringsPerIt;
+            alAbeg += stringsPerIt;
+            alBbeg += stringsPerIt;
+            alAend += stringsPerIt;
+            alBend += stringsPerIt;
             cudaErrchk(cudaFree(strA_d));
             cudaErrchk(cudaFree(strB_d));
-            //}
+
         }  // for iterations end here
         auto                          end1  = NOW;
         std::chrono::duration<double> diff2 = end1 - start2;
-
-        // cudaErrchk(cudaFree(I_i));
-        // cudaErrchk(cudaFree(I_j));
 
         cudaErrchk(cudaFree(alAbeg_d));
         cudaErrchk(cudaFree(alBbeg_d));
@@ -281,12 +275,16 @@ verificationTest(char* rstFile, short* g_alAbeg, short* g_alBbeg, short* g_alAen
                g_alBend[k] != que_end)
             {
                 errors++;
-                 std::cout<<"actualAbeg:"<<g_alAbeg[k]<<" expected:"<<ref_st<<std::endl;
-                std::cout<<"actualAend:"<<g_alAend[k]<<" expected:"<<ref_end<<std::endl;
-                 std::cout<<"actualBbeg:"<<g_alBbeg[k]<<" expected:"<<que_st<<std::endl;
+                std::cout << "actualAbeg:" << g_alAbeg[k] << " expected:" << ref_st
+                          << std::endl;
+                std::cout << "actualAend:" << g_alAend[k] << " expected:" << ref_end
+                          << std::endl;
+                std::cout << "actualBbeg:" << g_alBbeg[k] << " expected:" << que_st
+                          << std::endl;
 
-                std::cout<<"actualBend:"<<g_alBend[k]<<" expected:"<<que_end<<std::endl;
-std::cout<<"index:"<<k<<std::endl;
+                std::cout << "actualBend:" << g_alBend[k] << " expected:" << que_end
+                          << std::endl;
+                std::cout << "index:" << k << std::endl;
             }
             k++;
         }

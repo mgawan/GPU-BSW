@@ -6,6 +6,7 @@
 #include <cmath>
 #include <string>
 #include <vector>
+#include <timemory/timemory.hpp>
 
 #define NOW std::chrono::high_resolution_clock::now()
 
