@@ -14,8 +14,8 @@ callAlignKernel(std::vector<std::string> reads, std::vector<std::string> contigs
                 short** gg_alAbeg, short** gg_alBbeg, short** gg_alAend,
                 short** gg_alBend, char* rstFile)
 {
-    int deviceCount;
-    cudaGetDeviceCount(&deviceCount);
+    int deviceCount = 1;
+//    cudaGetDeviceCount(&deviceCount);
     cudaDeviceProp prop[deviceCount];
     for(int i = 0; i < deviceCount; i++)
         cudaGetDeviceProperties(&prop[i], 0);
@@ -27,7 +27,7 @@ callAlignKernel(std::vector<std::string> reads, std::vector<std::string> contigs
     }
 
     unsigned NBLOCKS = totalAlignments;
-
+    std::cout<<"NBLOCS:"<<NBLOCKS<<std::endl;
     unsigned alignmentsPerDevice = NBLOCKS / deviceCount;
     unsigned leftOver_device     = NBLOCKS % deviceCount;
     unsigned maxAligns           = alignmentsPerDevice + leftOver_device;
@@ -37,9 +37,15 @@ callAlignKernel(std::vector<std::string> reads, std::vector<std::string> contigs
                           maxMatrixSize * (long) maxAligns * sizeof(short) * 2*/
                           + (long) maxAligns * sizeof(short) * 4;
 
+    std:: cout << "tot memory:"<<totMemEst<<" tot GPU: "<<(prop[0].totalGlobalMem * 0.95)<<std::endl;
+   
     long long estMem = totMemEst;
     int       its    = ceil(estMem / (prop[0].totalGlobalMem * 0.95));
+    
 
+     
+    if(its <= 0) std::cout<<"***its ZERO**:"<<its<<std::endl;
+    
     short* g_alAbeg = new short[NBLOCKS];
     short* g_alBbeg = new short[NBLOCKS];
     short* g_alAend = new short[NBLOCKS];
@@ -52,6 +58,7 @@ callAlignKernel(std::vector<std::string> reads, std::vector<std::string> contigs
         cudaSetDevice(my_cpu_id);
         int myGPUid;
         cudaGetDevice(&myGPUid);
+	std::cout << "device set:"<<myGPUid<<" on cpu:"<<my_cpu_id<<std::endl;
         int BLOCKS_l = alignmentsPerDevice;
         if(my_cpu_id == deviceCount - 1)
             BLOCKS_l += leftOver_device;

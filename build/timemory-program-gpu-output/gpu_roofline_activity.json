@@ -1,0 +1,5983 @@
+{
+  "timemory": {
+    "ranks": [
+      {
+        "rank": 0,
+        "concurrency": 1,
+        "type": "gpu_roofline_activity",
+        "description": "GPU Roofline float Activity",
+        "unit_value": 1,
+        "unit_repr": "sec",
+        "roofline": {
+          "cereal_class_version": 0,
+          "entries": 189,
+          "ert": [
+            {
+              "label": "scalar_add",
+              "working-set": 40000000,
+              "trials": 12,
+              "total-bytes": 960000000,
+              "total-ops": 120000000,
+              "ops-per-set": 1,
+              "counter": {
+                "cereal_class_version": 0,
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.000623053,
+                "value": 791691968262612,
+                "accum": 623053,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "cereal_class_version": 0,
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "scalar_add",
+              "working-set": 44000000,
+              "trials": 11,
+              "total-bytes": 968000000,
+              "total-ops": 121000000,
+              "ops-per-set": 1,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.000621281,
+                "value": 791691968932826,
+                "accum": 621281,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "scalar_add",
+              "working-set": 48400000,
+              "trials": 10,
+              "total-bytes": 968000000,
+              "total-ops": 121000000,
+              "ops-per-set": 1,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.000623024,
+                "value": 791691969575409,
+                "accum": 623024,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "scalar_add",
+              "working-set": 53240000,
+              "trials": 9,
+              "total-bytes": 958320000,
+              "total-ops": 119790000,
+              "ops-per-set": 1,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.000620987,
+                "value": 791691970214341,
+                "accum": 620987,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "scalar_add",
+              "working-set": 58564000,
+              "trials": 8,
+              "total-bytes": 937024000,
+              "total-ops": 117128000,
+              "ops-per-set": 1,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.000616245,
+                "value": 791691970848119,
+                "accum": 616245,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "scalar_add",
+              "working-set": 64420400,
+              "trials": 7,
+              "total-bytes": 901885600,
+              "total-ops": 112735700,
+              "ops-per-set": 1,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.000595015,
+                "value": 791691971461035,
+                "accum": 595015,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "scalar_add",
+              "working-set": 70862440,
+              "trials": 7,
+              "total-bytes": 992074160,
+              "total-ops": 124009270,
+              "ops-per-set": 1,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.000649976,
+                "value": 791691972128504,
+                "accum": 649976,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "scalar_add",
+              "working-set": 77948684,
+              "trials": 6,
+              "total-bytes": 935384208,
+              "total-ops": 116923026,
+              "ops-per-set": 1,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.000623768,
+                "value": 791691972771680,
+                "accum": 623768,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "scalar_add",
+              "working-set": 85743552,
+              "trials": 5,
+              "total-bytes": 857435520,
+              "total-ops": 107179440,
+              "ops-per-set": 1,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.000583229,
+                "value": 791691973372579,
+                "accum": 583229,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "scalar_add",
+              "working-set": 94317904,
+              "trials": 5,
+              "total-bytes": 943179040,
+              "total-ops": 117897380,
+              "ops-per-set": 1,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.00063258,
+                "value": 791691974023355,
+                "accum": 632580,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "scalar_add",
+              "working-set": 103749692,
+              "trials": 4,
+              "total-bytes": 829997536,
+              "total-ops": 103749692,
+              "ops-per-set": 1,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.000619101,
+                "value": 791691974660620,
+                "accum": 619101,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "scalar_add",
+              "working-set": 114124660,
+              "trials": 4,
+              "total-bytes": 912997280,
+              "total-ops": 114124660,
+              "ops-per-set": 1,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.000675398,
+                "value": 791691975353012,
+                "accum": 675398,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "scalar_add",
+              "working-set": 125537124,
+              "trials": 3,
+              "total-bytes": 753222744,
+              "total-ops": 94152843,
+              "ops-per-set": 1,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.000715386,
+                "value": 791691976085921,
+                "accum": 715386,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "scalar_add",
+              "working-set": 138090836,
+              "trials": 3,
+              "total-bytes": 828545016,
+              "total-ops": 103568127,
+              "ops-per-set": 1,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.000787223,
+                "value": 791691976891666,
+                "accum": 787223,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "scalar_add",
+              "working-set": 151899916,
+              "trials": 3,
+              "total-bytes": 911399496,
+              "total-ops": 113924937,
+              "ops-per-set": 1,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.000865685,
+                "value": 791691977774627,
+                "accum": 865685,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "scalar_add",
+              "working-set": 167089904,
+              "trials": 2,
+              "total-bytes": 668359616,
+              "total-ops": 83544952,
+              "ops-per-set": 1,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.000950369,
+                "value": 791691978745080,
+                "accum": 950369,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "scalar_add",
+              "working-set": 183798892,
+              "trials": 2,
+              "total-bytes": 735195568,
+              "total-ops": 91899446,
+              "ops-per-set": 1,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.001047819,
+                "value": 791691979810415,
+                "accum": 1047819,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "scalar_add",
+              "working-set": 202178780,
+              "trials": 2,
+              "total-bytes": 808715120,
+              "total-ops": 101089390,
+              "ops-per-set": 1,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.001159318,
+                "value": 791691980990970,
+                "accum": 1159318,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "scalar_add",
+              "working-set": 222396656,
+              "trials": 2,
+              "total-bytes": 889586624,
+              "total-ops": 111198328,
+              "ops-per-set": 1,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.001295084,
+                "value": 791691982305015,
+                "accum": 1295084,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "scalar_add",
+              "working-set": 244636320,
+              "trials": 2,
+              "total-bytes": 978545280,
+              "total-ops": 122318160,
+              "ops-per-set": 1,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.001449692,
+                "value": 791691983771733,
+                "accum": 1449692,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "scalar_add",
+              "working-set": 269099952,
+              "trials": 1,
+              "total-bytes": 538199904,
+              "total-ops": 67274988,
+              "ops-per-set": 1,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.001521257,
+                "value": 791691985309858,
+                "accum": 1521257,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "scalar_add",
+              "working-set": 296009944,
+              "trials": 1,
+              "total-bytes": 592019888,
+              "total-ops": 74002486,
+              "ops-per-set": 1,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.001673436,
+                "value": 791691987002208,
+                "accum": 1673436,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "scalar_add",
+              "working-set": 325610936,
+              "trials": 1,
+              "total-bytes": 651221872,
+              "total-ops": 81402734,
+              "ops-per-set": 1,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.001842494,
+                "value": 791691988865339,
+                "accum": 1842494,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "scalar_add",
+              "working-set": 358172028,
+              "trials": 1,
+              "total-bytes": 716344056,
+              "total-ops": 89543007,
+              "ops-per-set": 1,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.002029991,
+                "value": 791691990914459,
+                "accum": 2029991,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "scalar_add",
+              "working-set": 393989228,
+              "trials": 1,
+              "total-bytes": 787978456,
+              "total-ops": 98497307,
+              "ops-per-set": 1,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.002235757,
+                "value": 791691993168555,
+                "accum": 2235757,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "scalar_add",
+              "working-set": 433388148,
+              "trials": 1,
+              "total-bytes": 866776296,
+              "total-ops": 108347037,
+              "ops-per-set": 1,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.002462671,
+                "value": 791691995651752,
+                "accum": 2462671,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "scalar_add",
+              "working-set": 476726960,
+              "trials": 1,
+              "total-bytes": 953453920,
+              "total-ops": 119181740,
+              "ops-per-set": 1,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.002708166,
+                "value": 791691998377369,
+                "accum": 2708166,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 40000000,
+              "trials": 12,
+              "total-bytes": 960000000,
+              "total-ops": 480000000,
+              "ops-per-set": 4,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.000648761,
+                "value": 791692007226291,
+                "accum": 648761,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 44000000,
+              "trials": 11,
+              "total-bytes": 968000000,
+              "total-ops": 484000000,
+              "ops-per-set": 4,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.000644466,
+                "value": 791692007898624,
+                "accum": 644466,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 48400000,
+              "trials": 10,
+              "total-bytes": 968000000,
+              "total-ops": 484000000,
+              "ops-per-set": 4,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.000646834,
+                "value": 791692008563539,
+                "accum": 646834,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 53240000,
+              "trials": 9,
+              "total-bytes": 958320000,
+              "total-ops": 479160000,
+              "ops-per-set": 4,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.000644454,
+                "value": 791692009227107,
+                "accum": 644454,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 58564000,
+              "trials": 8,
+              "total-bytes": 937024000,
+              "total-ops": 468512000,
+              "ops-per-set": 4,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.000644169,
+                "value": 791692009888685,
+                "accum": 644169,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 64420400,
+              "trials": 7,
+              "total-bytes": 901885600,
+              "total-ops": 450942800,
+              "ops-per-set": 4,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.000633544,
+                "value": 791692010539599,
+                "accum": 633544,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 70862440,
+              "trials": 7,
+              "total-bytes": 992074160,
+              "total-ops": 496037080,
+              "ops-per-set": 4,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.00068855,
+                "value": 791692011247619,
+                "accum": 688550,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 77948684,
+              "trials": 6,
+              "total-bytes": 935384208,
+              "total-ops": 467692104,
+              "ops-per-set": 4,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.000654877,
+                "value": 791692011920428,
+                "accum": 654877,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 85743552,
+              "trials": 5,
+              "total-bytes": 857435520,
+              "total-ops": 428717760,
+              "ops-per-set": 4,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.000620907,
+                "value": 791692012558876,
+                "accum": 620907,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 94317904,
+              "trials": 5,
+              "total-bytes": 943179040,
+              "total-ops": 471589520,
+              "ops-per-set": 4,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.000659993,
+                "value": 791692013237728,
+                "accum": 659993,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 103749692,
+              "trials": 4,
+              "total-bytes": 829997536,
+              "total-ops": 414998768,
+              "ops-per-set": 4,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.000623968,
+                "value": 791692013879321,
+                "accum": 623968,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 114124660,
+              "trials": 4,
+              "total-bytes": 912997280,
+              "total-ops": 456498640,
+              "ops-per-set": 4,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.000679152,
+                "value": 791692014575372,
+                "accum": 679152,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 125537124,
+              "trials": 3,
+              "total-bytes": 753222744,
+              "total-ops": 376611372,
+              "ops-per-set": 4,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.000714708,
+                "value": 791692015307240,
+                "accum": 714708,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 138090836,
+              "trials": 3,
+              "total-bytes": 828545016,
+              "total-ops": 414272508,
+              "ops-per-set": 4,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.000787097,
+                "value": 791692016111457,
+                "accum": 787097,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 151899916,
+              "trials": 3,
+              "total-bytes": 911399496,
+              "total-ops": 455699748,
+              "ops-per-set": 4,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.000865535,
+                "value": 791692016995392,
+                "accum": 865535,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 167089904,
+              "trials": 2,
+              "total-bytes": 668359616,
+              "total-ops": 334179808,
+              "ops-per-set": 4,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.000949534,
+                "value": 791692017962107,
+                "accum": 949534,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 183798892,
+              "trials": 2,
+              "total-bytes": 735195568,
+              "total-ops": 367597784,
+              "ops-per-set": 4,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.001046543,
+                "value": 791692019026042,
+                "accum": 1046543,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 202178780,
+              "trials": 2,
+              "total-bytes": 808715120,
+              "total-ops": 404357560,
+              "ops-per-set": 4,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.001159694,
+                "value": 791692020202849,
+                "accum": 1159694,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 222396656,
+              "trials": 2,
+              "total-bytes": 889586624,
+              "total-ops": 444793312,
+              "ops-per-set": 4,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.001299347,
+                "value": 791692021521010,
+                "accum": 1299347,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 244636320,
+              "trials": 2,
+              "total-bytes": 978545280,
+              "total-ops": 489272640,
+              "ops-per-set": 4,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.00146185,
+                "value": 791692023002486,
+                "accum": 1461850,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 269099952,
+              "trials": 1,
+              "total-bytes": 538199904,
+              "total-ops": 269099952,
+              "ops-per-set": 4,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.001523634,
+                "value": 791692024543448,
+                "accum": 1523634,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 296009944,
+              "trials": 1,
+              "total-bytes": 592019888,
+              "total-ops": 296009944,
+              "ops-per-set": 4,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.001676978,
+                "value": 791692026238717,
+                "accum": 1676978,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 325610936,
+              "trials": 1,
+              "total-bytes": 651221872,
+              "total-ops": 325610936,
+              "ops-per-set": 4,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.001847269,
+                "value": 791692028103650,
+                "accum": 1847269,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 358172028,
+              "trials": 1,
+              "total-bytes": 716344056,
+              "total-ops": 358172028,
+              "ops-per-set": 4,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.002032165,
+                "value": 791692030154128,
+                "accum": 2032165,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 393989228,
+              "trials": 1,
+              "total-bytes": 787978456,
+              "total-ops": 393989228,
+              "ops-per-set": 4,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.002238242,
+                "value": 791692032409777,
+                "accum": 2238242,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 433388148,
+              "trials": 1,
+              "total-bytes": 866776296,
+              "total-ops": 433388148,
+              "ops-per-set": 4,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.002461079,
+                "value": 791692034889387,
+                "accum": 2461079,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 476726960,
+              "trials": 1,
+              "total-bytes": 953453920,
+              "total-ops": 476726960,
+              "ops-per-set": 4,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.002709216,
+                "value": 791692037615918,
+                "accum": 2709216,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 40000000,
+              "trials": 12,
+              "total-bytes": 960000000,
+              "total-ops": 1920000000,
+              "ops-per-set": 16,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.000801419,
+                "value": 791692046874834,
+                "accum": 801419,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 44000000,
+              "trials": 11,
+              "total-bytes": 968000000,
+              "total-ops": 1936000000,
+              "ops-per-set": 16,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.000794376,
+                "value": 791692047696331,
+                "accum": 794376,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 48400000,
+              "trials": 10,
+              "total-bytes": 968000000,
+              "total-ops": 1936000000,
+              "ops-per-set": 16,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.000781505,
+                "value": 791692048495761,
+                "accum": 781505,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 53240000,
+              "trials": 9,
+              "total-bytes": 958320000,
+              "total-ops": 1916640000,
+              "ops-per-set": 16,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.000773682,
+                "value": 791692049288395,
+                "accum": 773682,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 58564000,
+              "trials": 8,
+              "total-bytes": 937024000,
+              "total-ops": 1874048000,
+              "ops-per-set": 16,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.000759385,
+                "value": 791692050065025,
+                "accum": 759385,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 64420400,
+              "trials": 7,
+              "total-bytes": 901885600,
+              "total-ops": 1803771200,
+              "ops-per-set": 16,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.000738976,
+                "value": 791692050821359,
+                "accum": 738976,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 70862440,
+              "trials": 7,
+              "total-bytes": 992074160,
+              "total-ops": 1984148320,
+              "ops-per-set": 16,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.000781068,
+                "value": 791692051619256,
+                "accum": 781068,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 77948684,
+              "trials": 6,
+              "total-bytes": 935384208,
+              "total-ops": 1870768416,
+              "ops-per-set": 16,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.000753442,
+                "value": 791692052389824,
+                "accum": 753442,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 85743552,
+              "trials": 5,
+              "total-bytes": 857435520,
+              "total-ops": 1714871040,
+              "ops-per-set": 16,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.000726647,
+                "value": 791692053135271,
+                "accum": 726647,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 94317904,
+              "trials": 5,
+              "total-bytes": 943179040,
+              "total-ops": 1886358080,
+              "ops-per-set": 16,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.00079172,
+                "value": 791692053943998,
+                "accum": 791720,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 103749692,
+              "trials": 4,
+              "total-bytes": 829997536,
+              "total-ops": 1659995072,
+              "ops-per-set": 16,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.00076702,
+                "value": 791692054728230,
+                "accum": 767020,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 114124660,
+              "trials": 4,
+              "total-bytes": 912997280,
+              "total-ops": 1825994560,
+              "ops-per-set": 16,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.000835064,
+                "value": 791692055583169,
+                "accum": 835064,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 125537124,
+              "trials": 3,
+              "total-bytes": 753222744,
+              "total-ops": 1506445488,
+              "ops-per-set": 16,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.000790734,
+                "value": 791692056392051,
+                "accum": 790734,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 138090836,
+              "trials": 3,
+              "total-bytes": 828545016,
+              "total-ops": 1657090032,
+              "ops-per-set": 16,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.000868741,
+                "value": 791692057279190,
+                "accum": 868741,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 151899916,
+              "trials": 3,
+              "total-bytes": 911399496,
+              "total-ops": 1822798992,
+              "ops-per-set": 16,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.000953296,
+                "value": 791692058249786,
+                "accum": 953296,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 167089904,
+              "trials": 2,
+              "total-bytes": 668359616,
+              "total-ops": 1336719232,
+              "ops-per-set": 16,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.000954139,
+                "value": 791692059221053,
+                "accum": 954139,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 183798892,
+              "trials": 2,
+              "total-bytes": 735195568,
+              "total-ops": 1470391136,
+              "ops-per-set": 16,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.001051991,
+                "value": 791692060290143,
+                "accum": 1051991,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 202178780,
+              "trials": 2,
+              "total-bytes": 808715120,
+              "total-ops": 1617430240,
+              "ops-per-set": 16,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.001164303,
+                "value": 791692061474890,
+                "accum": 1164303,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 222396656,
+              "trials": 2,
+              "total-bytes": 889586624,
+              "total-ops": 1779173248,
+              "ops-per-set": 16,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.001295773,
+                "value": 791692062788299,
+                "accum": 1295773,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 244636320,
+              "trials": 2,
+              "total-bytes": 978545280,
+              "total-ops": 1957090560,
+              "ops-per-set": 16,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.001450321,
+                "value": 791692064255398,
+                "accum": 1450321,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 269099952,
+              "trials": 1,
+              "total-bytes": 538199904,
+              "total-ops": 1076399808,
+              "ops-per-set": 16,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.001522354,
+                "value": 791692065797821,
+                "accum": 1522354,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 296009944,
+              "trials": 1,
+              "total-bytes": 592019888,
+              "total-ops": 1184039776,
+              "ops-per-set": 16,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.001678071,
+                "value": 791692067493302,
+                "accum": 1678071,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 325610936,
+              "trials": 1,
+              "total-bytes": 651221872,
+              "total-ops": 1302443744,
+              "ops-per-set": 16,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.001847444,
+                "value": 791692069357762,
+                "accum": 1847444,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 358172028,
+              "trials": 1,
+              "total-bytes": 716344056,
+              "total-ops": 1432688112,
+              "ops-per-set": 16,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.002035096,
+                "value": 791692071411510,
+                "accum": 2035096,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 393989228,
+              "trials": 1,
+              "total-bytes": 787978456,
+              "total-ops": 1575956912,
+              "ops-per-set": 16,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.002243213,
+                "value": 791692073672071,
+                "accum": 2243213,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 433388148,
+              "trials": 1,
+              "total-bytes": 866776296,
+              "total-ops": 1733552592,
+              "ops-per-set": 16,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.002466743,
+                "value": 791692076157257,
+                "accum": 2466743,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 476726960,
+              "trials": 1,
+              "total-bytes": 953453920,
+              "total-ops": 1906907840,
+              "ops-per-set": 16,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.00271418,
+                "value": 791692078889952,
+                "accum": 2714180,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 40000000,
+              "trials": 12,
+              "total-bytes": 960000000,
+              "total-ops": 7680000000,
+              "ops-per-set": 64,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.001183225,
+                "value": 791692088547425,
+                "accum": 1183225,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 44000000,
+              "trials": 11,
+              "total-bytes": 968000000,
+              "total-ops": 7744000000,
+              "ops-per-set": 64,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.001178619,
+                "value": 791692089753394,
+                "accum": 1178619,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 48400000,
+              "trials": 10,
+              "total-bytes": 968000000,
+              "total-ops": 7744000000,
+              "ops-per-set": 64,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.001168172,
+                "value": 791692090939786,
+                "accum": 1168172,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 53240000,
+              "trials": 9,
+              "total-bytes": 958320000,
+              "total-ops": 7666560000,
+              "ops-per-set": 64,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.001153232,
+                "value": 791692092110507,
+                "accum": 1153232,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 58564000,
+              "trials": 8,
+              "total-bytes": 937024000,
+              "total-ops": 7496192000,
+              "ops-per-set": 64,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.001117249,
+                "value": 791692093247670,
+                "accum": 1117249,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 64420400,
+              "trials": 7,
+              "total-bytes": 901885600,
+              "total-ops": 7215084800,
+              "ops-per-set": 64,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.001074947,
+                "value": 791692094340226,
+                "accum": 1074947,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 70862440,
+              "trials": 7,
+              "total-bytes": 992074160,
+              "total-ops": 7936593280,
+              "ops-per-set": 64,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.001167682,
+                "value": 791692095525087,
+                "accum": 1167682,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 77948684,
+              "trials": 6,
+              "total-bytes": 935384208,
+              "total-ops": 7483073664,
+              "ops-per-set": 64,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.001109716,
+                "value": 791692096651619,
+                "accum": 1109716,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 85743552,
+              "trials": 5,
+              "total-bytes": 857435520,
+              "total-ops": 6859484160,
+              "ops-per-set": 64,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.001040952,
+                "value": 791692097711632,
+                "accum": 1040952,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 94317904,
+              "trials": 5,
+              "total-bytes": 943179040,
+              "total-ops": 7545432320,
+              "ops-per-set": 64,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.001132538,
+                "value": 791692098861412,
+                "accum": 1132538,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 103749692,
+              "trials": 4,
+              "total-bytes": 829997536,
+              "total-ops": 6639980288,
+              "ops-per-set": 64,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.001039479,
+                "value": 791692099918118,
+                "accum": 1039479,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 114124660,
+              "trials": 4,
+              "total-bytes": 912997280,
+              "total-ops": 7303978240,
+              "ops-per-set": 64,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.001130364,
+                "value": 791692101065398,
+                "accum": 1130364,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 125537124,
+              "trials": 3,
+              "total-bytes": 753222744,
+              "total-ops": 6025781952,
+              "ops-per-set": 64,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.001018615,
+                "value": 791692102102658,
+                "accum": 1018615,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 138090836,
+              "trials": 3,
+              "total-bytes": 828545016,
+              "total-ops": 6628360128,
+              "ops-per-set": 64,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.001112751,
+                "value": 791692103232820,
+                "accum": 1112751,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 151899916,
+              "trials": 3,
+              "total-bytes": 911399496,
+              "total-ops": 7291195968,
+              "ops-per-set": 64,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.001214013,
+                "value": 791692104464003,
+                "accum": 1214013,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 167089904,
+              "trials": 2,
+              "total-bytes": 668359616,
+              "total-ops": 5346876928,
+              "ops-per-set": 64,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.001047301,
+                "value": 791692105529893,
+                "accum": 1047301,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 183798892,
+              "trials": 2,
+              "total-bytes": 735195568,
+              "total-ops": 5881564544,
+              "ops-per-set": 64,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.001152449,
+                "value": 791692106699588,
+                "accum": 1152449,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 202178780,
+              "trials": 2,
+              "total-bytes": 808715120,
+              "total-ops": 6469720960,
+              "ops-per-set": 64,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.00126174,
+                "value": 791692107978520,
+                "accum": 1261740,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 222396656,
+              "trials": 2,
+              "total-bytes": 889586624,
+              "total-ops": 7116692992,
+              "ops-per-set": 64,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.00139795,
+                "value": 791692109393527,
+                "accum": 1397950,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 244636320,
+              "trials": 2,
+              "total-bytes": 978545280,
+              "total-ops": 7828362240,
+              "ops-per-set": 64,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.001553298,
+                "value": 791692110965186,
+                "accum": 1553298,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 269099952,
+              "trials": 1,
+              "total-bytes": 538199904,
+              "total-ops": 4305599232,
+              "ops-per-set": 64,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.001530038,
+                "value": 791692112512324,
+                "accum": 1530038,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 296009944,
+              "trials": 1,
+              "total-bytes": 592019888,
+              "total-ops": 4736159104,
+              "ops-per-set": 64,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.001682969,
+                "value": 791692114214054,
+                "accum": 1682969,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 325610936,
+              "trials": 1,
+              "total-bytes": 651221872,
+              "total-ops": 5209774976,
+              "ops-per-set": 64,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.001854004,
+                "value": 791692116085500,
+                "accum": 1854004,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 358172028,
+              "trials": 1,
+              "total-bytes": 716344056,
+              "total-ops": 5730752448,
+              "ops-per-set": 64,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.002040104,
+                "value": 791692118144068,
+                "accum": 2040104,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 393989228,
+              "trials": 1,
+              "total-bytes": 787978456,
+              "total-ops": 6303827648,
+              "ops-per-set": 64,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.002248941,
+                "value": 791692120410097,
+                "accum": 2248941,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 433388148,
+              "trials": 1,
+              "total-bytes": 866776296,
+              "total-ops": 6934210368,
+              "ops-per-set": 64,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.002471425,
+                "value": 791692122900230,
+                "accum": 2471425,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 476726960,
+              "trials": 1,
+              "total-bytes": 953453920,
+              "total-ops": 7627631360,
+              "ops-per-set": 64,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.002718803,
+                "value": 791692125636243,
+                "accum": 2718803,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 40000000,
+              "trials": 12,
+              "total-bytes": 960000000,
+              "total-ops": 15360000000,
+              "ops-per-set": 128,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.00182285,
+                "value": 791692135931529,
+                "accum": 1822850,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 44000000,
+              "trials": 11,
+              "total-bytes": 968000000,
+              "total-ops": 15488000000,
+              "ops-per-set": 128,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.001823107,
+                "value": 791692137783712,
+                "accum": 1823107,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 48400000,
+              "trials": 10,
+              "total-bytes": 968000000,
+              "total-ops": 15488000000,
+              "ops-per-set": 128,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.00179988,
+                "value": 791692139603167,
+                "accum": 1799880,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 53240000,
+              "trials": 9,
+              "total-bytes": 958320000,
+              "total-ops": 15333120000,
+              "ops-per-set": 128,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.001774916,
+                "value": 791692141395775,
+                "accum": 1774916,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 58564000,
+              "trials": 8,
+              "total-bytes": 937024000,
+              "total-ops": 14992384000,
+              "ops-per-set": 128,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.00172586,
+                "value": 791692143140323,
+                "accum": 1725860,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 64420400,
+              "trials": 7,
+              "total-bytes": 901885600,
+              "total-ops": 14430169600,
+              "ops-per-set": 128,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.001647853,
+                "value": 791692144805600,
+                "accum": 1647853,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 70862440,
+              "trials": 7,
+              "total-bytes": 992074160,
+              "total-ops": 15873186560,
+              "ops-per-set": 128,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.001795841,
+                "value": 791692146620016,
+                "accum": 1795841,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 77948684,
+              "trials": 6,
+              "total-bytes": 935384208,
+              "total-ops": 14966147328,
+              "ops-per-set": 128,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.001708265,
+                "value": 791692148345507,
+                "accum": 1708265,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 85743552,
+              "trials": 5,
+              "total-bytes": 857435520,
+              "total-ops": 13718968320,
+              "ops-per-set": 128,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.001561574,
+                "value": 791692149925625,
+                "accum": 1561574,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 94317904,
+              "trials": 5,
+              "total-bytes": 943179040,
+              "total-ops": 15090864640,
+              "ops-per-set": 128,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.001706152,
+                "value": 791692151649087,
+                "accum": 1706152,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 103749692,
+              "trials": 4,
+              "total-bytes": 829997536,
+              "total-ops": 13279960576,
+              "ops-per-set": 128,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.001525598,
+                "value": 791692153191923,
+                "accum": 1525598,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 114124660,
+              "trials": 4,
+              "total-bytes": 912997280,
+              "total-ops": 14607956480,
+              "ops-per-set": 128,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.001668687,
+                "value": 791692154879111,
+                "accum": 1668687,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 125537124,
+              "trials": 3,
+              "total-bytes": 753222744,
+              "total-ops": 12051563904,
+              "ops-per-set": 128,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.001410656,
+                "value": 791692156307001,
+                "accum": 1410656,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 138090836,
+              "trials": 3,
+              "total-bytes": 828545016,
+              "total-ops": 13256720256,
+              "ops-per-set": 128,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.00154285,
+                "value": 791692157868326,
+                "accum": 1542850,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 151899916,
+              "trials": 3,
+              "total-bytes": 911399496,
+              "total-ops": 14582391936,
+              "ops-per-set": 128,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.001689468,
+                "value": 791692159575204,
+                "accum": 1689468,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 167089904,
+              "trials": 2,
+              "total-bytes": 668359616,
+              "total-ops": 10693753856,
+              "ops-per-set": 128,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.001327739,
+                "value": 791692160919983,
+                "accum": 1327739,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 183798892,
+              "trials": 2,
+              "total-bytes": 735195568,
+              "total-ops": 11763129088,
+              "ops-per-set": 128,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.001451636,
+                "value": 791692162390061,
+                "accum": 1451636,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 202178780,
+              "trials": 2,
+              "total-bytes": 808715120,
+              "total-ops": 12939441920,
+              "ops-per-set": 128,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.001591241,
+                "value": 791692163998722,
+                "accum": 1591241,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 222396656,
+              "trials": 2,
+              "total-bytes": 889586624,
+              "total-ops": 14233385984,
+              "ops-per-set": 128,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.001739509,
+                "value": 791692165762038,
+                "accum": 1739509,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 244636320,
+              "trials": 2,
+              "total-bytes": 978545280,
+              "total-ops": 15656724480,
+              "ops-per-set": 128,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.00191172,
+                "value": 791692167691270,
+                "accum": 1911720,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 269099952,
+              "trials": 1,
+              "total-bytes": 538199904,
+              "total-ops": 8611198464,
+              "ops-per-set": 128,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.001537762,
+                "value": 791692169246219,
+                "accum": 1537762,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 296009944,
+              "trials": 1,
+              "total-bytes": 592019888,
+              "total-ops": 9472318208,
+              "ops-per-set": 128,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.001689984,
+                "value": 791692170963915,
+                "accum": 1689984,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 325610936,
+              "trials": 1,
+              "total-bytes": 651221872,
+              "total-ops": 10419549952,
+              "ops-per-set": 128,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.001862683,
+                "value": 791692172845402,
+                "accum": 1862683,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 358172028,
+              "trials": 1,
+              "total-bytes": 716344056,
+              "total-ops": 11461504896,
+              "ops-per-set": 128,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.002053294,
+                "value": 791692174917178,
+                "accum": 2053294,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 393989228,
+              "trials": 1,
+              "total-bytes": 787978456,
+              "total-ops": 12607655296,
+              "ops-per-set": 128,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.002262573,
+                "value": 791692177197029,
+                "accum": 2262573,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 433388148,
+              "trials": 1,
+              "total-bytes": 866776296,
+              "total-ops": 13868420736,
+              "ops-per-set": 128,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.002487478,
+                "value": 791692179703067,
+                "accum": 2487478,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 476726960,
+              "trials": 1,
+              "total-bytes": 953453920,
+              "total-ops": 15255262720,
+              "ops-per-set": 128,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.002737422,
+                "value": 791692182457777,
+                "accum": 2737422,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 40000000,
+              "trials": 12,
+              "total-bytes": 960000000,
+              "total-ops": 30720000000,
+              "ops-per-set": 256,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.003061557,
+                "value": 791692193992739,
+                "accum": 3061557,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 44000000,
+              "trials": 11,
+              "total-bytes": 968000000,
+              "total-ops": 30976000000,
+              "ops-per-set": 256,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.003060607,
+                "value": 791692197082602,
+                "accum": 3060607,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 48400000,
+              "trials": 10,
+              "total-bytes": 968000000,
+              "total-ops": 30976000000,
+              "ops-per-set": 256,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.003051078,
+                "value": 791692200153406,
+                "accum": 3051078,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 53240000,
+              "trials": 9,
+              "total-bytes": 958320000,
+              "total-ops": 30666240000,
+              "ops-per-set": 256,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.00301252,
+                "value": 791692203184693,
+                "accum": 3012520,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 58564000,
+              "trials": 8,
+              "total-bytes": 937024000,
+              "total-ops": 29984768000,
+              "ops-per-set": 256,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.002941359,
+                "value": 791692206143413,
+                "accum": 2941359,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 64420400,
+              "trials": 7,
+              "total-bytes": 901885600,
+              "total-ops": 28860339200,
+              "ops-per-set": 256,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.002823639,
+                "value": 791692208985889,
+                "accum": 2823639,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 70862440,
+              "trials": 7,
+              "total-bytes": 992074160,
+              "total-ops": 31746373120,
+              "ops-per-set": 256,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.003092914,
+                "value": 791692212097039,
+                "accum": 3092914,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 77948684,
+              "trials": 6,
+              "total-bytes": 935384208,
+              "total-ops": 29932294656,
+              "ops-per-set": 256,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.002900212,
+                "value": 791692215017915,
+                "accum": 2900212,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 85743552,
+              "trials": 5,
+              "total-bytes": 857435520,
+              "total-ops": 27437936640,
+              "ops-per-set": 256,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.002658997,
+                "value": 791692217694112,
+                "accum": 2658997,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 94317904,
+              "trials": 5,
+              "total-bytes": 943179040,
+              "total-ops": 30181729280,
+              "ops-per-set": 256,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.002923544,
+                "value": 791692220636047,
+                "accum": 2923544,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 103749692,
+              "trials": 4,
+              "total-bytes": 829997536,
+              "total-ops": 26559921152,
+              "ops-per-set": 256,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.002569662,
+                "value": 791692223226180,
+                "accum": 2569662,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 114124660,
+              "trials": 4,
+              "total-bytes": 912997280,
+              "total-ops": 29215912960,
+              "ops-per-set": 256,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.002811154,
+                "value": 791692226054500,
+                "accum": 2811154,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 125537124,
+              "trials": 3,
+              "total-bytes": 753222744,
+              "total-ops": 24103127808,
+              "ops-per-set": 256,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.002341403,
+                "value": 791692228414340,
+                "accum": 2341403,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 138090836,
+              "trials": 3,
+              "total-bytes": 828545016,
+              "total-ops": 26513440512,
+              "ops-per-set": 256,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.002560784,
+                "value": 791692230994593,
+                "accum": 2560784,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 151899916,
+              "trials": 3,
+              "total-bytes": 911399496,
+              "total-ops": 29164783872,
+              "ops-per-set": 256,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.002801973,
+                "value": 791692233813843,
+                "accum": 2801973,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 167089904,
+              "trials": 2,
+              "total-bytes": 668359616,
+              "total-ops": 21387507712,
+              "ops-per-set": 256,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.002082217,
+                "value": 791692235914433,
+                "accum": 2082217,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 183798892,
+              "trials": 2,
+              "total-bytes": 735195568,
+              "total-ops": 23526258176,
+              "ops-per-set": 256,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.00228511,
+                "value": 791692238218958,
+                "accum": 2285110,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 202178780,
+              "trials": 2,
+              "total-bytes": 808715120,
+              "total-ops": 25878883840,
+              "ops-per-set": 256,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.002506906,
+                "value": 791692240744262,
+                "accum": 2506906,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 222396656,
+              "trials": 2,
+              "total-bytes": 889586624,
+              "total-ops": 28466771968,
+              "ops-per-set": 256,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.002750199,
+                "value": 791692243512928,
+                "accum": 2750199,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 244636320,
+              "trials": 2,
+              "total-bytes": 978545280,
+              "total-ops": 31313448960,
+              "ops-per-set": 256,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.003017135,
+                "value": 791692246547327,
+                "accum": 3017135,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 269099952,
+              "trials": 1,
+              "total-bytes": 538199904,
+              "total-ops": 17222396928,
+              "ops-per-set": 256,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.00177268,
+                "value": 791692248338349,
+                "accum": 1772680,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 296009944,
+              "trials": 1,
+              "total-bytes": 592019888,
+              "total-ops": 18944636416,
+              "ops-per-set": 256,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.001943746,
+                "value": 791692250300666,
+                "accum": 1943746,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 325610936,
+              "trials": 1,
+              "total-bytes": 651221872,
+              "total-ops": 20839099904,
+              "ops-per-set": 256,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.002137041,
+                "value": 791692252454904,
+                "accum": 2137041,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 358172028,
+              "trials": 1,
+              "total-bytes": 716344056,
+              "total-ops": 22923009792,
+              "ops-per-set": 256,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.002339818,
+                "value": 791692254816613,
+                "accum": 2339818,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 393989228,
+              "trials": 1,
+              "total-bytes": 787978456,
+              "total-ops": 25215310592,
+              "ops-per-set": 256,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.002562994,
+                "value": 791692257397274,
+                "accum": 2562994,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 433388148,
+              "trials": 1,
+              "total-bytes": 866776296,
+              "total-ops": 27736841472,
+              "ops-per-set": 256,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.002818501,
+                "value": 791692260233993,
+                "accum": 2818501,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 476726960,
+              "trials": 1,
+              "total-bytes": 953453920,
+              "total-ops": 30510525440,
+              "ops-per-set": 256,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.003088989,
+                "value": 791692263341726,
+                "accum": 3088989,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 40000000,
+              "trials": 12,
+              "total-bytes": 960000000,
+              "total-ops": 61440000000,
+              "ops-per-set": 512,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.005617642,
+                "value": 791692277438536,
+                "accum": 5617642,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 44000000,
+              "trials": 11,
+              "total-bytes": 968000000,
+              "total-ops": 61952000000,
+              "ops-per-set": 512,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.005636752,
+                "value": 791692283101937,
+                "accum": 5636752,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 48400000,
+              "trials": 10,
+              "total-bytes": 968000000,
+              "total-ops": 61952000000,
+              "ops-per-set": 512,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.005625182,
+                "value": 791692288746547,
+                "accum": 5625182,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 53240000,
+              "trials": 9,
+              "total-bytes": 958320000,
+              "total-ops": 61332480000,
+              "ops-per-set": 512,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.005555091,
+                "value": 791692294320426,
+                "accum": 5555091,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 58564000,
+              "trials": 8,
+              "total-bytes": 937024000,
+              "total-ops": 59969536000,
+              "ops-per-set": 512,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.005448259,
+                "value": 791692299787141,
+                "accum": 5448259,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 64420400,
+              "trials": 7,
+              "total-bytes": 901885600,
+              "total-ops": 57720678400,
+              "ops-per-set": 512,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.005221582,
+                "value": 791692305027435,
+                "accum": 5221582,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 70862440,
+              "trials": 7,
+              "total-bytes": 992074160,
+              "total-ops": 63492746240,
+              "ops-per-set": 512,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.005733192,
+                "value": 791692310779306,
+                "accum": 5733192,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 77948684,
+              "trials": 6,
+              "total-bytes": 935384208,
+              "total-ops": 59864589312,
+              "ops-per-set": 512,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.005371184,
+                "value": 791692316169572,
+                "accum": 5371184,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 85743552,
+              "trials": 5,
+              "total-bytes": 857435520,
+              "total-ops": 54875873280,
+              "ops-per-set": 512,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.004922243,
+                "value": 791692321110424,
+                "accum": 4922243,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 94317904,
+              "trials": 5,
+              "total-bytes": 943179040,
+              "total-ops": 60363458560,
+              "ops-per-set": 512,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.005414709,
+                "value": 791692326543909,
+                "accum": 5414709,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 103749692,
+              "trials": 4,
+              "total-bytes": 829997536,
+              "total-ops": 53119842304,
+              "ops-per-set": 512,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.004762563,
+                "value": 791692331325102,
+                "accum": 4762563,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 114124660,
+              "trials": 4,
+              "total-bytes": 912997280,
+              "total-ops": 58431825920,
+              "ops-per-set": 512,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.005219754,
+                "value": 791692336563589,
+                "accum": 5219754,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 125537124,
+              "trials": 3,
+              "total-bytes": 753222744,
+              "total-ops": 48206255616,
+              "ops-per-set": 512,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.004302674,
+                "value": 791692340884993,
+                "accum": 4302674,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 138090836,
+              "trials": 3,
+              "total-bytes": 828545016,
+              "total-ops": 53026881024,
+              "ops-per-set": 512,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.004727735,
+                "value": 791692345633857,
+                "accum": 4727735,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 151899916,
+              "trials": 3,
+              "total-bytes": 911399496,
+              "total-ops": 58329567744,
+              "ops-per-set": 512,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.005201903,
+                "value": 791692350856474,
+                "accum": 5201903,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 167089904,
+              "trials": 2,
+              "total-bytes": 668359616,
+              "total-ops": 42775015424,
+              "ops-per-set": 512,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.003838513,
+                "value": 791692354714799,
+                "accum": 3838513,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 183798892,
+              "trials": 2,
+              "total-bytes": 735195568,
+              "total-ops": 47052516352,
+              "ops-per-set": 512,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.004206941,
+                "value": 791692358940271,
+                "accum": 4206941,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 202178780,
+              "trials": 2,
+              "total-bytes": 808715120,
+              "total-ops": 51757767680,
+              "ops-per-set": 512,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.004600318,
+                "value": 791692363559257,
+                "accum": 4600318,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 222396656,
+              "trials": 2,
+              "total-bytes": 889586624,
+              "total-ops": 56933543936,
+              "ops-per-set": 512,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.005057066,
+                "value": 791692368634838,
+                "accum": 5057066,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 244636320,
+              "trials": 2,
+              "total-bytes": 978545280,
+              "total-ops": 62626897920,
+              "ops-per-set": 512,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.005564855,
+                "value": 791692374218216,
+                "accum": 5564855,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 269099952,
+              "trials": 1,
+              "total-bytes": 538199904,
+              "total-ops": 34444793856,
+              "ops-per-set": 512,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.003091594,
+                "value": 791692377328267,
+                "accum": 3091594,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 296009944,
+              "trials": 1,
+              "total-bytes": 592019888,
+              "total-ops": 37889272832,
+              "ops-per-set": 512,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.003410954,
+                "value": 791692380758235,
+                "accum": 3410954,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 325610936,
+              "trials": 1,
+              "total-bytes": 651221872,
+              "total-ops": 41678199808,
+              "ops-per-set": 512,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.003764233,
+                "value": 791692384540936,
+                "accum": 3764233,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 358172028,
+              "trials": 1,
+              "total-bytes": 716344056,
+              "total-ops": 45846019584,
+              "ops-per-set": 512,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.00409579,
+                "value": 791692388655228,
+                "accum": 4095790,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 393989228,
+              "trials": 1,
+              "total-bytes": 787978456,
+              "total-ops": 50430621184,
+              "ops-per-set": 512,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.00449086,
+                "value": 791692393164571,
+                "accum": 4490860,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 433388148,
+              "trials": 1,
+              "total-bytes": 866776296,
+              "total-ops": 55473682944,
+              "ops-per-set": 512,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.004926511,
+                "value": 791692398109355,
+                "accum": 4926511,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            },
+            {
+              "label": "vector_fma",
+              "working-set": 476726960,
+              "trials": 1,
+              "total-bytes": 953453920,
+              "total-ops": 61021050880,
+              "ops-per-set": 512,
+              "counter": {
+                "is_transient": true,
+                "laps": 0,
+                "repr_data": 0.005425749,
+                "value": 791692403553996,
+                "accum": 5425749,
+                "units": 1,
+                "display_units": "sec"
+              },
+              "device": "gpu",
+              "dtype": "float",
+              "exec-params": {
+                "working_set_min": 10000000,
+                "memory_max": 500000000,
+                "nthreads": 1,
+                "nrank": 0,
+                "nproc": 1,
+                "nstreams": 1,
+                "grid_size": 9766,
+                "block_size": 1024,
+                "shmem_size": 0
+              }
+            }
+          ]
+        },
+        "graph": [
+          {
+            "hash": 11766273160311278535,
+            "prefix": ">>> ./program_gpu",
+            "depth": 0,
+            "entry": {
+              "cereal_class_version": 0,
+              "is_transient": true,
+              "laps": 1,
+              "display": "0.280819",
+              "mode": "activity",
+              "type": "float",
+              "labels": [
+                "runtime"
+              ],
+              "repr_data": {
+                "runtime": 0.280819232
+              },
+              "value": [
+                280819232
+              ],
+              "accum": [
+                280819232
+              ]
+            }
+          },
+          {
+            "hash": 6951334972054678056,
+            "prefix": ">>> |_cuptiOverhead_INSTRUMENTATION",
+            "depth": 1,
+            "entry": {
+              "is_transient": true,
+              "laps": 1,
+              "display": "0.00161015",
+              "mode": "activity",
+              "type": "float",
+              "labels": [
+                "runtime"
+              ],
+              "repr_data": {
+                "runtime": 0.001610153
+              },
+              "value": [
+                1610153
+              ],
+              "accum": [
+                1610153
+              ]
+            }
+          },
+          {
+            "hash": 132116623377607852,
+            "prefix": ">>> |_void thrust::cuda_cub::core::_kernel_agent<thrust::cuda_cub::__parallel_for::ParallelForAgent<thrust::cuda_cub::__transform::unary_transform_f<thrust::pointer<int, thrust::cuda_cub::tag, thrust::use_default, thrust::use_default>, thrust::detail::normal_iterator<thrust::device_ptr<unsigned int> >, thrust::cuda_cub::__transform::no_stencil_tag, thrust::identity<int>, thrust::cuda_cub::__transform::always_true_predicate>, long>, thrust::cuda_cub::__transform::unary_transform_f<thrust::pointer<int, thrust::cuda_cub::tag, thrust::use_default, thrust::use_default>, thrust::detail::normal_iterator<thrust::device_ptr<unsigned int> >, thrust::cuda_cub::__transform::no_stencil_tag, thrust::identity<int>, thrust::cuda_cub::__transform::always_true_predicate>, long>(thrust::cuda_cub::__transform::unary_transform_f<thrust::pointer<int, thrust::cuda_cub::tag, thrust::use_default, thrust::use_default>, thrust::detail::normal_iterator<thrust::device_ptr<unsigned int> >, thrust::cuda_cub::__transform::no_stencil_tag, thrust::identity<int>, thrust::cuda_cub::__transform::always_true_predicate>, long)",
+            "depth": 1,
+            "entry": {
+              "is_transient": true,
+              "laps": 1,
+              "display": "2.4e-06",
+              "mode": "activity",
+              "type": "float",
+              "labels": [
+                "runtime"
+              ],
+              "repr_data": {
+                "runtime": 0.0000024
+              },
+              "value": [
+                2400
+              ],
+              "accum": [
+                2400
+              ]
+            }
+          },
+          {
+            "hash": 7756010413721251247,
+            "prefix": ">>> |_cudaMemcpy_DtoH",
+            "depth": 1,
+            "entry": {
+              "is_transient": true,
+              "laps": 1,
+              "display": "1.7217e-05",
+              "mode": "activity",
+              "type": "float",
+              "labels": [
+                "runtime"
+              ],
+              "repr_data": {
+                "runtime": 0.000017217
+              },
+              "value": [
+                17217
+              ],
+              "accum": [
+                17217
+              ]
+            }
+          },
+          {
+            "hash": 1809159424773368750,
+            "prefix": ">>> |_cuptiOverhead_BUFFER_FLUSH",
+            "depth": 1,
+            "entry": {
+              "is_transient": true,
+              "laps": 1,
+              "display": "4.7824e-05",
+              "mode": "activity",
+              "type": "float",
+              "labels": [
+                "runtime"
+              ],
+              "repr_data": {
+                "runtime": 0.000047824
+              },
+              "value": [
+                47824
+              ],
+              "accum": [
+                47824
+              ]
+            }
+          },
+          {
+            "hash": 16424092715352993845,
+            "prefix": ">>> |_void thrust::cuda_cub::core::_kernel_agent<thrust::cuda_cub::__scan::ScanAgent<thrust::detail::normal_iterator<thrust::device_ptr<unsigned int> >, thrust::detail::normal_iterator<thrust::device_ptr<unsigned int> >, thrust::plus<unsigned int>, int, unsigned int, thrust::detail::integral_constant<bool, true> >, thrust::detail::normal_iterator<thrust::device_ptr<unsigned int> >, thrust::detail::normal_iterator<thrust::device_ptr<unsigned int> >, thrust::plus<unsigned int>, int, thrust::cuda_cub::cub::ScanTileState<unsigned int, true>, thrust::cuda_cub::__scan::DoNothing<unsigned int> >(thrust::detail::normal_iterator<thrust::device_ptr<unsigned int> >, thrust::detail::normal_iterator<thrust::device_ptr<unsigned int> >, thrust::plus<unsigned int>, int, thrust::cuda_cub::cub::ScanTileState<unsigned int, true>, thrust::cuda_cub::__scan::DoNothing<unsigned int>)",
+            "depth": 1,
+            "entry": {
+              "is_transient": true,
+              "laps": 1,
+              "display": "7.168e-06",
+              "mode": "activity",
+              "type": "float",
+              "labels": [
+                "runtime"
+              ],
+              "repr_data": {
+                "runtime": 0.000007168
+              },
+              "value": [
+                7168
+              ],
+              "accum": [
+                7168
+              ]
+            }
+          },
+          {
+            "hash": 5868291610752127856,
+            "prefix": ">>> |_cudaMemcpy_HtoD",
+            "depth": 1,
+            "entry": {
+              "is_transient": true,
+              "laps": 1,
+              "display": "0.00178065",
+              "mode": "activity",
+              "type": "float",
+              "labels": [
+                "runtime"
+              ],
+              "repr_data": {
+                "runtime": 0.001780647
+              },
+              "value": [
+                1780647
+              ],
+              "accum": [
+                1780647
+              ]
+            }
+          },
+          {
+            "hash": 8871195944700088529,
+            "prefix": ">>> |_align_sequences_gpu(char*, char*, unsigned int*, unsigned int*, short*, short*, short*, short*)",
+            "depth": 1,
+            "entry": {
+              "is_transient": true,
+              "laps": 1,
+              "display": "0.0556009",
+              "mode": "activity",
+              "type": "float",
+              "labels": [
+                "runtime"
+              ],
+              "repr_data": {
+                "runtime": 0.055600922
+              },
+              "value": [
+                55600922
+              ],
+              "accum": [
+                55600922
+              ]
+            }
+          },
+          {
+            "hash": 3644810944094183466,
+            "prefix": ">>> |_void thrust::cuda_cub::core::_kernel_agent<thrust::cuda_cub::__parallel_for::ParallelForAgent<thrust::cuda_cub::__uninitialized_fill::functor<thrust::device_ptr<unsigned int>, unsigned int>, unsigned long>, thrust::cuda_cub::__uninitialized_fill::functor<thrust::device_ptr<unsigned int>, unsigned int>, unsigned long>(thrust::cuda_cub::__uninitialized_fill::functor<thrust::device_ptr<unsigned int>, unsigned int>, unsigned long)",
+            "depth": 1,
+            "entry": {
+              "is_transient": true,
+              "laps": 1,
+              "display": "2.112e-06",
+              "mode": "activity",
+              "type": "float",
+              "labels": [
+                "runtime"
+              ],
+              "repr_data": {
+                "runtime": 0.000002112
+              },
+              "value": [
+                2112
+              ],
+              "accum": [
+                2112
+              ]
+            }
+          },
+          {
+            "hash": 1555344552613803471,
+            "prefix": ">>> |_cuptiOverhead_RESOURCE",
+            "depth": 1,
+            "entry": {
+              "is_transient": true,
+              "laps": 1,
+              "display": "0.0080407",
+              "mode": "activity",
+              "type": "float",
+              "labels": [
+                "runtime"
+              ],
+              "repr_data": {
+                "runtime": 0.008040701
+              },
+              "value": [
+                8040701
+              ],
+              "accum": [
+                8040701
+              ]
+            }
+          },
+          {
+            "hash": 15482533287517922531,
+            "prefix": ">>> |_void thrust::cuda_cub::core::_kernel_agent<thrust::cuda_cub::__scan::InitAgent<thrust::cuda_cub::cub::ScanTileState<unsigned int, true>, int>, thrust::cuda_cub::cub::ScanTileState<unsigned int, true>, int>(thrust::cuda_cub::cub::ScanTileState<unsigned int, true>, int)",
+            "depth": 1,
+            "entry": {
+              "is_transient": true,
+              "laps": 1,
+              "display": "1.728e-06",
+              "mode": "activity",
+              "type": "float",
+              "labels": [
+                "runtime"
+              ],
+              "repr_data": {
+                "runtime": 0.000001728
+              },
+              "value": [
+                1728
+              ],
+              "accum": [
+                1728
+              ]
+            }
+          },
+          {
+            "hash": 3441826735103684201,
+            "prefix": ">>> |_cudaRuntime",
+            "depth": 1,
+            "entry": {
+              "is_transient": true,
+              "laps": 1,
+              "display": "0.233106",
+              "mode": "activity",
+              "type": "float",
+              "labels": [
+                "runtime"
+              ],
+              "repr_data": {
+                "runtime": 0.233105716
+              },
+              "value": [
+                233105716
+              ],
+              "accum": [
+                233105716
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

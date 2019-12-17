@@ -1,0 +1,1 @@
+>>> ./program_gpu :  117.3 MB peak_rss, 1 laps, depth 0
