@@ -132,12 +132,12 @@ callAlignKernel(std::vector<std::string> reads, std::vector<std::string> contigs
             std::vector<std::string> sequencesA(beginAVec, endAVec);
             std::vector<std::string> sequencesB(beginBVec, endBVec);
 
-            for(int i = 0; i < sequencesA.size(); i++)
+            for(unsigned i = 0; i < sequencesA.size(); i++)
             {
                 offsetA[i] = sequencesA[i].size();
             }
 
-            for(int i = 0; i < sequencesB.size(); i++)
+            for(unsigned i = 0; i < sequencesB.size(); i++)
             {
                 offsetB[i] = sequencesB[i].size();
             }
@@ -158,7 +158,7 @@ callAlignKernel(std::vector<std::string> reads, std::vector<std::string> contigs
 
             char* strA = new char[totalLengthA];
             char* strB = new char[totalLengthB];
-            for(int i = 0; i < sequencesA.size(); i++)
+            for(unsigned i = 0; i < sequencesA.size(); i++)
             {
                 char* seqptrA =
                     strA + offsetSumA;  // vec_offsetA_d[i] - sequencesA[i].size();
@@ -180,8 +180,8 @@ callAlignKernel(std::vector<std::string> reads, std::vector<std::string> contigs
             cudaErrchk(cudaMemcpy(strB_d, strB, totalLengthB * sizeof(char),
                                   cudaMemcpyHostToDevice));
 
-            unsigned maxSize =
-                (maxReadSize > maxContigSize) ? maxReadSize : maxContigSize;
+            //unsigned maxSize =
+              //  (maxReadSize > maxContigSize) ? maxReadSize : maxContigSize;
             unsigned minSize =
                 (maxReadSize < maxContigSize) ? maxReadSize : maxContigSize;
 
