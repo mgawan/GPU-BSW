@@ -1,4 +1,4 @@
-# gpu-sw-timemory
+# GPU-BSW
 
 To Build:<br />
 mkdir build <br />
