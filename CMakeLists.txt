@@ -7,7 +7,8 @@ set(CMAKE_CXX_EXTENSIONS OFF CACHE BOOL "")
 set(CMAKE_CUDA_STANDARD 14 CACHE STRING "")
 set(CMAKE_CUDA_EXTENSIONS OFF CACHE BOOL "")
 
-find_package(timemory REQUIRED COMPONENTS headers cuda cupti compile-options arch)
+#find_package(timemory REQUIRED COMPONENTS headers cuda cupti compile-options arch)
+#find_package(cuda REQUIRED)
 find_package(OpenMP REQUIRED)
 
 
@@ -19,7 +20,8 @@ set_source_files_properties(${sources} PROPERTIES
     LINKER_LANGUAGE CUDA)
 
 add_executable(program_gpu ${sources} ${headers})
-target_link_libraries(program_gpu PUBLIC timemory OpenMP::OpenMP_CXX)
+#target_link_libraries(program_gpu PUBLIC timemory OpenMP::OpenMP_CXX)
+target_link_libraries(program_gpu PUBLIC OpenMP::OpenMP_CXX)
 target_include_directories(program_gpu PUBLIC ${PROJECT_SOURCE_DIR})
 
 get_property(LANGUAGES GLOBAL PROPERTY ENABLED_LANGUAGES)

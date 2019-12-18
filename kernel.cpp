@@ -181,7 +181,7 @@ align_sequences_gpu(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA
     // local pointers
     char*    seqA;
     char*    seqB;
-    unsigned totBytes = 0;
+//    unsigned totBytes = 0;
 
     extern __shared__ char is_valid_array[];
     char*                  is_valid = &is_valid_array[0];

@@ -8,12 +8,12 @@
 
 
 using namespace std;
-using auto_timer_t = tim::auto_timer;
+//using auto_timer_t = tim::auto_timer;
 
 int
 main(int argc, char* argv[])
 {
-  tim::timemory_init(argc, argv);
+//  tim::timemory_init(argc, argv);
 //  omp_set_num_threads(1);
 //  cudaSetDevice(0);
     vector<string> G_sequencesA, G_sequencesB;
@@ -58,25 +58,25 @@ main(int argc, char* argv[])
     short* g_alBend;
     cout << "Total Alignments:" << G_sequencesB.size() << endl;
 
-    using auto_timer_list_type = typename auto_timer_t::component_type::list_type;
-    auto _orig_init = auto_timer_list_type::get_initializer();
-    auto_timer_list_type::get_initializer() = [=](auto_timer_list_type& al)
-    {
-        using namespace tim::component;
-        _orig_init(al);
-        tim::settings::instruction_roofline() = true;
-        al.init<gpu_roofline_sp_flops>();
-    };
-
-    auto_timer_t main(argv[0]);
+    // using auto_timer_list_type = typename auto_timer_t::component_type::list_type;
+    // auto _orig_init = auto_timer_list_type::get_initializer();
+    // auto_timer_list_type::get_initializer() = [=](auto_timer_list_type& al)
+    // {
+    //     using namespace tim::component;
+    //     _orig_init(al);
+    //     tim::settings::instruction_roofline() = true;
+    //     al.init<gpu_roofline_sp_flops>();
+    // };
+    //
+    // auto_timer_t main(argv[0]);
 
     callAlignKernel(G_sequencesB, G_sequencesA, largestB, largestA, G_sequencesA.size(),
                     &g_alAbeg, &g_alBbeg, &g_alAend, &g_alBend, argv[3]);
 
-  main.stop();
+  // main.stop();
     verificationTest(argv[3], g_alAbeg, g_alBbeg, g_alAend, g_alBend);
 
-    tim::timemory_finalize();
+    // tim::timemory_finalize();
 
     return 0;
 }
