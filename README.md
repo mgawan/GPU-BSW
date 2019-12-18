@@ -8,7 +8,7 @@ make <br />
 
 <br />
 To Execute: <br />
-export OMP_NUM_THREADS=<number of GPUs available> <br />
+export OMP_NUM_THREADS=number of GPUs available <br />
 ./program_gpu ../test-data/ref_file_30000.txt ../test-data/que_file_30000.txt ../test-data/results_30000 <br />
 
 <br />
