@@ -7,7 +7,7 @@ set(CMAKE_CXX_EXTENSIONS OFF CACHE BOOL "")
 set(CMAKE_CUDA_STANDARD 14 CACHE STRING "")
 set(CMAKE_CUDA_EXTENSIONS OFF CACHE BOOL "")
 
-find_package(timemory REQUIRED COMPONENTS headers cuda cudart-static cupti compile-options arch)
+find_package(timemory REQUIRED COMPONENTS headers cuda cupti compile-options arch)
 find_package(OpenMP REQUIRED)
 
 

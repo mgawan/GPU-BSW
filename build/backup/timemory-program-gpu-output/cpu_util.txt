@@ -1,1 +1,0 @@
->>> ./program_gpu :   99.9 % cpu_util, 1 laps, depth 0

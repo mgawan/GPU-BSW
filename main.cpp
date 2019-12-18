@@ -56,7 +56,7 @@ main(int argc, char* argv[])
     short* g_alBbeg;
     short* g_alAend;
     short* g_alBend;
-    cout << "total alignments:" << G_sequencesB.size() << endl;
+    cout << "Total Alignments:" << G_sequencesB.size() << endl;
 
     using auto_timer_list_type = typename auto_timer_t::component_type::list_type;
     auto _orig_init = auto_timer_list_type::get_initializer();
@@ -77,6 +77,6 @@ main(int argc, char* argv[])
     verificationTest(argv[3], g_alAbeg, g_alBbeg, g_alAend, g_alBend);
 
     tim::timemory_finalize();
-    
+
     return 0;
 }

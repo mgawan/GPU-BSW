@@ -1,1 +1,0 @@
->>> ./program_gpu :   12.742 sec wall, 1 laps, depth 0

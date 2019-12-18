@@ -1,1 +1,0 @@
->>> ./program_gpu :   16.790 sec user, 1 laps, depth 0
