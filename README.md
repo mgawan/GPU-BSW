@@ -1,5 +1,5 @@
 # GPU-BSW
-**License:  
+**License:**  
         
 **GPU accelerated Smith-Waterman for performing batch alignments (GPU-BSW) Copyright (c) 2019, The
 Regents of the University of California, through Lawrence Berkeley National
