@@ -36,4 +36,5 @@ Contact: mgawan@lbl.gov
 
 <br />
 If you use GPU-BSW in your project, please cite this repo as:  
-*Muaaz G. Awan, GPU accelerated Smith-Waterman for performing batch alignments (GPU-BSW), 2019, Github Repository: https://github.com/m-gul/GPU-BSW/ *
+
+*Muaaz G. Awan, GPU accelerated Smith-Waterman for performing batch alignments (GPU-BSW), 2019, Github Repository: https://github.com/m-gul/GPU-BSW/*
