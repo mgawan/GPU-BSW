@@ -20,6 +20,7 @@ set_source_files_properties(${sources} PROPERTIES
     LINKER_LANGUAGE CUDA)
 
 add_executable(program_gpu ${sources} ${headers})
+target_compile_options(program_gpu PUBLIC $<$<COMPILE_LANGUAGE:CUDA>:-gencode arch=compute_70,code=sm_70>)
 #target_link_libraries(program_gpu PUBLIC timemory OpenMP::OpenMP_CXX)
 target_link_libraries(program_gpu PUBLIC OpenMP::OpenMP_CXX)
 target_include_directories(program_gpu PUBLIC ${PROJECT_SOURCE_DIR})
