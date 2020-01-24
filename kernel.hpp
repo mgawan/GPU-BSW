@@ -4,28 +4,24 @@
 #include <fstream>
 #include <iostream>
 #include <sys/time.h>
-#define NUM_OF_AA 21
-#define ENCOD_MAT_SIZE 91
-#define SCORE_MAT_SIZE 576
 
-namespace gpu_bsw{
-__device__ short
-warpReduceMax_with_index(short val, short& myIndex, short& myIndex2, unsigned lengthSeqB);
+#define EXTEND_GAP -2
+#define START_GAP -2
+//#define NBLOCKS 15000
+#define MATCH 15
+#define MISMATCH -3
 
-__device__ short
-warpReduceMax(short val, unsigned lengthSeqB);
-
-__device__ short
-blockShuffleReduce_with_index(short myVal, short& myIndex, short& myIndex2, unsigned lengthSeqB);
+__inline__ __device__ short
+warpReduceMax(short val, short& myIndex, short& myIndex2);
 
 __device__ short
-blockShuffleReduce(short val, unsigned lengthSeqB);
+blockShuffleReduce(short myVal, short& myIndex, short& myIndex2);
 
 __device__ __host__ short
            findMax(short array[], int length, int* ind);
 
 __device__ __host__ short
-            findMaxFour(short first, short second, short third, short fourth);
+           findMax(short array[], int length, int* ind);
 
 __device__ void
 traceBack(short current_i, short current_j, short* seqA_align_begin,
@@ -33,13 +29,9 @@ traceBack(short current_i, short current_j, short* seqA_align_begin,
           short* I_j, unsigned lengthSeqB, unsigned lengthSeqA, unsigned int* diagOffset);
 
 __global__ void
-sequence_dna_kernel(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA,
-                    unsigned* prefix_lengthB, short* seqA_align_begin, short* seqA_align_end,
-                    short* seqB_align_begin, short* seqB_align_end, short* top_scores, short matchScore, short misMatchScore, short startGap, short extendGap);
+align_sequences_gpu(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA,
+                    unsigned* prefix_lengthB, unsigned maxMatrixSize, short* I_i_array,
+                    short* I_j_array, short* seqA_align_begin, short* seqA_align_end,
+                    short* seqB_align_begin, short* seqB_align_end);
 
-__global__ void
-sequence_aa_kernel(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA,
-                    unsigned* prefix_lengthB, short* seqA_align_begin, short* seqA_align_end,
-                    short* seqB_align_begin, short* seqB_align_end, short* top_scores, short startGap, short extendGap, short* scoring_matrix, short* encoding_matrix);
-}
 #endif

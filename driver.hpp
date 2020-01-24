@@ -24,26 +24,14 @@ gpuAssert(cudaError_t code, const char* file, int line, bool abort = true)
     }
 }
 
-namespace gpu_bsw_driver{
-
-// for storing the alignment results
-struct alignment_results{
-  short* g_alAbeg;
-  short* g_alBbeg;
-  short* g_alAend;
-  short* g_alBend;
-  short* top_scores;
-};
+void
+callAlignKernel(std::vector<std::string> reads, std::vector<std::string> contigs,
+                unsigned maxReadSize, unsigned maxContigSize, unsigned totalAlignments,
+                short** gg_alAbeg, short** gg_alBbeg, short** gg_alAend,
+                short** gg_alBend, char* rstFile);
 
 void
-kernel_driver_dna(std::vector<std::string> reads, std::vector<std::string> contigs, alignment_results *alignments, short scores[4]);
-
-
-void
-kernel_driver_aa(std::vector<std::string> reads, std::vector<std::string> contigs, alignment_results *alignments, short scoring_matrix[], short openGap, short extendGap);
-
-void
-verificationTest(std::string rstFile, short* g_alAbeg, short* g_alBbeg, short* g_alAend,
+verificationTest(char* rstFile, short* g_alAbeg, short* g_alBbeg, short* g_alAend,
                  short* g_alBend);
-}
+
 #endif
