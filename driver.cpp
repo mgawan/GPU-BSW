@@ -53,7 +53,7 @@ gpu_bsw_driver::kernel_driver_dna(std::vector<std::string> reads, std::vector<st
 
     long long estMem = totMemEst;
     int       its    = ceil(estMem / (prop[0].totalGlobalMem * 0.90));
-    // its = 10;
+    // its = 3;
 
     short* g_alAbeg = new short[NBLOCKS];
     short* g_alBbeg = new short[NBLOCKS];
@@ -220,8 +220,7 @@ gpu_bsw_driver::kernel_driver_dna(std::vector<std::string> reads, std::vector<st
             gpu_bsw::sequence_dna_kernel<<<blocksLaunched, minSize, ShmemBytes>>>(
                 strA_d, strB_d, offsetA_d, offsetB_d, alAbeg_d,
                 alAend_d, alBbeg_d, alBend_d, top_scores_d, matchScore, misMatchScore, startGap, extendGap);
-                std::cout <<"threads:"<<minSize<<std::endl;
-
+      
             cudaErrchk(cudaMemcpy(alAbeg, alAbeg_d, blocksLaunched * sizeof(short),
                                   cudaMemcpyDeviceToHost));
             cudaErrchk(cudaMemcpy(alBbeg, alBbeg_d, blocksLaunched * sizeof(short),

@@ -13,10 +13,16 @@ __device__ short
 warpReduceMax_with_index(short val, short& myIndex, short& myIndex2, unsigned lengthSeqB);
 
 __device__ short
+warpReduceMax_with_index_reverse(short val, short& myIndex, short& myIndex2, unsigned lengthSeqB);
+
+__device__ short
 warpReduceMax(short val, unsigned lengthSeqB);
 
 __device__ short
 blockShuffleReduce_with_index(short myVal, short& myIndex, short& myIndex2, unsigned lengthSeqB);
+
+__device__ short
+blockShuffleReduce_with_index_reverse(short myVal, short& myIndex, short& myIndex2, unsigned lengthSeqB);
 
 __device__ short
 blockShuffleReduce(short val, unsigned lengthSeqB);

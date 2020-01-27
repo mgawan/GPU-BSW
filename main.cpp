@@ -121,9 +121,11 @@ void dnaSampleRun(string refFile, string queFile, string resultFile){
 
   gpu_bsw_driver::alignment_results results_test;
 
-  short scores[] = {5, -3, -5, -2};
+
+  short scores[] = {1, -3, -5, -2};
 
   gpu_bsw_driver::kernel_driver_dna(G_sequencesB, G_sequencesA,&results_test, scores);
+
 
   gpu_bsw_driver::verificationTest(resultFile, results_test.g_alAbeg, results_test.g_alBbeg, results_test.g_alAend, results_test.g_alBend);
 
