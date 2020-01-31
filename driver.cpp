@@ -39,7 +39,7 @@ callAlignKernel(std::vector<std::string> reads, std::vector<std::string> contigs
 
     long long estMem = totMemEst;
     int       its    = ceil(estMem / (prop[0].totalGlobalMem * 0.95));
-
+   // its = 34;
     short* g_alAbeg = new short[NBLOCKS];
     short* g_alBbeg = new short[NBLOCKS];
     short* g_alAend = new short[NBLOCKS];
@@ -91,7 +91,8 @@ callAlignKernel(std::vector<std::string> reads, std::vector<std::string> contigs
         // //std::cout << "Iterations per GPU:"<<its<<std::endl;
         auto start2 = NOW;
         std::cout << "total its:" << its << std::endl;
-        for(int perGPUIts = 0; perGPUIts < its; perGPUIts++)
+        auto kernel_only = 0.0;
+    	for(int perGPUIts = 0; perGPUIts < its; perGPUIts++)
         {
             int                                      blocksLaunched = 0;
             std::vector<std::string>::const_iterator beginAVec;
@@ -188,22 +189,27 @@ callAlignKernel(std::vector<std::string> reads, std::vector<std::string> contigs
            unsigned maxSize = (maxReadSize > maxContigSize) ? maxReadSize : maxContigSize;
            unsigned minSize = (maxReadSize < maxContigSize) ? maxReadSize : maxContigSize;
 
-            unsigned totShmem = 3 * 3 * (minSize + 1) * sizeof(short) +
-                                3 * minSize + (minSize & 1) + maxSize;
+            unsigned totShmem = 3 * 3 * (minSize + 1) * sizeof(int) +
+                                (3 * minSize + (minSize & 1))*sizeof(int) + maxSize*sizeof(int);
 
-            unsigned alignmentPad = 4 + (4 - totShmem % 4);
+          //  unsigned alignmentPad = 4 + (4 - totShmem % 4);
             size_t   ShmemBytes =
-                totShmem + alignmentPad + sizeof(int) * (maxContigSize + maxReadSize + 2);
+                totShmem  + sizeof(int) * (maxContigSize + maxReadSize + 2);
 
             if(ShmemBytes > 48000)
                 cudaFuncSetAttribute(align_sequences_gpu,
                                      cudaFuncAttributeMaxDynamicSharedMemorySize,
                                      ShmemBytes);
-
+                printf("cpu side shmem bytes:%d\n",ShmemBytes );
+	    auto l_kernel = NOW;
             align_sequences_gpu<<<blocksLaunched, minSize, ShmemBytes>>>(
                 strA_d, strB_d, offsetA_d, offsetB_d, maxMatrixSize, I_i, I_j, alAbeg_d,
                 alAend_d, alBbeg_d, alBend_d);
-                std::cout <<"threads:"<<minSize<<std::endl;
+	    cudaDeviceSynchronize();
+	    std::chrono::duration<double> l_kernel_end = l_kernel - NOW;
+	    kernel_only += l_kernel_end.count();
+
+                std::cout <<"tot_kernel_time:"<<kernel_only<<std::endl;
 
             cudaErrchk(cudaMemcpy(alAbeg, alAbeg_d, blocksLaunched * sizeof(short),
                                   cudaMemcpyDeviceToHost));

@@ -40,9 +40,9 @@ blockShuffleReduce(short myVal, short& myIndex, short& myIndex2, unsigned length
 {
     int              laneId = threadIdx.x % 32;
     int              warpId = threadIdx.x / 32;
-    __shared__ short locTots[32];
-    __shared__ short locInds[32];
-    __shared__ short locInds2[32];
+    __shared__ int locTots[32];
+    __shared__ int locInds[32];
+    __shared__ int locInds2[32];
     short            myInd  = myIndex;
     short            myInd2 = myIndex2;
     myVal                   = warpReduceMax(myVal, myInd, myInd2, lengthSeqB);
@@ -81,10 +81,10 @@ blockShuffleReduce(short myVal, short& myIndex, short& myIndex2, unsigned length
     }
     return myVal;
 }
-__device__ __host__ short
-           findMax(short array[], int length, int* ind)
+__device__ __host__ int
+           findMax(int array[], int length, int* ind)
 {
-    short max = array[0];
+    int max = array[0];
     *ind      = 0;
 
     for(int i = 1; i < length; i++)
@@ -180,8 +180,8 @@ align_sequences_gpu(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA
     short *  I_i, *I_j;
     unsigned totBytes = 0;
 
-    extern __shared__ char is_valid_array[];
-    char*                  is_valid = &is_valid_array[0];
+    extern __shared__ int is_valid_array[];
+    int*                  is_valid = &is_valid_array[0];
 
     if(myId == 0)
     {
@@ -205,29 +205,32 @@ align_sequences_gpu(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA
     unsigned maxSize = lengthSeqA > lengthSeqB ? lengthSeqA : lengthSeqB;
     unsigned minSize = lengthSeqA < lengthSeqB ? lengthSeqA : lengthSeqB;
 
-    short* curr_H =
-        (short*) (&is_valid_array[3 * minSize +
+    int* curr_H =
+        (int*) (&is_valid_array[3 * minSize +
                                   (minSize & 1)]);  // point where the valid_array ends
-    short* prev_H      = &curr_H[minSize + 1];      // where the curr_H array ends
-    short* prev_prev_H = &prev_H[minSize + 1];
-    totBytes += (3 * minSize + (minSize & 1)) * sizeof(char) +
-                ((minSize + 1) + (minSize + 1)) * sizeof(short);
+    int* prev_H      = &curr_H[minSize + 1];      // where the curr_H array ends
+    int* prev_prev_H = &prev_H[minSize + 1];
+    totBytes += (3 * minSize + (minSize & 1)) * sizeof(int) +
+                ((minSize + 1) + (minSize + 1)) * sizeof(int);
 
-    short* curr_E      = &prev_prev_H[minSize + 1];
-    short* prev_E      = &curr_E[minSize + 1];
-    short* prev_prev_E = &prev_E[minSize + 1];
-    totBytes += ((minSize + 1) + (minSize + 1) + (minSize + 1)) * sizeof(short);
+    int* curr_E      = &prev_prev_H[minSize + 1];
+    int* prev_E      = &curr_E[minSize + 1];
+    int* prev_prev_E = &prev_E[minSize + 1];
+    totBytes += ((minSize + 1) + (minSize + 1) + (minSize + 1)) * sizeof(int);
 
-    short* curr_F      = &prev_prev_E[minSize + 1];
-    short* prev_F      = &curr_F[minSize + 1];
-    short* prev_prev_F = &prev_F[minSize + 1];
-    totBytes += ((minSize + 1) + (minSize + 1) + (minSize + 1)) * sizeof(short);
+    int* curr_F      = &prev_prev_E[minSize + 1];
+    int* prev_F      = &curr_F[minSize + 1];
+    int* prev_prev_F = &prev_F[minSize + 1];
+    totBytes += ((minSize + 1) + (minSize + 1) + (minSize + 1)) * sizeof(int);
 
-    char* myLocString = (char*) &prev_prev_F[minSize + 1];
-    totBytes += (minSize + 1) * sizeof(short) + (maxSize) * sizeof(char);
+    int* myLocString = (int*) &prev_prev_F[minSize + 1];
+    totBytes += (minSize + 1) * sizeof(int) + (maxSize) * sizeof(int);
 
-    unsigned      alignmentPad = 4 + (4 - totBytes % 4);
-    unsigned int* diagOffset   = (unsigned int*) &myLocString[maxSize + alignmentPad];
+  //  unsigned      alignmentPad = 4 + (4 - totBytes % 4);
+    unsigned int* diagOffset   = (unsigned int*) &myLocString[maxSize];
+
+    if(blockIdx.x == 0 && threadIdx.x == 0)
+      printf("total bytes:%d\n", (totBytes+(sizeof(int)*(maxSize + minSize +2))));
     // char* v = is_valid;
 
     __syncthreads();
@@ -237,7 +240,7 @@ align_sequences_gpu(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA
     is_valid += minSize;
     memset(is_valid, 0, minSize);
 
-    memset(curr_H, 0, 9 * (minSize + 1) * sizeof(short));
+    memset(curr_H, 0, 9 * (minSize + 1) * sizeof(int));
 
     __shared__ int i_max;
     __shared__ int j_max;
@@ -265,13 +268,13 @@ align_sequences_gpu(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA
 
     __syncthreads();
 
-    short            traceback[4];
-    __shared__ short iVal[4];  //= {-1,-1,0,0};
+    int            traceback[4];
+    __shared__ int iVal[4];  //= {-1,-1,0,0};
     iVal[0] = -1;
     iVal[1] = -1;
     iVal[2] = 0;
     iVal[3] = 0;
-    __shared__ short jVal[4];  //= {-1,0,-1,0};
+    __shared__ int jVal[4];  //= {-1,0,-1,0};
     jVal[0] = -1;
     jVal[1] = 0;
     jVal[2] = -1;
@@ -284,7 +287,7 @@ align_sequences_gpu(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA
     short thread_max_i = 0;
     short thread_max_j = 0;
 
-    short* tmp_ptr;
+    int* tmp_ptr;
     int    locSum = 0;
     for(int diag = 0; diag < lengthSeqA + lengthSeqB - 1; diag++)
     {
@@ -307,7 +310,7 @@ align_sequences_gpu(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA
                 diagOffset[locDiagId] = locSum;
             }
             diagOffset[lengthSeqA + lengthSeqB] = locSum + 2;
-            // printf("diag:%d\tlocSum:%d\n",diag,diagOffset[locDiagId]);
+            // if(blockIdx.x == 0) printf("diag:%d\tlocSum:%d\n",diag,diagOffset[locDiagId]);
         }
     }
     __syncthreads();
@@ -362,8 +365,8 @@ align_sequences_gpu(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA
 
             curr_H[j] = findMax(traceback, 4, &ind);
 
-            unsigned short diagId    = i + j;
-            unsigned short locOffset = 0;
+            unsigned int diagId    = i + j;
+            unsigned int locOffset = 0;
             if(diagId < maxSize + 1)
             {
                 locOffset = j;
@@ -373,6 +376,8 @@ align_sequences_gpu(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA
                 unsigned short myOff = diagId - maxSize;
                 locOffset            = j - myOff;
             }
+
+            if(blockIdx.x == 0 && threadIdx.x == 127) printf("ind:%d, diagoffset:%d, diagId:%d\n",ind,diagOffset[diagId], diagId);
 
             I_i[diagOffset[diagId] + locOffset] =
                 i + iVal[ind];  // coalesced accesses, need to change
