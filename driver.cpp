@@ -91,7 +91,7 @@ callAlignKernel(std::vector<std::string> reads, std::vector<std::string> contigs
         // //std::cout << "Iterations per GPU:"<<its<<std::endl;
         auto start2 = NOW;
         std::cout << "total its:" << its << std::endl;
-        auto kernel_only = 0.0;
+  //      auto kernel_only = 0.0;
     	for(int perGPUIts = 0; perGPUIts < its; perGPUIts++)
         {
             int                                      blocksLaunched = 0;
@@ -200,16 +200,16 @@ callAlignKernel(std::vector<std::string> reads, std::vector<std::string> contigs
                 cudaFuncSetAttribute(align_sequences_gpu,
                                      cudaFuncAttributeMaxDynamicSharedMemorySize,
                                      ShmemBytes);
-                printf("cpu side shmem bytes:%d\n",ShmemBytes );
+            //    printf("cpu side shmem bytes:%d\n",ShmemBytes );
 	    auto l_kernel = NOW;
             align_sequences_gpu<<<blocksLaunched, minSize, ShmemBytes>>>(
                 strA_d, strB_d, offsetA_d, offsetB_d, maxMatrixSize, I_i, I_j, alAbeg_d,
                 alAend_d, alBbeg_d, alBend_d);
-	    cudaDeviceSynchronize();
-	    std::chrono::duration<double> l_kernel_end = l_kernel - NOW;
-	    kernel_only += l_kernel_end.count();
-
-                std::cout <<"tot_kernel_time:"<<kernel_only<<std::endl;
+	    // cudaDeviceSynchronize();
+	    // std::chrono::duration<double> l_kernel_end = l_kernel - NOW;
+	    // kernel_only += l_kernel_end.count();
+      //
+      //           std::cout <<"tot_kernel_time:"<<kernel_only<<std::endl;
 
             cudaErrchk(cudaMemcpy(alAbeg, alAbeg_d, blocksLaunched * sizeof(short),
                                   cudaMemcpyDeviceToHost));

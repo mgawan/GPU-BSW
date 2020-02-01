@@ -206,7 +206,7 @@ align_sequences_gpu(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA
     unsigned minSize = lengthSeqA < lengthSeqB ? lengthSeqA : lengthSeqB;
 
     int* curr_H =
-        (int*) (&is_valid_array[3 * minSize +
+        (int*) (&is_valid_array[3 * minSize+
                                   (minSize & 1)]);  // point where the valid_array ends
     int* prev_H      = &curr_H[minSize + 1];      // where the curr_H array ends
     int* prev_prev_H = &prev_H[minSize + 1];
@@ -229,16 +229,16 @@ align_sequences_gpu(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA
   //  unsigned      alignmentPad = 4 + (4 - totBytes % 4);
     unsigned int* diagOffset   = (unsigned int*) &myLocString[maxSize];
 
-    if(blockIdx.x == 0 && threadIdx.x == 0)
-      printf("total bytes:%d\n", (totBytes+(sizeof(int)*(maxSize + minSize +2))));
+    // if(blockIdx.x == 0 && threadIdx.x == 0)
+    //   printf("total bytes:%d\n", (totBytes+(sizeof(int)*(maxSize + minSize +2))));
     // char* v = is_valid;
 
     __syncthreads();
-    memset(is_valid, 0, minSize);
+    memset(is_valid, 0, minSize*sizeof(int));
     is_valid += minSize;
-    memset(is_valid, 1, minSize);
+    memset(is_valid, 1, minSize*sizeof(int));
     is_valid += minSize;
-    memset(is_valid, 0, minSize);
+    memset(is_valid, 0, minSize*sizeof(int));
 
     memset(curr_H, 0, 9 * (minSize + 1) * sizeof(int));
 
@@ -377,7 +377,7 @@ align_sequences_gpu(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA
                 locOffset            = j - myOff;
             }
 
-            if(blockIdx.x == 0 && threadIdx.x == 127) printf("ind:%d, diagoffset:%d, diagId:%d\n",ind,diagOffset[diagId], diagId);
+              // if(threadIdx.x == 127 && diagId > 1153) printf("ind:%d, diagoffset:%d, diagId:%d, block:%d, i:%d, j:%d\n",ind,diagOffset[diagId], diagId, blockIdx.x, i, j);
 
             I_i[diagOffset[diagId] + locOffset] =
                 i + iVal[ind];  // coalesced accesses, need to change
