@@ -326,7 +326,7 @@ gpu_bsw_driver::kernel_driver_aa(std::vector<std::string> reads, std::vector<std
 
   long long estMem = totMemEst;
   int       its    = ceil(estMem / (prop[0].totalGlobalMem * 0.90));
-  //its = 5;
+ // its = 5;
 
   short* g_alAbeg = new short[NBLOCKS];
   short* g_alBbeg = new short[NBLOCKS];
