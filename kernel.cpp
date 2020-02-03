@@ -206,8 +206,7 @@ align_sequences_gpu(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA
     unsigned minSize = lengthSeqA < lengthSeqB ? lengthSeqA : lengthSeqB;
 
     int* curr_H =
-        (int*) (&is_valid_array[3 * minSize+
-                                  (minSize & 1)]);  // point where the valid_array ends
+        (int*) (&is_valid_array[3 * minSize + (minSize & 1)]);  // point where the valid_array ends
     int* prev_H      = &curr_H[minSize + 1];      // where the curr_H array ends
     int* prev_prev_H = &prev_H[minSize + 1];
     totBytes += (3 * minSize + (minSize & 1)) * sizeof(int) +
