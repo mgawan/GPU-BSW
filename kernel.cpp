@@ -337,6 +337,7 @@ gpu_bsw::sequence_dna_kernel(char* seqA_array, char* seqB_array, unsigned* prefi
 
     extern __shared__ char is_valid_array[];
     char*                  is_valid = &is_valid_array[0];
+    char* longer_seq;
 
 // setting up block local sequences and their lengths.
     if(block_Id == 0)
@@ -361,7 +362,7 @@ gpu_bsw::sequence_dna_kernel(char* seqA_array, char* seqB_array, unsigned* prefi
     unsigned minSize = lengthSeqA < lengthSeqB ? lengthSeqA : lengthSeqB;
 
 // shared memory space for storing longer of the two strings
-    char* myLocString = (char*) &is_valid[3 * minSize + (minSize & 1)];
+  //  char* myLocString = (char*) &is_valid[3 * minSize + (minSize & 1)];
 
     memset(is_valid, 0, minSize);
     is_valid += minSize;
@@ -374,18 +375,20 @@ gpu_bsw::sequence_dna_kernel(char* seqA_array, char* seqB_array, unsigned* prefi
     if(lengthSeqA < lengthSeqB)
     {
       myColumnChar = seqA[thread_Id];  // read only once
-      for(int i = thread_Id; i < lengthSeqB; i += 32)
-      {
-          myLocString[i] = seqB[i];
-      }
+      // for(int i = thread_Id; i < lengthSeqB; i += 32)
+      // {
+      //     myLocString[i] = seqB[i];
+            longer_seq = seqB;
+      // }
     }
     else
     {
        myColumnChar = seqB[thread_Id];
-      for(int i = thread_Id; i < lengthSeqA; i += 32)
-      {
-          myLocString[i] = seqA[i];
-      }
+      // for(int i = thread_Id; i < lengthSeqA; i += 32)
+      // {
+      //     myLocString[i] = seqA[i];
+              longer_seq = seqA;
+      // }
     }
 
     __syncthreads(); // this is required here so that complete sequence has been copied to shared memory
@@ -499,7 +502,7 @@ gpu_bsw::sequence_dna_kernel(char* seqA_array, char* seqB_array, unsigned* prefi
 
 
           if(warpId == 0 && laneId == 0) final_prev_prev_H = 0;
-          short diag_score = final_prev_prev_H + ((myLocString[i - 1] == myColumnChar)
+          short diag_score = final_prev_prev_H + ((longer_seq[i - 1] == myColumnChar)//((myLocString[i - 1] == myColumnChar)
                        ? matchScore
                        : misMatchScore);
           _curr_H = findMaxFour(diag_score, _curr_F, _curr_E, 0);
@@ -571,10 +574,11 @@ gpu_bsw::sequence_dna_kernel(char* seqA_array, char* seqB_array, unsigned* prefi
 
         }
         if(lengthSeqA > lengthSeqB) // do the below only if myLocString contains seqA previously
-          for(int i = thread_Id; i < newlengthSeqB; i += 32)
-          {
-            myLocString[newlengthSeqB -1 - i] = seqB[newlengthSeqB - 1 - i]; // locString contains reference/longer string
-          }
+          // for(int i = thread_Id; i < newlengthSeqB; i += 32)
+          // {
+          //   myLocString[newlengthSeqB -1 - i] = seqB[newlengthSeqB - 1 - i]; // locString contains reference/longer string
+          longer_seq = seqB;
+          // }
 
     }
     else
@@ -585,10 +589,11 @@ gpu_bsw::sequence_dna_kernel(char* seqA_array, char* seqB_array, unsigned* prefi
       }
 
     if(lengthSeqB > lengthSeqA) // do the below only if myLocString contains seqB previously
-       for(int i = thread_Id; i < newlengthSeqA; i += 32)
-       {
-           myLocString[newlengthSeqA - 1 - i] = seqA[newlengthSeqA - 1 - i];
-       }
+       // for(int i = thread_Id; i < newlengthSeqA; i += 32)
+       // {
+       //     myLocString[newlengthSeqA - 1 - i] = seqA[newlengthSeqA - 1 - i];
+          longer_seq = seqA;
+       // }
     }
 
 
@@ -715,7 +720,7 @@ gpu_bsw::sequence_dna_kernel(char* seqA_array, char* seqB_array, unsigned* prefi
 
           short diag_score =
                   final_prev_prev_H +
-                  ((myLocString[(maxSize - i )] == myColumnChar)
+                  ((longer_seq[(maxSize - i )] == myColumnChar)//((myLocString[(maxSize - i )] == myColumnChar)
                        ? matchScore
                        : misMatchScore);
 
@@ -756,6 +761,258 @@ gpu_bsw::sequence_dna_kernel(char* seqA_array, char* seqB_array, unsigned* prefi
 }
 
 
+__global__ void
+gpu_bsw::sequence_dna_reverse(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA,
+                    unsigned* prefix_lengthB, short* seqA_align_begin, short* seqA_align_end,
+                    short* seqB_align_begin, short* seqB_align_end, short* top_scores, short matchScore, short misMatchScore, short startGap, short extendGap){
+
+      int block_Id  = blockIdx.x;
+      int thread_Id = threadIdx.x;
+      short laneId = threadIdx.x%32;
+      short warpId = threadIdx.x/32;
+
+      unsigned lengthSeqA;
+      unsigned lengthSeqB;
+      // local pointers
+      char*    seqA;
+      char*    seqB;
+
+      extern __shared__ char is_valid_array[];
+      char*                  is_valid = &is_valid_array[0];
+      char* longer_seq;
+
+  // setting up block local sequences and their lengths.
+      if(block_Id == 0)
+      {
+          lengthSeqA = prefix_lengthA[0];
+          lengthSeqB = prefix_lengthB[0];
+          seqA       = seqA_array;
+          seqB       = seqB_array;
+      }
+      else
+      {
+          lengthSeqA = prefix_lengthA[block_Id] - prefix_lengthA[block_Id - 1];
+          lengthSeqB = prefix_lengthB[block_Id] - prefix_lengthB[block_Id - 1];
+          seqA       = seqA_array + prefix_lengthA[block_Id - 1];
+          seqB       = seqB_array + prefix_lengthB[block_Id - 1];
+      }
+
+
+      int newlengthSeqA = seqA_align_end[block_Id];
+      int newlengthSeqB = seqB_align_end[block_Id];
+
+      unsigned maxSize = newlengthSeqA > newlengthSeqB ? newlengthSeqA : newlengthSeqB;
+      unsigned minSize = newlengthSeqA < newlengthSeqB ? newlengthSeqA : newlengthSeqB;
+      char myColumnChar;
+
+      is_valid = &is_valid_array[0]; //reset is_valid array for second iter
+      memset(is_valid, 0, minSize);
+      is_valid += minSize;
+      memset(is_valid, 1, minSize);
+      is_valid += minSize;
+      memset(is_valid, 0, minSize);
+      __syncthreads(); // this is required because shmem writes
+
+
+  //check if the new length of A is larger than B, if so then place the B string in registers and A in myLocString, make sure we dont do redundant copy by checking which string is located in myLocString before
+
+      if(newlengthSeqA < newlengthSeqB)
+      {
+        if(thread_Id < newlengthSeqA)
+        {
+          myColumnChar = seqA[(newlengthSeqA - 1) - thread_Id];  // read only once
+          longer_seq = seqB;
+          }
+        //  if(lengthSeqA > lengthSeqB) // do the below only if myLocString contains seqA previously
+            // for(int i = thread_Id; i < newlengthSeqB; i += 32)
+            // {
+            //   myLocString[newlengthSeqB -1 - i] = seqB[newlengthSeqB - 1 - i]; // locString contains reference/longer string
+            //l
+            // }
+
+      }
+      else
+      {
+        if(thread_Id < newlengthSeqB)
+        {
+         myColumnChar = seqB[(newlengthSeqB - 1) - thread_Id];
+           longer_seq = seqA;
+        }
+
+    //  if(lengthSeqB > lengthSeqA) // do the below only if myLocString contains seqB previously
+         // for(int i = thread_Id; i < newlengthSeqA; i += 32)
+         // {
+         //     myLocString[newlengthSeqA - 1 - i] = seqA[newlengthSeqA - 1 - i];
+
+         // }
+      }
+
+
+      __syncthreads(); // this is required  because sequence has been re-written in shmem
+
+
+      int   i            = 1;
+      short thread_max   = 0; // to maintain the thread max score
+      short thread_max_i = 0; // to maintain the DP coordinate i for the longer string
+      short thread_max_j = 0;// to maintain the DP cooirdinate j for the shorter string
+
+    //initializing registers for storing diagonal values for three recent most diagonals (separate tables for
+    //H, E and F)
+      short _curr_H = 0, _curr_F = 0, _curr_E = 0;
+      short _prev_H = 0, _prev_F = 0, _prev_E = 0;
+      short _prev_prev_H = 0, _prev_prev_F = 0, _prev_prev_E = 0;
+      short _temp_Val = 0;
+
+     __shared__ short sh_prev_E[32]; // one such element is required per warp
+     __shared__ short sh_prev_H[32];
+     __shared__ short sh_prev_prev_H[32];
+
+     __shared__ short local_spill_prev_E[1024];// each threads local spill,
+     __shared__ short local_spill_prev_H[1024];
+     __shared__ short local_spill_prev_prev_H[1024];
+
+
+      __syncthreads(); // this is required because shmem has been updated
+      for(int diag = 0; diag <  newlengthSeqA + newlengthSeqB - 1; diag++)
+      {
+        is_valid = is_valid - (diag < minSize || diag >= maxSize);
+
+        _temp_Val = _prev_H;
+      	_prev_H = _curr_H;
+      	_curr_H = _prev_prev_H;
+      	_prev_prev_H = _temp_Val;
+
+      	_curr_H = 0;
+
+
+        _temp_Val = _prev_E;
+        _prev_E = _curr_E;
+        _curr_E = _prev_prev_E;
+        _prev_prev_E = _temp_Val;
+        _curr_E = 0;
+
+        _temp_Val = _prev_F;
+        _prev_F = _curr_F;
+        _curr_F = _prev_prev_F;
+        _prev_prev_F = _temp_Val;
+      	_curr_F = 0;
+
+        if(laneId == 31)
+        {
+          sh_prev_E[warpId] = _prev_E;
+          sh_prev_H[warpId] = _prev_H;
+    		  sh_prev_prev_H[warpId] = _prev_prev_H;
+        }
+
+        if(diag>= maxSize)
+        { // if you are invalid in this iteration, spill your values to shmem
+          local_spill_prev_E[thread_Id] = _prev_E;
+          local_spill_prev_H[thread_Id] = _prev_H;
+          local_spill_prev_prev_H[thread_Id] = _prev_prev_H;
+        }
+
+        __syncthreads();
+
+        if(is_valid[thread_Id] && thread_Id < minSize)
+        {
+
+      	    unsigned mask  = __ballot_sync(__activemask(), (is_valid[thread_Id] &&( thread_Id < minSize)));
+
+
+      	    short fVal = _prev_F + extendGap;
+      	    short hfVal = _prev_H + startGap;
+      	    short valeShfl = __shfl_sync(mask, _prev_E, laneId- 1, 32);
+      	    short valheShfl = __shfl_sync(mask, _prev_H, laneId - 1, 32);
+
+
+            short eVal=0;
+            short heVal = 0;
+
+            if(diag >= maxSize)
+            {
+                eVal = local_spill_prev_E[thread_Id - 1] + extendGap;
+
+            }
+            else
+            {
+              eVal =((warpId !=0 && laneId == 0)?sh_prev_E[warpId-1]: valeShfl) + extendGap;
+            }
+
+            if(diag >= maxSize)
+            {
+                heVal = local_spill_prev_H[thread_Id - 1]+ startGap;
+            }
+            else
+            {
+              heVal =((warpId !=0 && laneId == 0)?sh_prev_H[warpId-1]:valheShfl) + startGap;
+            }
+
+
+            if(warpId == 0 && laneId == 0)
+            {
+              eVal = 0;
+              heVal = 0;
+            }
+            _curr_F = (fVal > hfVal) ? fVal : hfVal;
+        		_curr_E = (eVal > heVal) ? eVal : heVal;
+
+
+            short testShufll = __shfl_sync(mask, _prev_prev_H, laneId - 1, 32);
+      	    short final_prev_prev_H =0;
+
+            if(diag >= maxSize)
+             {
+               final_prev_prev_H = local_spill_prev_prev_H[thread_Id - 1];
+             }
+            else
+             {
+               final_prev_prev_H =(warpId !=0 && laneId == 0)?sh_prev_prev_H[warpId-1]:testShufll;
+             }
+
+            if(warpId == 0 && laneId == 0) final_prev_prev_H = 0;
+
+            short diag_score =
+                    final_prev_prev_H +
+                    ((longer_seq[(maxSize - i )] == myColumnChar)//((myLocString[(maxSize - i )] == myColumnChar)
+                         ? matchScore
+                         : misMatchScore);
+
+
+            _curr_H = findMaxFour(diag_score, _curr_F, _curr_E, 0);
+
+            thread_max_i = (thread_max >= _curr_H) ? thread_max_i : maxSize - i ;//i;// begin_A (longer string)
+            thread_max_j = (thread_max >= _curr_H) ? thread_max_j : minSize - thread_Id -1; // begin_B (shorter string)
+            thread_max   = (thread_max >= _curr_H) ? thread_max : _curr_H;
+            i++;
+        }
+
+          __syncthreads();
+
+        }
+        __syncthreads();
+
+
+        //  printf("reverse scoring, thread:%d max:%d \n",threadIdx.x, thread_max);
+
+        thread_max = blockShuffleReduce_with_index_reverse(thread_max, thread_max_i, thread_max_j,
+                                        minSize);  // thread 0 will have the correct values
+
+        if(thread_Id == 0)
+        {
+          if(newlengthSeqA < newlengthSeqB)
+          {
+            seqB_align_begin[block_Id] = /*newlengthSeqB - */(thread_max_i);
+            seqA_align_begin[block_Id] = /*newlengthSeqA */ (thread_max_j);
+          }
+          else
+          {
+            seqA_align_begin[block_Id] = /*newlengthSeqA - */(thread_max_i);
+            seqB_align_begin[block_Id] = /*newlengthSeqB -*/ (thread_max_j);
+          }
+        }
+        __syncthreads();
+
+}
 __global__ void
 gpu_bsw::sequence_aa_kernel(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA,
                     unsigned* prefix_lengthB, short* seqA_align_begin, short* seqA_align_end,
