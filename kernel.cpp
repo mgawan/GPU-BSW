@@ -361,7 +361,8 @@ gpu_bsw::sequence_dna_kernel(char* seqA_array, char* seqB_array, unsigned* prefi
     unsigned minSize = lengthSeqA < lengthSeqB ? lengthSeqA : lengthSeqB;
 
 // shared memory space for storing longer of the two strings
-    char* myLocString = (char*) &is_valid[3 * minSize + (minSize & 1)];
+    //char* myLocString = (char*) &is_valid[3 * minSize + (minSize & 1)];
+    char* longer_sequence;
 
     memset(is_valid, 0, minSize);
     is_valid += minSize;
@@ -374,18 +375,20 @@ gpu_bsw::sequence_dna_kernel(char* seqA_array, char* seqB_array, unsigned* prefi
     if(lengthSeqA < lengthSeqB)
     {
       myColumnChar = seqA[thread_Id];  // read only once
-      for(int i = thread_Id; i < lengthSeqB; i += 32)
-      {
-          myLocString[i] = seqB[i];
-      }
+      longer_sequence = seqB;
+      // for(int i = thread_Id; i < lengthSeqB; i += 32)
+      // {
+      //     myLocString[i] = seqB[i];
+      // }
     }
     else
     {
        myColumnChar = seqB[thread_Id];
-      for(int i = thread_Id; i < lengthSeqA; i += 32)
-      {
-          myLocString[i] = seqA[i];
-      }
+       longer_sequence = seqA;
+      // for(int i = thread_Id; i < lengthSeqA; i += 32)
+      // {
+      //     myLocString[i] = seqA[i];
+      // }
     }
 
     __syncthreads(); // this is required here so that complete sequence has been copied to shared memory
@@ -499,7 +502,7 @@ gpu_bsw::sequence_dna_kernel(char* seqA_array, char* seqB_array, unsigned* prefi
 
 
           if(warpId == 0 && laneId == 0) final_prev_prev_H = 0;
-          short diag_score = final_prev_prev_H + ((myLocString[i - 1] == myColumnChar)
+          short diag_score = final_prev_prev_H + ((longer_sequence[i - 1] == myColumnChar)
                        ? matchScore
                        : misMatchScore);
           _curr_H = findMaxFour(diag_score, _curr_F, _curr_E, 0);
@@ -571,10 +574,11 @@ gpu_bsw::sequence_dna_kernel(char* seqA_array, char* seqB_array, unsigned* prefi
 
         }
         if(lengthSeqA > lengthSeqB) // do the below only if myLocString contains seqA previously
-          for(int i = thread_Id; i < newlengthSeqB; i += 32)
-          {
-            myLocString[newlengthSeqB -1 - i] = seqB[newlengthSeqB - 1 - i]; // locString contains reference/longer string
-          }
+          // for(int i = thread_Id; i < newlengthSeqB; i += 32)
+          // {
+          //   myLocString[newlengthSeqB -1 - i] = seqB[newlengthSeqB - 1 - i]; // locString contains reference/longer string
+          // }
+          longer_sequence = seqB;
 
     }
     else
@@ -585,10 +589,12 @@ gpu_bsw::sequence_dna_kernel(char* seqA_array, char* seqB_array, unsigned* prefi
       }
 
     if(lengthSeqB > lengthSeqA) // do the below only if myLocString contains seqB previously
-       for(int i = thread_Id; i < newlengthSeqA; i += 32)
-       {
-           myLocString[newlengthSeqA - 1 - i] = seqA[newlengthSeqA - 1 - i];
-       }
+       // for(int i = thread_Id; i < newlengthSeqA; i += 32)
+       // {
+       //     myLocString[newlengthSeqA - 1 - i] = seqA[newlengthSeqA - 1 - i];
+       // }
+
+       longer_sequence = seqA;
     }
 
 
@@ -715,7 +721,7 @@ gpu_bsw::sequence_dna_kernel(char* seqA_array, char* seqB_array, unsigned* prefi
 
           short diag_score =
                   final_prev_prev_H +
-                  ((myLocString[(maxSize - i )] == myColumnChar)
+                  ((longer_sequence[(maxSize - i )] == myColumnChar)
                        ? matchScore
                        : misMatchScore);
 
@@ -774,6 +780,7 @@ gpu_bsw::sequence_aa_kernel(char* seqA_array, char* seqB_array, unsigned* prefix
 
   extern __shared__ char is_valid_array[];
   char*                  is_valid = &is_valid_array[0];
+  char* longer_sequence;
 
 // setting up block local sequences and their lengths.
   if(block_Id == 0)
@@ -798,7 +805,7 @@ gpu_bsw::sequence_aa_kernel(char* seqA_array, char* seqB_array, unsigned* prefix
   unsigned minSize = lengthSeqA < lengthSeqB ? lengthSeqA : lengthSeqB;
 
 // shared memory space for storing longer of the two strings
-  char* myLocString = (char*) &is_valid[3 * minSize + (minSize & 1)];
+  //char* myLocString = (char*) &is_valid[3 * minSize + (minSize & 1)];
 
   memset(is_valid, 0, minSize);
   is_valid += minSize;
@@ -811,18 +818,21 @@ gpu_bsw::sequence_aa_kernel(char* seqA_array, char* seqB_array, unsigned* prefix
   if(lengthSeqA < lengthSeqB)
   {
     myColumnChar = seqA[thread_Id];  // read only once
-    for(int i = thread_Id; i < lengthSeqB; i += 32)
-    {
-        myLocString[i] = seqB[i];
-    }
+    // for(int i = thread_Id; i < lengthSeqB; i += 32)
+    // {
+    //     myLocString[i] = seqB[i];
+    // }
+    longer_sequence = seqB;
   }
   else
   {
      myColumnChar = seqB[thread_Id];
-    for(int i = thread_Id; i < lengthSeqA; i += 32)
-    {
-        myLocString[i] = seqA[i];
-    }
+    // for(int i = thread_Id; i < lengthSeqA; i += 32)
+    // {
+    //     myLocString[i] = seqA[i];
+    // }
+
+    longer_sequence = seqA;
   }
 
   __syncthreads(); // this is required here so that complete sequence has been copied to shared memory
@@ -948,7 +958,7 @@ gpu_bsw::sequence_aa_kernel(char* seqA_array, char* seqB_array, unsigned* prefix
 
         if(warpId == 0 && laneId == 0) final_prev_prev_H = 0;
 
-        short mat_index_q = sh_aa_encoding[(int)myLocString[i-1]];
+        short mat_index_q = sh_aa_encoding[(int)longer_sequence[i-1]];
         short mat_index_r = sh_aa_encoding[(int)myColumnChar];
 
         short add_score = sh_aa_scoring[mat_index_q*24 + mat_index_r]; // doesnt really matter in what order these indices are used, since the scoring table is symmetrical
@@ -1023,10 +1033,11 @@ gpu_bsw::sequence_aa_kernel(char* seqA_array, char* seqB_array, unsigned* prefix
 
       }
       if(lengthSeqA > lengthSeqB) // do the below only if myLocString contains seqA previously
-        for(int i = thread_Id; i < newlengthSeqB; i += 32)
-        {
-          myLocString[newlengthSeqB -1 - i] = seqB[newlengthSeqB - 1 - i]; // locString contains reference/longer string
-        }
+        // for(int i = thread_Id; i < newlengthSeqB; i += 32)
+        // {
+        //   myLocString[newlengthSeqB -1 - i] = seqB[newlengthSeqB - 1 - i]; // locString contains reference/longer string
+        // }
+        longer_sequence = seqB;
 
   }
   else
@@ -1037,10 +1048,11 @@ gpu_bsw::sequence_aa_kernel(char* seqA_array, char* seqB_array, unsigned* prefix
     }
 
   if(lengthSeqB > lengthSeqA) // do the below only if myLocString contains seqB previously
-     for(int i = thread_Id; i < newlengthSeqA; i += 32)
-     {
-         myLocString[newlengthSeqA - 1 - i] = seqA[newlengthSeqA - 1 - i];
-     }
+     // for(int i = thread_Id; i < newlengthSeqA; i += 32)
+     // {
+     //     myLocString[newlengthSeqA - 1 - i] = seqA[newlengthSeqA - 1 - i];
+     // }
+     longer_sequence = seqA;
   }
 
 
@@ -1164,7 +1176,7 @@ gpu_bsw::sequence_aa_kernel(char* seqA_array, char* seqB_array, unsigned* prefix
 
         if(warpId == 0 && laneId == 0) final_prev_prev_H = 0;
 
-        short mat_index_q = sh_aa_encoding[(int)myLocString[maxSize - i]];
+        short mat_index_q = sh_aa_encoding[(int)longer_sequence[maxSize - i]];
         short mat_index_r = sh_aa_encoding[(int)myColumnChar];
 
 

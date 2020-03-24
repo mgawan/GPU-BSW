@@ -206,7 +206,7 @@ gpu_bsw_driver::kernel_driver_dna(std::vector<std::string> reads, std::vector<st
           // unsigned maxSize = (maxReadSize > maxContigSize) ? maxReadSize : maxContigSize;
            unsigned minSize = (maxReadSize < maxContigSize) ? maxReadSize : maxContigSize;
 
-            unsigned totShmem = 3 * 3 * (minSize + 1) * sizeof(short);// +
+            unsigned totShmem = 3 * (minSize + 1) * sizeof(short);// +
                                 //3 * minSize + (minSize & 1) + maxSize;
 
             unsigned alignmentPad = 4 + (4 - totShmem % 4);
@@ -220,7 +220,7 @@ gpu_bsw_driver::kernel_driver_dna(std::vector<std::string> reads, std::vector<st
             gpu_bsw::sequence_dna_kernel<<<blocksLaunched, minSize, ShmemBytes>>>(
                 strA_d, strB_d, offsetA_d, offsetB_d, alAbeg_d,
                 alAend_d, alBbeg_d, alBend_d, top_scores_d, matchScore, misMatchScore, startGap, extendGap);
-      
+
             cudaErrchk(cudaMemcpy(alAbeg, alAbeg_d, blocksLaunched * sizeof(short),
                                   cudaMemcpyDeviceToHost));
             cudaErrchk(cudaMemcpy(alBbeg, alBbeg_d, blocksLaunched * sizeof(short),
@@ -484,7 +484,7 @@ gpu_bsw_driver::kernel_driver_aa(std::vector<std::string> reads, std::vector<std
         // unsigned maxSize = (maxReadSize > maxContigSize) ? maxReadSize : maxContigSize;
          unsigned minSize = (maxReadSize < maxContigSize) ? maxReadSize : maxContigSize;
 
-          unsigned totShmem = 3 * 3 * (minSize + 1) * sizeof(short);// +
+          unsigned totShmem = 3 * (minSize + 1) * sizeof(short);// +
                               //3 * minSize + (minSize & 1) + maxSize;
 
           unsigned alignmentPad = 4 + (4 - totShmem % 4);
