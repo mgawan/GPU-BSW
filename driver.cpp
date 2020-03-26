@@ -46,14 +46,7 @@ gpu_bsw_driver::kernel_driver_dna(std::vector<std::string> reads, std::vector<st
     unsigned leftOver_device     = NBLOCKS % deviceCount;
     unsigned maxAligns           = alignmentsPerDevice + leftOver_device;
 
-    long long totMemEst = maxContigSize * (long) maxAligns +
-                          maxReadSize * (long) maxAligns /*+
-                          maxMatrixSize * (long) maxAligns * sizeof(short) * 2*/ +
-                          (long) maxAligns * sizeof(short) * (4+1); // + 1 for the top scores
 
-    long long estMem = totMemEst;
-    int       its    = ceil(estMem / (prop[0].totalGlobalMem * 0.90));
-    // its = 3;
 
     short* g_alAbeg = new short[NBLOCKS];
     short* g_alBbeg = new short[NBLOCKS];
@@ -64,6 +57,20 @@ gpu_bsw_driver::kernel_driver_dna(std::vector<std::string> reads, std::vector<st
     auto start = NOW;
 #pragma omp parallel
     {
+      long long totMemEst = maxContigSize * (long) maxAligns +
+                            maxReadSize * (long) maxAligns /*+
+                            maxMatrixSize * (long) maxAligns * sizeof(short) * 2*/ +
+                            (long) maxAligns * sizeof(short) * (4+1)// + 1 for the top scores
+                            + (long) maxAligns * 2 * sizeof(int);
+
+      long long estMem = totMemEst;
+      std::cout << "est Mem:"<<estMem<<std::endl;
+      std::cout << "max aligns::"<<maxAligns<<std::endl;
+      std::cout << "max read size::"<<maxReadSize<<std::endl;
+      std::cout << "max contig size::"<<maxContigSize<<std::endl;
+      int       its    = ceil((float)estMem / (prop[0].totalGlobalMem * 0.90));
+      its = 10;
+
         int my_cpu_id = omp_get_thread_num();
         cudaSetDevice(my_cpu_id);
         int myGPUid;
