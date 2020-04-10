@@ -94,13 +94,19 @@ void dnaSampleRun(string refFile, string queFile, string resultFile){
   {
       while(getline(ref_file, myInLine))
       {
-          string seq = myInLine.substr(myInLine.find(":") + 1, myInLine.size() - 1);
-          G_sequencesA.push_back(seq);
-          totSizeA += seq.size();
-          if(seq.size() > largestA)
-          {
-              largestA = seq.size();
+          //string seq = myInLine.substr(myInLine.find(":") + 1, myInLine.size() - 1);
+          if(myInLine[0] == '>'){
+            continue;
+          }else{
+            string seq = myInLine;
+            G_sequencesA.push_back(seq);
+            totSizeA += seq.size();
+            if(seq.size() > largestA)
+            {
+                largestA = seq.size();
+            }
           }
+
       }
   }
 
@@ -108,12 +114,17 @@ void dnaSampleRun(string refFile, string queFile, string resultFile){
   {
       while(getline(quer_file, myInLine))
       {
-          string seq = myInLine.substr(myInLine.find(":") + 1, myInLine.size() - 1);
-          G_sequencesB.push_back(seq);
-          totSizeB += seq.size();
-          if(seq.size() > largestB)
-          {
-              largestB = seq.size();
+          //string seq = myInLine.substr(myInLine.find(":") + 1, myInLine.size() - 1);
+          if(myInLine[0] == '>'){
+            continue;
+          }else{
+            string seq = myInLine;
+            G_sequencesB.push_back(seq);
+            totSizeB += seq.size();
+            if(seq.size() > largestB)
+            {
+                largestB = seq.size();
+            }
           }
       }
   }
@@ -127,7 +138,7 @@ void dnaSampleRun(string refFile, string queFile, string resultFile){
   gpu_bsw_driver::kernel_driver_dna(G_sequencesB, G_sequencesA,&results_test, scores);
 
 
-  gpu_bsw_driver::verificationTest(resultFile, results_test.g_alAbeg, results_test.g_alBbeg, results_test.g_alAend, results_test.g_alBend);
+//  gpu_bsw_driver::verificationTest(resultFile, results_test.g_alAbeg, results_test.g_alBbeg, results_test.g_alAend, results_test.g_alBend);
 
 }
 
