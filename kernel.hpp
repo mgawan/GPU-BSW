@@ -47,5 +47,10 @@ __global__ void
 sequence_aa_kernel(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA,
                     unsigned* prefix_lengthB, short* seqA_align_begin, short* seqA_align_end,
                     short* seqB_align_begin, short* seqB_align_end, short* top_scores, short startGap, short extendGap, short* scoring_matrix, short* encoding_matrix);
+
+__global__ void
+sequence_dna_kernel_long_reads(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA,
+              unsigned* prefix_lengthB, short* seqA_align_begin, short* seqA_align_end,
+              short* seqB_align_begin, short* seqB_align_end, short* top_scores, short* d_h_curr, short* d_h_prev, short* d_h_prev_prev, short* d_e_curr, short* d_e_prev, short* d_e_prev_prev,short* d_f_curr, short* d_f_prev, short* d_f_prev_prev, short matchScore, short misMatchScore, short startGap, short extendGap);
 }
 #endif

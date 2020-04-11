@@ -137,8 +137,8 @@ void dnaSampleRun(string refFile, string queFile, string resultFile){
 
   gpu_bsw_driver::kernel_driver_dna(G_sequencesB, G_sequencesA,&results_test, scores);
 
-
-//  gpu_bsw_driver::verificationTest(resultFile, results_test.g_alAbeg, results_test.g_alBbeg, results_test.g_alAend, results_test.g_alBend);
+std::cout <<"endA:"<<results_test.g_alAend[0]<<"endB:"<<results_test.g_alBend[0]<<"score:"<<results_test.top_scores[0]<<std::endl;
+  //gpu_bsw_driver::verificationTest(resultFile, results_test.g_alAbeg, results_test.g_alBbeg, results_test.g_alAend, results_test.g_alBend);
 
 }
 
