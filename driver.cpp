@@ -125,15 +125,15 @@ gpu_bsw_driver::kernel_driver_dna(std::vector<std::string> reads, std::vector<st
 
         unsigned minSize = (maxReadSize < maxContigSize) ? maxReadSize : maxContigSize;
 
-        cudaErrchk(cudaMalloc(&d_h_curr, (stringsPerIt + leftOvers) * minSize * sizeof(short)));
-        cudaErrchk(cudaMalloc(&d_h_prev, (stringsPerIt + leftOvers) * minSize * sizeof(short)));
-        cudaErrchk(cudaMalloc(&d_h_prev_prev, (stringsPerIt + leftOvers) * minSize * sizeof(short)));
-        cudaErrchk(cudaMalloc(&d_e_curr, (stringsPerIt + leftOvers) * minSize * sizeof(short)));
-        cudaErrchk(cudaMalloc(&d_e_prev, (stringsPerIt + leftOvers) * minSize * sizeof(short)));
-        cudaErrchk(cudaMalloc(&d_e_prev_prev, (stringsPerIt + leftOvers) * minSize * sizeof(short)));
-        cudaErrchk(cudaMalloc(&d_f_curr, (stringsPerIt + leftOvers) * minSize * sizeof(short)));
-        cudaErrchk(cudaMalloc(&d_f_prev, (stringsPerIt + leftOvers) * minSize * sizeof(short)));
-        cudaErrchk(cudaMalloc(&d_f_prev_prev, (stringsPerIt + leftOvers) * minSize * sizeof(short)));
+        cudaErrchk(cudaMalloc(&d_h_curr, (stringsPerIt + leftOvers) * (minSize+1) * sizeof(short)));
+        cudaErrchk(cudaMalloc(&d_h_prev, (stringsPerIt + leftOvers) * (minSize+1) * sizeof(short)));
+        cudaErrchk(cudaMalloc(&d_h_prev_prev, (stringsPerIt + leftOvers) * (minSize+1) * sizeof(short)));
+        cudaErrchk(cudaMalloc(&d_e_curr, (stringsPerIt + leftOvers) * (minSize+1) * sizeof(short)));
+        cudaErrchk(cudaMalloc(&d_e_prev, (stringsPerIt + leftOvers) * (minSize+1) * sizeof(short)));
+        cudaErrchk(cudaMalloc(&d_e_prev_prev, (stringsPerIt + leftOvers) * (minSize+1) * sizeof(short)));
+        cudaErrchk(cudaMalloc(&d_f_curr, (stringsPerIt + leftOvers) * (minSize+1) * sizeof(short)));
+        cudaErrchk(cudaMalloc(&d_f_prev, (stringsPerIt + leftOvers) * (minSize+1) * sizeof(short)));
+        cudaErrchk(cudaMalloc(&d_f_prev_prev, (stringsPerIt + leftOvers) * (minSize+1) * sizeof(short)));
 
         auto start2 = NOW;
       //  std::cout << "total iterations:" << its << std::endl;
@@ -252,7 +252,7 @@ gpu_bsw_driver::kernel_driver_dna(std::vector<std::string> reads, std::vector<st
                                      ShmemBytes);
 
             auto kernel_start = NOW;
-            gpu_bsw::sequence_dna_kernel_long_reads<<<blocksLaunched, 32, ShmemBytes>>>(
+            gpu_bsw::sequence_dna_kernel_long_reads<<<blocksLaunched, 3, ShmemBytes>>>(
                 strA_d, strB_d, offsetA_d, offsetB_d, alAbeg_d,
                 alAend_d, alBbeg_d, alBend_d, top_scores_d, d_h_curr, d_h_prev, d_h_prev_prev, d_e_curr, d_e_prev, d_e_prev_prev, d_f_curr, d_f_prev, d_f_prev_prev, matchScore, misMatchScore, startGap, extendGap);
           cudaDeviceSynchronize();

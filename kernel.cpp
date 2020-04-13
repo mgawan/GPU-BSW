@@ -1274,15 +1274,15 @@ gpu_bsw::sequence_dna_kernel_long_reads(char* seqA_array, char* seqB_array, unsi
         minSize = lengthSeqA < lengthSeqB ? lengthSeqA : lengthSeqB;
         seqA       = seqA_array + prefix_lengthA[block_Id - 1];
         seqB       = seqB_array + prefix_lengthB[block_Id - 1];
-        h_curr = d_h_curr + minSize*block_Id;
-        h_prev = d_h_prev + minSize*block_Id;
-        h_prev_prev = d_h_prev_prev+ minSize*block_Id;
-        e_curr = d_e_curr+ minSize*block_Id;
-        e_prev = d_e_prev+ minSize;
-        e_prev_prev = d_h_prev_prev+ minSize;
-        f_curr = d_f_curr+ minSize;
-        f_prev = d_f_prev+ minSize;
-        f_prev_prev = d_f_prev_prev+ minSize;
+        h_curr = d_h_curr + (minSize+1)*block_Id;
+        h_prev = d_h_prev + (minSize+1)*block_Id;
+        h_prev_prev = d_h_prev_prev+ (minSize+1)*block_Id;
+        e_curr = d_e_curr+ (minSize+1)*block_Id;
+        e_prev = d_e_prev+ (minSize+1)*block_Id;
+        e_prev_prev = d_h_prev_prev+ (minSize+1)*block_Id;
+        f_curr = d_f_curr+ (minSize+1)*block_Id;
+        f_prev = d_f_prev+ (minSize+1)*block_Id;
+        f_prev_prev = d_f_prev_prev+ (minSize+1)*block_Id;
 
     }
 //*************************************
@@ -1305,7 +1305,7 @@ gpu_bsw::sequence_dna_kernel_long_reads(char* seqA_array, char* seqB_array, unsi
 
     __syncthreads(); // this is required here so that complete sequence has been copied to shared memory
 
-    int   i            = 1;
+    int   i            = 0;
     short thread_max   = 0; // to maintain the thread max score
     short thread_max_i = 0; // to maintain the DP coordinate i for the longer string
     short thread_max_j = 0;// to maintain the DP cooirdinate j for the shorter string
@@ -1316,6 +1316,15 @@ gpu_bsw::sequence_dna_kernel_long_reads(char* seqA_array, char* seqB_array, unsi
    short* temp_pointer;
     __syncthreads(); // to make sure all shmem allocations have been initialized
     int j = thread_Id + 1;
+
+memset(f_curr, 0, (minSize+1) * sizeof(short));
+memset(f_prev, 0, (minSize+1) * sizeof(short));
+memset(e_curr, 0, (minSize+1) * sizeof(short));
+memset(e_prev, 0, (minSize+1) * sizeof(short));
+memset(h_curr, 0, (minSize+1) * sizeof(short));
+memset(h_prev, 0, (minSize+1) * sizeof(short));
+memset(h_prev_prev, 0, (minSize+1) * sizeof(short));
+
     for(int diag = 0; diag < lengthSeqA + lengthSeqB - 1; diag++)
     {  // iterate for the number of anti-diagonals
 
@@ -1333,7 +1342,7 @@ gpu_bsw::sequence_dna_kernel_long_reads(char* seqA_array, char* seqB_array, unsi
          h_prev = h_curr;
          h_curr = h_prev_prev;
          h_prev_prev = temp_pointer;
-         memset(h_curr, 0, (minSize + 1) * sizeof(short));
+         memset(h_curr, 0, (minSize+1) * sizeof(short));
 
 
         // _temp_Val = _prev_E;
@@ -1346,7 +1355,7 @@ gpu_bsw::sequence_dna_kernel_long_reads(char* seqA_array, char* seqB_array, unsi
         e_prev = e_curr;
         e_curr = e_prev_prev;
         e_prev_prev = temp_pointer;
-        memset(e_curr, 0, (minSize + 1) * sizeof(short));
+        memset(e_curr, 0, (minSize+1) * sizeof(short));
 
         // _temp_Val = _prev_F;
         // _prev_F = _curr_F;
@@ -1358,7 +1367,7 @@ gpu_bsw::sequence_dna_kernel_long_reads(char* seqA_array, char* seqB_array, unsi
         f_prev = f_curr;
         f_curr = f_prev_prev;
         f_prev_prev = temp_pointer;
-        memset(f_curr, 0, (minSize + 1) * sizeof(short));
+        memset(f_curr, 0, (minSize+1) * sizeof(short));
 
 
 
@@ -1398,25 +1407,36 @@ gpu_bsw::sequence_dna_kernel_long_reads(char* seqA_array, char* seqB_array, unsi
         }else{
           diagonal_length = minSize;
         }
-
+//if(thread_Id == 1)printf("diag:%d, diag_size:%d \n", diag, diagonal_length);
       int total_segments = ceil((float)diagonal_length/total_threads);
+      int g_seg = 0;
       for(int seg = 0; seg < total_segments; seg++)//  if(is_valid[thread_Id] && thread_Id < minSize)
         {
+          g_seg = seg;
+          int col_ind = 0;
+
+            if(diag > maxSize-1)
+              col_ind = thread_Id + (diag - (maxSize-1)) + seg*total_threads;
+            else
+              col_ind = thread_Id + seg*total_threads;
 
           if(lengthSeqA < lengthSeqB)
           {
-            myColumnChar = seqA[thread_Id + seg*total_threads];  // read only once
+
+            myColumnChar = seqA[col_ind];  // read only once
           //  longer_sequence = seqB;
           }
           else
           {
-             myColumnChar = seqB[thread_Id + seg*total_threads];
+             myColumnChar = seqB[col_ind];
              //longer_sequence = seqA;
           }
 
           //unsigned mask  = __ballot_sync(__activemask(), (is_valid[thread_Id] &&( thread_Id < minSize)));
 
           if(j + seg*total_threads < diagonal_length + 1){ // +1 because of the zeros in initial row/col
+            if(seg == 0 && diag <= maxSize-1)
+              i++;
           short fVal  = f_prev[ j + seg*total_threads] + extendGap;
           short hfVal = h_prev[j + seg*total_threads] + startGap;
           short eVal  = e_prev[(j-1) + seg*total_threads] + extendGap;
@@ -1428,63 +1448,23 @@ gpu_bsw::sequence_dna_kernel_long_reads(char* seqA_array, char* seqB_array, unsi
 
 
 
-          // short fVal = _prev_F + extendGap;
-          // short hfVal = _prev_H + startGap;
-          // short valeShfl = __shfl_sync(mask, _prev_E, laneId- 1, 32);
-          // short valheShfl = __shfl_sync(mask, _prev_H, laneId - 1, 32);
-
-          // short eVal=0, heVal = 0;
-          //
-          // if(diag >= maxSize) // when the previous thread has phased out, get value from shmem
-          // {
-          //   eVal = local_spill_prev_E[thread_Id - 1] + extendGap;
-          //   heVal = local_spill_prev_H[thread_Id - 1]+ startGap;
-          // }
-          // else
-          // {
-          //   eVal =((warpId !=0 && laneId == 0)?sh_prev_E[warpId-1]: valeShfl) + extendGap;
-          //   heVal =((warpId !=0 && laneId == 0)?sh_prev_H[warpId-1]:valheShfl) + startGap;
-          // }
-          //
-          //
-          //  if(warpId == 0 && laneId == 0) // make sure that values for lane 0 in warp 0 is not undefined
-          //  {
-          //     eVal = 0;
-          //     heVal = 0;
-          //   }
-          //
-      		// _curr_F = (fVal > hfVal) ? fVal : hfVal;
-      		// _curr_E = (eVal > heVal) ? eVal : heVal;
-          //
-          //
-          // short testShufll = __shfl_sync(mask, _prev_prev_H, laneId - 1, 32);
-          // short final_prev_prev_H = 0;
-          // if(diag >= maxSize)
-          // {
-          //   final_prev_prev_H = local_spill_prev_prev_H[thread_Id - 1];
-          // }
-          // else
-          // {
-          //   final_prev_prev_H =(warpId !=0 && laneId == 0)?sh_prev_prev_H[warpId-1]:testShufll;
-          // }
-          //
-          //
-          // if(warpId == 0 && laneId == 0) final_prev_prev_H = 0;
-          // short diag_score = final_prev_prev_H + ((longer_sequence[i - 1] == myColumnChar)
-          //              ? matchScore
-          //              : misMatchScore);
           int row_index = (i - 1) - seg*total_threads;
           short diag_score = h_prev_prev[(j-1) + seg*total_threads] + ((longer_sequence[row_index] == myColumnChar)? matchScore: misMatchScore);
 
           h_curr[j + seg*total_threads] = findMaxFour(diag_score, f_curr[j + seg*total_threads], e_curr[j + seg*total_threads], 0);
 
+          printf("query char:%c, ref_char:%c, thread:%d, seg:%d, diag:%d, colindex:%d, rowInd:%d, h_score:%d, prev_prev_h:%d, curr_index:%d, prevprevIndex:%d\n",myColumnChar, longer_sequence[row_index], thread_Id, seg, diag, col_ind, row_index,h_curr[j + seg*total_threads],h_prev_prev[(j-1) + seg*total_threads],j + seg*total_threads,(j-1) + seg*total_threads   );
+
           thread_max_i = (thread_max >= h_curr[j + seg*total_threads]) ? thread_max_i : row_index;
           thread_max_j = (thread_max >= h_curr[j + seg*total_threads]) ? thread_max_j : j + seg*total_threads;
           thread_max   = (thread_max >= h_curr[j + seg*total_threads]) ? thread_max : h_curr[j + seg*total_threads];
 
-          i++;
+
+
         }// if statement ends here
       //  }// end seg if statement
+
+        __syncthreads();
       }// end seg for loop
 
       __syncthreads(); // why do I need this? commenting it out breaks it
