@@ -1419,7 +1419,7 @@ memset(h_prev_prev, 0, (minSize+1) * sizeof(short));
               col_ind = thread_Id + (diag - (maxSize-1)) + seg*total_threads;
             else
               col_ind = thread_Id + seg*total_threads;
-
+          int array_inds = col_ind + 1;
           if(lengthSeqA < lengthSeqB)
           {
 
@@ -1437,27 +1437,27 @@ memset(h_prev_prev, 0, (minSize+1) * sizeof(short));
           if(j + seg*total_threads < diagonal_length + 1){ // +1 because of the zeros in initial row/col
             if(seg == 0 && diag <= maxSize-1)
               i++;
-          short fVal  = f_prev[ j + seg*total_threads] + extendGap;
-          short hfVal = h_prev[j + seg*total_threads] + startGap;
-          short eVal  = e_prev[(j-1) + seg*total_threads] + extendGap;
-          short heVal = h_prev[(j-1) + seg*total_threads] + startGap;
+          short fVal  = f_prev[ array_inds] + extendGap;
+          short hfVal = h_prev[array_inds] + startGap;
+          short eVal  = e_prev[array_inds-1] + extendGap;
+          short heVal = h_prev[array_inds-1] + startGap;
 
 
-          f_curr[j + seg*total_threads] = (fVal > hfVal) ? fVal : hfVal;
-          e_curr[j + seg*total_threads] = (eVal > heVal) ? eVal : heVal;
+          f_curr[array_inds] = (fVal > hfVal) ? fVal : hfVal;
+          e_curr[array_inds] = (eVal > heVal) ? eVal : heVal;
 
 
 
           int row_index = (i - 1) - seg*total_threads;
-          short diag_score = h_prev_prev[(j-1) + seg*total_threads] + ((longer_sequence[row_index] == myColumnChar)? matchScore: misMatchScore);
+          short diag_score = h_prev_prev[array_inds-1] + ((longer_sequence[row_index] == myColumnChar)? matchScore: misMatchScore);
 
-          h_curr[j + seg*total_threads] = findMaxFour(diag_score, f_curr[j + seg*total_threads], e_curr[j + seg*total_threads], 0);
+          h_curr[array_inds] = findMaxFour(diag_score, f_curr[array_inds], e_curr[array_inds], 0);
 
-          printf("query char:%c, ref_char:%c, thread:%d, seg:%d, diag:%d, colindex:%d, rowInd:%d, h_score:%d, prev_prev_h:%d, curr_index:%d, prevprevIndex:%d\n",myColumnChar, longer_sequence[row_index], thread_Id, seg, diag, col_ind, row_index,h_curr[j + seg*total_threads],h_prev_prev[(j-1) + seg*total_threads],j + seg*total_threads,(j-1) + seg*total_threads   );
+        //  printf("query char:%c, ref_char:%c, thread:%d, seg:%d, diag:%d, colindex:%d, rowInd:%d, h_score:%d, prev_prev_h:%d, curr_index:%d, prevprevIndex:%d\n",myColumnChar, longer_sequence[row_index], thread_Id, seg, diag, col_ind, row_index,h_curr[array_inds],h_prev_prev[array_inds],array_inds,array_inds-1 );
 
-          thread_max_i = (thread_max >= h_curr[j + seg*total_threads]) ? thread_max_i : row_index;
-          thread_max_j = (thread_max >= h_curr[j + seg*total_threads]) ? thread_max_j : j + seg*total_threads;
-          thread_max   = (thread_max >= h_curr[j + seg*total_threads]) ? thread_max : h_curr[j + seg*total_threads];
+          thread_max_i = (thread_max >= h_curr[array_inds]) ? thread_max_i : row_index;
+          thread_max_j = (thread_max >= h_curr[array_inds]) ? thread_max_j : array_inds;
+          thread_max   = (thread_max >= h_curr[array_inds]) ? thread_max : h_curr[array_inds];
 
 
 
