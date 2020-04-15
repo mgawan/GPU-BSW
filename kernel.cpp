@@ -1231,7 +1231,7 @@ gpu_bsw::sequence_dna_kernel_long_reads(char* seqA_array, char* seqB_array, unsi
     short warpId = threadIdx.x/32;
     int total_threads = blockDim.x;
 
-    if(thread_Id == 0)printf("total_threads:%d\nm",total_threads);
+  //  if(thread_Id == 0)printf("total_threads:%d\nm",total_threads);
 
     unsigned lengthSeqA;
     unsigned lengthSeqB;
@@ -1455,7 +1455,7 @@ memset(h_prev_prev, 0, (minSize+1) * sizeof(short));
 
         //  printf("query char:%c, ref_char:%c, thread:%d, seg:%d, diag:%d, colindex:%d, rowInd:%d, h_score:%d, prev_prev_h:%d, curr_index:%d, prevprevIndex:%d\n",myColumnChar, longer_sequence[row_index], thread_Id, seg, diag, col_ind, row_index,h_curr[array_inds],h_prev_prev[array_inds],array_inds,array_inds-1 );
 
-          thread_max_i = (thread_max >= h_curr[array_inds]) ? thread_max_i : row_index;
+          thread_max_i = (thread_max >= h_curr[array_inds]) ? thread_max_i : row_index+1;
           thread_max_j = (thread_max >= h_curr[array_inds]) ? thread_max_j : array_inds;
           thread_max   = (thread_max >= h_curr[array_inds]) ? thread_max : h_curr[array_inds];
 
