@@ -774,8 +774,8 @@ gpu_bsw::sequence_dna_reverse(char* seqA_array, char* seqB_array, unsigned* pref
       short laneId = threadIdx.x%32;
       short warpId = threadIdx.x/32;
 
-      unsigned lengthSeqA;
-      unsigned lengthSeqB;
+      // unsigned lengthSeqA;
+      // unsigned lengthSeqB;
       // local pointers
       char*    seqA;
       char*    seqB;
@@ -788,15 +788,15 @@ gpu_bsw::sequence_dna_reverse(char* seqA_array, char* seqB_array, unsigned* pref
   // setting up block local sequences and their lengths.
       if(block_Id == 0)
       {
-          lengthSeqA = prefix_lengthA[0];
-          lengthSeqB = prefix_lengthB[0];
+          // lengthSeqA = prefix_lengthA[0];
+          // lengthSeqB = prefix_lengthB[0];
           seqA       = seqA_array;
           seqB       = seqB_array;
       }
       else
       {
-          lengthSeqA = prefix_lengthA[block_Id] - prefix_lengthA[block_Id - 1];
-          lengthSeqB = prefix_lengthB[block_Id] - prefix_lengthB[block_Id - 1];
+          // lengthSeqA = prefix_lengthA[block_Id] - prefix_lengthA[block_Id - 1];
+          // lengthSeqB = prefix_lengthB[block_Id] - prefix_lengthB[block_Id - 1];
           seqA       = seqA_array + prefix_lengthA[block_Id - 1];
           seqB       = seqB_array + prefix_lengthB[block_Id - 1];
       }
@@ -1517,8 +1517,8 @@ gpu_bsw::sequence_aa_reverse(char* seqA_array, char* seqB_array, unsigned* prefi
       short laneId = threadIdx.x%32;
       short warpId = threadIdx.x/32;
 
-      unsigned lengthSeqA;
-      unsigned lengthSeqB;
+      // unsigned lengthSeqA;
+      // unsigned lengthSeqB;
       // local pointers
       char*    seqA;
       char*    seqB;
@@ -1530,15 +1530,15 @@ gpu_bsw::sequence_aa_reverse(char* seqA_array, char* seqB_array, unsigned* prefi
   // setting up block local sequences and their lengths.
       if(block_Id == 0)
       {
-          lengthSeqA = prefix_lengthA[0];
-          lengthSeqB = prefix_lengthB[0];
+          // lengthSeqA = prefix_lengthA[0];
+          // lengthSeqB = prefix_lengthB[0];
           seqA       = seqA_array;
           seqB       = seqB_array;
       }
       else
       {
-          lengthSeqA = prefix_lengthA[block_Id] - prefix_lengthA[block_Id - 1];
-          lengthSeqB = prefix_lengthB[block_Id] - prefix_lengthB[block_Id - 1];
+          // lengthSeqA = prefix_lengthA[block_Id] - prefix_lengthA[block_Id - 1];
+          // lengthSeqB = prefix_lengthB[block_Id] - prefix_lengthB[block_Id - 1];
           seqA       = seqA_array + prefix_lengthA[block_Id - 1];
           seqB       = seqB_array + prefix_lengthB[block_Id - 1];
       }
