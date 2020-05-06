@@ -9,7 +9,7 @@
 
 using namespace std;
 
-void proteinSampleRun(string refFile, string queFile, string resultFile){
+void proteinSampleRun(string refFile, string queFile){
   long long int total_cells = 0;
   vector<string> G_sequencesA, G_sequencesB;
   string myInLine;
@@ -119,28 +119,20 @@ void proteinSampleRun(string refFile, string queFile, string resultFile){
    };*/
 
     gpu_bsw_driver::alignment_results results_test;
-    std::cout <<G_sequencesA.size()<<endl;
     gpu_bsw_driver::kernel_driver_aa(G_sequencesB, G_sequencesA, &results_test, scores_matrix, -6, -1);
 
   //  gpu_bsw_driver::verificationTest(resultFile, results_test.g_alAbeg, results_test.g_alBbeg, results_test.g_alAend, results_test.g_alBend);
-  int i = 0;
-  cout << "A beg:"<<results_test.g_alAbeg[i]<<"  A end:"<<results_test.g_alAend[i]<<" B beg:"<<results_test.g_alBbeg[i]<<" B end:"<<results_test.g_alBend[i]<<" score:"<<results_test.top_scores[i]<<endl;
 
   for(int l = 0; l < G_sequencesA.size(); l++){
     total_cells += G_sequencesA.at(l).size()*G_sequencesB.at(l).size();
   }
-  // unsigned errors = 0;
-  //   for(unsigned i = 0; i < sequences_a.size(); i++){
-  //     if((results_store.g_alAbeg[i] != results_store.g_alBbeg[i]) || (results_store.g_alAend[i] != results_store.g_alBend[i])){
-  //       errors++;
-  //     }
-  //   }
+
 
     cout << "Total Cells:"<<total_cells<<endl;
 }
 
 
-void dnaSampleRun(string refFile, string queFile, string resultFile){
+void dnaSampleRun(string refFile, string queFile){
   vector<string> G_sequencesA,
       G_sequencesB;
 
@@ -150,19 +142,6 @@ void dnaSampleRun(string refFile, string queFile, string resultFile){
   unsigned largestA = 0, largestB = 0;
 
   int totSizeA = 0, totSizeB = 0;
-  // if(ref_file.is_open())
-  // {
-  //     while(getline(ref_file, myInLine))
-  //     {
-  //         string seq = myInLine.substr(myInLine.find(":") + 1, myInLine.size() - 1);
-  //         G_sequencesA.push_back(seq);
-  //         totSizeA += seq.size();
-  //         if(seq.size() > largestA)
-  //         {
-  //             largestA = seq.size();
-  //         }
-  //     }
-  // }
 
 
   if(ref_file.is_open())
@@ -211,19 +190,6 @@ void dnaSampleRun(string refFile, string queFile, string resultFile){
       }
       quer_file.close();
   }
-  // if(quer_file.is_open())
-  // {
-  //     while(getline(quer_file, myInLine))
-  //     {
-  //         string seq = myInLine.substr(myInLine.find(":") + 1, myInLine.size() - 1);
-  //         G_sequencesB.push_back(seq);
-  //         totSizeB += seq.size();
-  //         if(seq.size() > largestB)
-  //         {
-  //             largestB = seq.size();
-  //         }
-  //     }
-  // }
 
 
   gpu_bsw_driver::alignment_results results_test;
@@ -232,15 +198,12 @@ void dnaSampleRun(string refFile, string queFile, string resultFile){
   short scores[] = {3, -3, -6, -1};
 
   gpu_bsw_driver::kernel_driver_dna(G_sequencesB, G_sequencesA,&results_test, scores);
-  int i = 0;
-  cout << "A beg:"<<results_test.g_alAbeg[i]<<"  A end:"<<results_test.g_alAend[i]<<" B beg:"<<results_test.g_alBbeg[i]<<" B end:"<<results_test.g_alBend[i]<<" score:"<<results_test.top_scores[i]<<endl;
 
   long long int total_cells = 0;
   for(int l = 0; l < G_sequencesA.size(); l++){
     total_cells += G_sequencesA.at(l).size()*G_sequencesB.at(l).size();
   }
   cout <<"Total Cells:"<<total_cells<<endl;
-  //gpu_bsw_driver::verificationTest(resultFile, results_test.g_alAbeg, results_test.g_alBbeg, results_test.g_alAend, results_test.g_alBend);
 
 }
 
@@ -248,12 +211,11 @@ int
 main(int argc, char* argv[])
 {
   string in_arg = argv[1];
-  // proteinSampleRun(argv[1]);
- //proteinSampleRun(argv[1], argv[2], argv[3]);
+
  if(in_arg == "aa"){
- 	proteinSampleRun(argv[2], argv[3], argv[4]);	
+ 	proteinSampleRun(argv[2], argv[3]);
  }else{
- 	dnaSampleRun(argv[2], argv[3], argv[4]);
+ 	dnaSampleRun(argv[2], argv[3]);
  }
 
     return 0;

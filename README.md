@@ -27,9 +27,13 @@ cmake CMAKE_BUILD_TYPE=Release .. <br />
 make <br />
 
 <br />
-To Execute: <br />
-export OMP_NUM_THREADS=number of GPUs available <br />
-./program_gpu ../test-data/ref_file_30000.txt ../test-data/que_file_30000.txt ../test-data/results_30000 <br />
+To Execute DNA test run: <br />
+
+./program_gpu dna ../test-data/dna-reference.fasta ../test-data/dna-query.fasta <br />
+
+To Execute Protein test run: <br />
+
+./program_gpu aa ../test-data/protein-reference.fasta ../test-data/protein-query.fasta <br />
 
 <br />
 Contact: mgawan@lbl.gov
