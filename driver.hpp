@@ -6,6 +6,7 @@
 #include <cmath>
 #include <string>
 #include <vector>
+#include <omp.h>
 
 #define NOW std::chrono::high_resolution_clock::now()
 
@@ -18,7 +19,7 @@ gpuAssert(cudaError_t code, const char* file, int line, bool abort = true)
 {
     if(code != cudaSuccess)
     {
-        fprintf(stderr, "GPUassert: %s %s %d\n", cudaGetErrorString(code), file, line);
+        fprintf(stderr, "GPUassert: %s %s %d cpu:%d\n", cudaGetErrorString(code), file, line,omp_get_thread_num());
         if(abort)
             exit(code);
     }

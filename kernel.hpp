@@ -52,5 +52,10 @@ __global__ void
 sequence_aa_kernel(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA,
                     unsigned* prefix_lengthB, short* seqA_align_begin, short* seqA_align_end,
                     short* seqB_align_begin, short* seqB_align_end, short* top_scores, short startGap, short extendGap, short* scoring_matrix, short* encoding_matrix);
+
+__global__ void
+sequence_aa_reverse(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA,
+                    unsigned* prefix_lengthB, short* seqA_align_begin, short* seqA_align_end,
+                    short* seqB_align_begin, short* seqB_align_end, short* top_scores, short startGap, short extendGap, short* scoring_matrix, short* encoding_matrix);
 }
 #endif

@@ -1,7 +1,7 @@
 #include "driver.hpp"
 #include <fstream>
 #include <iostream>
-#include <omp.h>
+
 #include <sstream>
 #include <thrust/device_vector.h>
 #include <thrust/host_vector.h>
@@ -27,18 +27,21 @@ gpu_bsw_driver::kernel_driver_dna(std::vector<std::string> reads, std::vector<st
     unsigned maxReadSize = getMaxLength(reads);
     unsigned totalAlignments = contigs.size(); // assuming that read and contig vectors are same length
 
-    std::cout<<"Alignments:"<<totalAlignments<<std::endl;
+  //  std::cout<<"Alignments:"<<totalAlignments<<std::endl;
     int deviceCount;
     cudaGetDeviceCount(&deviceCount);
+    omp_set_num_threads(deviceCount);
+    std::cout<<"Number of available GPUs:"<<deviceCount<<"\n";
+
     cudaDeviceProp prop[deviceCount];
     for(int i = 0; i < deviceCount; i++)
       cudaGetDeviceProperties(&prop[i], 0);
 
-    for(int i = 0; i < deviceCount; i++)
-    {
-        std::cout << "total Global Memory available on Device: " << i
-             << " is:" << prop[i].totalGlobalMem << std::endl;
-    }
+    // for(int i = 0; i < deviceCount; i++)
+    // {
+    //     std::cout << "total Global Memory available on Device: " << i
+    //          << " is:" << prop[i].totalGlobalMem << std::endl;
+    // }
 
     unsigned NBLOCKS             = totalAlignments;
   //  unsigned maxMatrixSize       = (maxContigSize + 1) * (maxReadSize + 1);
@@ -52,7 +55,7 @@ gpu_bsw_driver::kernel_driver_dna(std::vector<std::string> reads, std::vector<st
                           (long) maxAligns * sizeof(short) * (4+1); // + 1 for the top scores
 
     long long estMem = totMemEst;
-    int       its    = ceil(estMem / (prop[0].totalGlobalMem * 0.90));
+    int       its    = 50;//ceil((float)totalAlignments/10000);//ceil(estMem / (prop[0].totalGlobalMem * 0.90));
     // its = 3;
 
     short* g_alAbeg = new short[NBLOCKS];
@@ -62,8 +65,15 @@ gpu_bsw_driver::kernel_driver_dna(std::vector<std::string> reads, std::vector<st
     short* g_top_scores = new short[NBLOCKS];
 
     auto start = NOW;
+
 #pragma omp parallel
     {
+
+
+        float total_kernel_time = 0;
+        float fwd_kernel_time = 0;
+        float data_time_total = 0;
+
         int my_cpu_id = omp_get_thread_num();
         cudaSetDevice(my_cpu_id);
         int myGPUid;
@@ -71,7 +81,7 @@ gpu_bsw_driver::kernel_driver_dna(std::vector<std::string> reads, std::vector<st
         int BLOCKS_l = alignmentsPerDevice;
         if(my_cpu_id == deviceCount - 1)
             BLOCKS_l += leftOver_device;
-
+        if(my_cpu_id == 0)std::cout<<"Number of GPUs being used:"<<omp_get_num_threads()<<"\n";
         unsigned leftOvers    = BLOCKS_l % its;
         unsigned stringsPerIt = BLOCKS_l / its;
 
@@ -111,6 +121,7 @@ gpu_bsw_driver::kernel_driver_dna(std::vector<std::string> reads, std::vector<st
         std::cout << "total iterations:" << its << std::endl;
         for(int perGPUIts = 0; perGPUIts < its; perGPUIts++)
         {
+        //  std::cout<< "its:"<<perGPUIts<<std::endl;
             int                                      blocksLaunched = 0;
             std::vector<std::string>::const_iterator beginAVec;
             std::vector<std::string>::const_iterator endAVec;
@@ -154,7 +165,6 @@ gpu_bsw_driver::kernel_driver_dna(std::vector<std::string> reads, std::vector<st
 
             std::vector<std::string> sequencesA(beginAVec, endAVec);
             std::vector<std::string> sequencesB(beginBVec, endBVec);
-
             for(int i = 0; i < sequencesA.size(); i++)
             {
                 offsetA[i] = sequencesA[i].size();
@@ -172,8 +182,8 @@ gpu_bsw_driver::kernel_driver_dna(std::vector<std::string> reads, std::vector<st
                                    vec_offsetA_d.begin());
             thrust::inclusive_scan(vec_offsetB_d.begin(), vec_offsetB_d.end(),
                                    vec_offsetB_d.begin());
-
             unsigned totalLengthA = vec_offsetA_d[sequencesA.size() - 1];
+
             unsigned totalLengthB = vec_offsetB_d[sequencesB.size() - 1];
 
             unsigned offsetSumA = 0;
@@ -198,10 +208,14 @@ gpu_bsw_driver::kernel_driver_dna(std::vector<std::string> reads, std::vector<st
             cudaErrchk(cudaMalloc(&strA_d, totalLengthA * sizeof(char)));
             cudaErrchk(cudaMalloc(&strB_d, totalLengthB * sizeof(char)));
 
+            auto host_device_begin = NOW;
             cudaErrchk(cudaMemcpy(strA_d, strA, totalLengthA * sizeof(char),
                                   cudaMemcpyHostToDevice));
             cudaErrchk(cudaMemcpy(strB_d, strB, totalLengthB * sizeof(char),
                                   cudaMemcpyHostToDevice));
+            auto host_device_end = NOW;
+            std::chrono::duration<double> host_dev_count = host_device_end - host_device_end;
+            data_time_total += host_dev_count.count();
 
           // unsigned maxSize = (maxReadSize > maxContigSize) ? maxReadSize : maxContigSize;
            unsigned minSize = (maxReadSize < maxContigSize) ? maxReadSize : maxContigSize;
@@ -216,25 +230,64 @@ gpu_bsw_driver::kernel_driver_dna(std::vector<std::string> reads, std::vector<st
                 cudaFuncSetAttribute(gpu_bsw::sequence_dna_kernel,
                                      cudaFuncAttributeMaxDynamicSharedMemorySize,
                                      ShmemBytes);
-
+  //std:: cout<<"old min:"<<minSize<<std::endl;
+            auto local_kernel_start = NOW;
             gpu_bsw::sequence_dna_kernel<<<blocksLaunched, minSize, ShmemBytes>>>(
                 strA_d, strB_d, offsetA_d, offsetB_d, alAbeg_d,
                 alAend_d, alBbeg_d, alBend_d, top_scores_d, matchScore, misMatchScore, startGap, extendGap);
+            cudaDeviceSynchronize();
 
+              auto local_data_start = NOW;
+
+              std::chrono::duration<double> rev_count = local_data_start - local_kernel_start;
+
+              fwd_kernel_time += rev_count.count();
+                // copyin back end index so that we can find new min
+
+                cudaErrchk(cudaMemcpy(alAend, alAend_d, blocksLaunched * sizeof(short),
+                                      cudaMemcpyDeviceToHost));
+                cudaErrchk(
+                    cudaMemcpy(alBend, alBend_d, blocksLaunched * sizeof(short),
+                               cudaMemcpyDeviceToHost));
+
+              auto local_data_stop = NOW;
+
+               std::chrono::duration<double> data_time = local_data_stop - local_data_start;
+               data_time_total += data_time.count();
+
+
+                int newMin = 1000;
+                int maxA = 0;
+                int maxB = 0;
+              //  int newMax = 0;
+                for(int i = 0; i < blocksLaunched; i++){
+                  if(alBend[i] > maxB ){
+                      maxB = alBend[i];
+                  //  newMin = (alBend[i] > alAend[i])? alAend[i] : alBend[i];
+                  }
+                  if(alAend[i] > maxA){
+                    maxA = alAend[i];
+                  }
+
+
+                }
+                  newMin = (maxB > maxA)? maxA : maxB;
+              //  std:: cout<<"new min:"<<newMin<<std::endl;
                 //launching reverse scoring kernel
-          // gpu_bsw::sequence_dna_reverse<<<blocksLaunched, minSize, ShmemBytes>>>(
-          //           strA_d, strB_d, offsetA_d, offsetB_d, alAbeg_d,
-          //           alAend_d, alBbeg_d, alBend_d, top_scores_d, matchScore, misMatchScore, startGap, extendGap);
+           gpu_bsw::sequence_dna_reverse<<<blocksLaunched, newMin, ShmemBytes>>>(
+                     strA_d, strB_d, offsetA_d, offsetB_d, alAbeg_d,
+                     alAend_d, alBbeg_d, alBend_d, top_scores_d, matchScore, misMatchScore, startGap, extendGap);
+                     cudaDeviceSynchronize();
+                     auto local_kernel_stop = NOW;
+                     std::chrono::duration<double> kernel_time = (local_kernel_stop - local_kernel_start) - data_time;
+
+                     total_kernel_time += kernel_time.count();
 
             cudaErrchk(cudaMemcpy(alAbeg, alAbeg_d, blocksLaunched * sizeof(short),
                                   cudaMemcpyDeviceToHost));
             cudaErrchk(cudaMemcpy(alBbeg, alBbeg_d, blocksLaunched * sizeof(short),
                                   cudaMemcpyDeviceToHost));
-            cudaErrchk(cudaMemcpy(alAend, alAend_d, blocksLaunched * sizeof(short),
-                                  cudaMemcpyDeviceToHost));
-            cudaErrchk(
-                cudaMemcpy(alBend, alBend_d, blocksLaunched * sizeof(short),
-                           cudaMemcpyDeviceToHost));  // this does not cause the error
+ // this does not cause the error
                                                       // the other three lines do.
             cudaErrchk(cudaMemcpy(top_scores_cpu, top_scores_d, blocksLaunched * sizeof(short),
                                   cudaMemcpyDeviceToHost));
@@ -263,13 +316,16 @@ gpu_bsw_driver::kernel_driver_dna(std::vector<std::string> reads, std::vector<st
         cudaErrchk(cudaFree(alBend_d));
         cudaErrchk(cudaFree(top_scores_d));
 
+      //  std::cout<<"Per CPU:\n";
+        std::cout<<"cpu:"<<my_cpu_id<<"\tData:"<<data_time_total<<"\tfwd:"<<fwd_kernel_time<<"\ttotal:"<<total_kernel_time<<std::endl;
+
 
 #pragma omp barrier
     }  // paralle pragma ends
     auto                          end  = NOW;
     std::chrono::duration<double> diff = end - start;
 
-    std::cout << "Total time:" << diff.count() << std::endl;
+    std::cout << totalAlignments<<"\t"<<maxContigSize<<"\t"<<maxReadSize<<"\t" << diff.count() <<std::endl;
 
     alignments->g_alAbeg = g_alAbeg;
     alignments->g_alBbeg = g_alBbeg;
@@ -303,12 +359,18 @@ gpu_bsw_driver::kernel_driver_aa(std::vector<std::string> reads, std::vector<std
                           13,7,8,9,0,11,10,12,2,0,14,5,
                           1,15,16,0,19,17,22,18,21};
 
-  short* d_encoding_matrix;
-  short* d_scoring_matrix;
+
+  // short* h_encoding_matrix = new short[ENCOD_MAT_SIZE];
+  // short* h_scoring_matrix = new short[SCORE_MAT_SIZE];
+
+  // memcpy(h_encoding_matrix, encoding_matrix, ENCOD_MAT_SIZE*sizeof(short));
+  // memcpy(h_scoring_matrix, scoring_matrix, SCORE_MAT_SIZE*sizeof(short));
+
 
   int deviceCount;
   cudaGetDeviceCount(&deviceCount);
   cudaDeviceProp prop[deviceCount];
+  //deviceCount = 1;
   for(int i = 0; i < deviceCount; i++)
     cudaGetDeviceProperties(&prop[i], 0);
 
@@ -330,7 +392,7 @@ gpu_bsw_driver::kernel_driver_aa(std::vector<std::string> reads, std::vector<std
                         (long) maxAligns * sizeof(short) * (4+1);// +1 for scores
 
   long long estMem = totMemEst;
-  int       its    = ceil(estMem / (prop[0].totalGlobalMem * 0.90));
+  int       its    = 50;//ceil((float)maxAligns/10000);//50;//ceil(estMem / (prop[0].totalGlobalMem * 0.90));
  // its = 5;
 
   short* g_alAbeg = new short[NBLOCKS];
@@ -342,6 +404,10 @@ gpu_bsw_driver::kernel_driver_aa(std::vector<std::string> reads, std::vector<std
   auto start = NOW;
 #pragma omp parallel
   {
+    float total_kernel_time = 0;
+    float forward_kernel_time = 0;
+    float total_data_time = 0;
+      std::chrono::duration<double> total_cpu_gpu;
       int my_cpu_id = omp_get_thread_num();
       cudaSetDevice(my_cpu_id);
       int myGPUid;
@@ -353,7 +419,10 @@ gpu_bsw_driver::kernel_driver_aa(std::vector<std::string> reads, std::vector<std
       unsigned leftOvers    = BLOCKS_l % its;
       unsigned stringsPerIt = BLOCKS_l / its;
 
+
       short *alAbeg_d, *alBbeg_d, *alAend_d, *alBend_d, *top_scores_d;
+      short* d_encoding_matrix;
+      short* d_scoring_matrix;
 
       short* alAbeg = g_alAbeg + my_cpu_id * alignmentsPerDevice;
       short* alBbeg = g_alBbeg + my_cpu_id * alignmentsPerDevice;
@@ -383,9 +452,13 @@ gpu_bsw_driver::kernel_driver_aa(std::vector<std::string> reads, std::vector<std
 
       cudaErrchk(cudaMalloc(&d_encoding_matrix, ENCOD_MAT_SIZE * sizeof(short)));
       cudaErrchk(cudaMalloc(&d_scoring_matrix, SCORE_MAT_SIZE * sizeof(short)));
+      cudaErrchk(cudaMemcpy(d_encoding_matrix, encoding_matrix, ENCOD_MAT_SIZE * sizeof(short),
+                            cudaMemcpyHostToDevice));
+
+      cudaErrchk(cudaMemcpy(d_scoring_matrix, scoring_matrix, SCORE_MAT_SIZE * sizeof(short),
+                            cudaMemcpyHostToDevice));
 
       auto start2 = NOW;
-      std::cout << "total iterations:" << its << std::endl;
       for(int perGPUIts = 0; perGPUIts < its; perGPUIts++)
       {
           int                                      blocksLaunched = 0;
@@ -475,21 +548,22 @@ gpu_bsw_driver::kernel_driver_aa(std::vector<std::string> reads, std::vector<std
           cudaErrchk(cudaMalloc(&strA_d, totalLengthA * sizeof(char)));
           cudaErrchk(cudaMalloc(&strB_d, totalLengthB * sizeof(char)));
 
+          auto data_start = NOW;
           cudaErrchk(cudaMemcpy(strA_d, strA, totalLengthA * sizeof(char),
                                 cudaMemcpyHostToDevice));
           cudaErrchk(cudaMemcpy(strB_d, strB, totalLengthB * sizeof(char),
                                 cudaMemcpyHostToDevice));
+          auto data_end = NOW;
 
-          cudaErrchk(cudaMemcpy(d_encoding_matrix, encoding_matrix, 91 * sizeof(short),
-                                cudaMemcpyHostToDevice));
+           total_cpu_gpu = data_end - data_start;
+           total_data_time += total_cpu_gpu.count();
 
-          cudaErrchk(cudaMemcpy(d_scoring_matrix, scoring_matrix, 576 * sizeof(short),
-                                cudaMemcpyHostToDevice));
+
 
         // unsigned maxSize = (maxReadSize > maxContigSize) ? maxReadSize : maxContigSize;
          unsigned minSize = (maxReadSize < maxContigSize) ? maxReadSize : maxContigSize;
 
-          unsigned totShmem = 3 * 3 * (minSize + 1) * sizeof(short);// +
+          unsigned totShmem = 3*sizeof(short)*(minSize+1);//3 * 3 * (minSize + 1) * sizeof(short);// +
                               //3 * minSize + (minSize & 1) + maxSize;
 
           unsigned alignmentPad = 4 + (4 - totShmem % 4);
@@ -499,21 +573,68 @@ gpu_bsw_driver::kernel_driver_aa(std::vector<std::string> reads, std::vector<std
               cudaFuncSetAttribute(gpu_bsw::sequence_aa_kernel,
                                    cudaFuncAttributeMaxDynamicSharedMemorySize,
                                    ShmemBytes);
-
+          auto kernel_start_time = NOW;
+        //  std::cout <<"threads:"<<minSize<<" bclocks:"<< blocksLaunched<<" cpu:"<<my_cpu_id<<std::endl;
           gpu_bsw::sequence_aa_kernel<<<blocksLaunched, minSize, ShmemBytes>>>(
               strA_d, strB_d, offsetA_d, offsetB_d, alAbeg_d,
               alAend_d, alBbeg_d, alBend_d, top_scores_d,openGap, extendGap, d_scoring_matrix, d_encoding_matrix);
-              std::cout <<"threads:"<<minSize<<std::endl;
+              //std::cout <<"threads:"<<minSize<<std::endl;
+              cudaDeviceSynchronize();
+              auto data_copy_start = NOW;
+
+              std::chrono::duration<double> forward_time_l = data_copy_start - kernel_start_time;
+            forward_kernel_time += forward_time_l.count();
+
+              cudaErrchk(cudaMemcpy(alAend, alAend_d, blocksLaunched * sizeof(short),
+                                    cudaMemcpyDeviceToHost));
+              cudaErrchk(
+                  cudaMemcpy(alBend, alBend_d, blocksLaunched * sizeof(short),
+                             cudaMemcpyDeviceToHost));
+              auto data_copy_end = NOW;
+          //  auto local_data_stop = NOW;
+
+             std::chrono::duration<double> data_time = data_copy_end - data_copy_start;
+             total_data_time += data_time.count();
+
+
+              int newMin = 1000;
+              int maxA = 0;
+              int maxB = 0;
+            //  int newMax = 0;
+              for(int i = 0; i < blocksLaunched; i++){
+                if(alBend[i] > maxB ){
+                    maxB = alBend[i];
+                //  newMin = (alBend[i] > alAend[i])? alAend[i] : alBend[i];
+                }
+                if(alAend[i] > maxA){
+                  maxA = alAend[i];
+                }
+              }
+
+              newMin = (maxB > maxA)? maxA : maxB;
+              // std:: cout<<"new min:"<<newMin<<std::endl;
+              // std:: cout<<"maxb:"<<maxB<<std::endl;
+              // std:: cout<<"maxA:"<<maxA<<std::endl;
+              //launching reverse scoring kernel
+         gpu_bsw::sequence_aa_reverse<<<blocksLaunched, newMin, ShmemBytes>>>(
+                   strA_d, strB_d, offsetA_d, offsetB_d, alAbeg_d,
+                   alAend_d, alBbeg_d, alBend_d, top_scores_d, openGap, extendGap, d_scoring_matrix, d_encoding_matrix);
+                  cudaDeviceSynchronize();
+                   auto kernel_stop_time = NOW;
+                   std::chrono::duration<double> kernel_time = (kernel_stop_time - kernel_start_time) - data_time;
+
+                   total_kernel_time += kernel_time.count();
+
 
           cudaErrchk(cudaMemcpy(alAbeg, alAbeg_d, blocksLaunched * sizeof(short),
                                 cudaMemcpyDeviceToHost));
           cudaErrchk(cudaMemcpy(alBbeg, alBbeg_d, blocksLaunched * sizeof(short),
                                 cudaMemcpyDeviceToHost));
-          cudaErrchk(cudaMemcpy(alAend, alAend_d, blocksLaunched * sizeof(short),
-                                cudaMemcpyDeviceToHost));
-          cudaErrchk(
-              cudaMemcpy(alBend, alBend_d, blocksLaunched * sizeof(short),
-                         cudaMemcpyDeviceToHost));
+          // cudaErrchk(cudaMemcpy(alAend, alAend_d, blocksLaunched * sizeof(short),
+          //                       cudaMemcpyDeviceToHost));
+          // cudaErrchk(
+          //     cudaMemcpy(alBend, alBend_d, blocksLaunched * sizeof(short),
+          //                cudaMemcpyDeviceToHost));
           cudaErrchk(cudaMemcpy(top_scores_cpu, top_scores_d, blocksLaunched * sizeof(short), cudaMemcpyDeviceToHost));
 
 
@@ -538,19 +659,20 @@ gpu_bsw_driver::kernel_driver_aa(std::vector<std::string> reads, std::vector<std
       cudaErrchk(cudaFree(alBbeg_d));
       cudaErrchk(cudaFree(alAend_d));
       cudaErrchk(cudaFree(alBend_d));
-      // cudaErrchk(cudaFree(d_encoding_matrix));
-      // cudaErrchk(cudaFree(d_scoring_matrix));
+       cudaErrchk(cudaFree(d_encoding_matrix));
+       cudaErrchk(cudaFree(d_scoring_matrix));
 
       cudaErrchk(cudaFree(top_scores_d));
 
-
+std::cout<<"thread:"<< my_cpu_id<<"\t total time:"<<total_kernel_time<<"\tforward time:"<<forward_kernel_time<<"\tcpu_gpu_data_time:"<<total_data_time<<std::endl;
 #pragma omp barrier
   }  // paralle pragma ends
   auto                          end  = NOW;
   std::chrono::duration<double> diff = end - start;
 
-  std::cout << "Total time:" << diff.count() << std::endl;
+//  std::cout << "Total time:" << diff.count() << std::endl;
 
+std::cout << totalAlignments<<"\t"<<maxContigSize<<"\t"<<maxReadSize<<"\t" << diff.count() <<std::endl;
 
   alignments->g_alAbeg = g_alAbeg;
   alignments->g_alBbeg = g_alBbeg;
