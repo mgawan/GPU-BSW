@@ -87,14 +87,17 @@ gpu_bsw_driver::kernel_driver_dna(std::vector<std::string> reads, std::vector<st
 
         short* top_scores_cpu = g_top_scores + my_cpu_id * alignmentsPerDevice;
 
-
-        thrust::host_vector<int>        offsetA(stringsPerIt + leftOvers);
-        thrust::host_vector<int>        offsetB(stringsPerIt + leftOvers);
-        thrust::device_vector<unsigned> vec_offsetA_d(stringsPerIt + leftOvers);
-        thrust::device_vector<unsigned> vec_offsetB_d(stringsPerIt + leftOvers);
-
-        unsigned* offsetA_d = thrust::raw_pointer_cast(&vec_offsetA_d[0]);
-        unsigned* offsetB_d = thrust::raw_pointer_cast(&vec_offsetB_d[0]);
+        unsigned* offsetA_h = new unsigned[stringsPerIt + leftOvers];
+        unsigned* offsetB_h = new unsigned[stringsPerIt + leftOvers];
+        // thrust::host_vector<int>        offsetA(stringsPerIt + leftOvers);
+        // thrust::host_vector<int>        offsetB(stringsPerIt + leftOvers);
+        // thrust::device_vector<unsigned> vec_offsetA_d(stringsPerIt + leftOvers);
+        // thrust::device_vector<unsigned> vec_offsetB_d(stringsPerIt + leftOvers);
+        //
+         unsigned* offsetA_d;// = thrust::raw_pointer_cast(&vec_offsetA_d[0]);
+         unsigned* offsetB_d;// = thrust::raw_pointer_cast(&vec_offsetB_d[0]);
+         cudaErrchk(cudaMalloc(&offsetA_d, (stringsPerIt + leftOvers) * sizeof(int)));
+         cudaErrchk(cudaMalloc(&offsetB_d, (stringsPerIt + leftOvers) * sizeof(int)));
 
         cudaErrchk(cudaMalloc(&alAbeg_d, (stringsPerIt + leftOvers) * sizeof(short)));
         cudaErrchk(cudaMalloc(&alBbeg_d, (stringsPerIt + leftOvers) * sizeof(short)));
@@ -148,26 +151,29 @@ gpu_bsw_driver::kernel_driver_dna(std::vector<std::string> reads, std::vector<st
 
             std::vector<std::string> sequencesA(beginAVec, endAVec);
             std::vector<std::string> sequencesB(beginBVec, endBVec);
+            unsigned running_sum = 0;
             for(int i = 0; i < sequencesA.size(); i++)
             {
-                offsetA[i] = sequencesA[i].size();
+                running_sum +=sequencesA[i].size();
+                offsetA_h[i] = running_sum;//sequencesA[i].size();
             }
-
+            running_sum = 0;
             for(int i = 0; i < sequencesB.size(); i++)
             {
-                offsetB[i] = sequencesB[i].size();
+                running_sum +=sequencesB[i].size();
+                offsetB_h[i] = running_sum; //sequencesB[i].size();
             }
 
-            vec_offsetA_d = offsetA;
-            vec_offsetB_d = offsetB;
+            // vec_offsetA_d = offsetA;
+            // vec_offsetB_d = offsetB;
+            //
+            // thrust::inclusive_scan(vec_offsetA_d.begin(), vec_offsetA_d.end(),
+            //                        vec_offsetA_d.begin());
+            // thrust::inclusive_scan(vec_offsetB_d.begin(), vec_offsetB_d.end(),
+            //                        vec_offsetB_d.begin());
+            unsigned totalLengthA = offsetA_h[sequencesA.size() - 1];//vec_offsetA_d[sequencesA.size() - 1];
 
-            thrust::inclusive_scan(vec_offsetA_d.begin(), vec_offsetA_d.end(),
-                                   vec_offsetA_d.begin());
-            thrust::inclusive_scan(vec_offsetB_d.begin(), vec_offsetB_d.end(),
-                                   vec_offsetB_d.begin());
-            unsigned totalLengthA = vec_offsetA_d[sequencesA.size() - 1];
-
-            unsigned totalLengthB = vec_offsetB_d[sequencesB.size() - 1];
+            unsigned totalLengthB = offsetB_h[sequencesB.size() - 1];//vec_offsetB_d[sequencesB.size() - 1];
 
             unsigned offsetSumA = 0;
             unsigned offsetSumB = 0;
@@ -191,6 +197,10 @@ gpu_bsw_driver::kernel_driver_dna(std::vector<std::string> reads, std::vector<st
             cudaErrchk(cudaMalloc(&strA_d, totalLengthA * sizeof(char)));
             cudaErrchk(cudaMalloc(&strB_d, totalLengthB * sizeof(char)));
 
+            cudaErrchk(cudaMemcpy(offsetA_d, offsetA_h, (stringsPerIt + leftOvers) * sizeof(int),
+                                  cudaMemcpyHostToDevice));
+            cudaErrchk(cudaMemcpy(offsetB_d, offsetB_h, (stringsPerIt + leftOvers) * sizeof(int),
+                                                        cudaMemcpyHostToDevice));
           //  auto host_device_begin = NOW;
             cudaErrchk(cudaMemcpy(strA_d, strA, totalLengthA * sizeof(char),
                                   cudaMemcpyHostToDevice));
@@ -261,13 +271,19 @@ gpu_bsw_driver::kernel_driver_dna(std::vector<std::string> reads, std::vector<st
 
             top_scores_cpu += stringsPerIt;
 
+            delete[] strA;
+            delete[] strB;
+
             cudaErrchk(cudaFree(strA_d));
             cudaErrchk(cudaFree(strB_d));
             //}
         }  // for iterations end here
         auto                          end1  = NOW;
         std::chrono::duration<double> diff2 = end1 - start2;
-
+        delete[] offsetA_h;
+        delete[] offsetB_h;
+        cudaErrchk(cudaFree(offsetA_d));
+        cudaErrchk(cudaFree(offsetB_d));
 
         cudaErrchk(cudaFree(alAbeg_d));
         cudaErrchk(cudaFree(alBbeg_d));

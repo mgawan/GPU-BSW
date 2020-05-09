@@ -132,7 +132,7 @@ void proteinSampleRun(string refFile, string queFile){
 }
 
 
-void dnaSampleRun(string refFile, string queFile){
+void dnaSampleRun(string refFile, string queFile, string resultFile){
   vector<string> G_sequencesA,
       G_sequencesB;
 
@@ -205,6 +205,8 @@ void dnaSampleRun(string refFile, string queFile){
   }
   cout <<"Total Cells:"<<total_cells<<endl;
 
+  gpu_bsw_driver::verificationTest(resultFile, results_test.g_alAbeg, results_test.g_alBbeg, results_test.g_alAend, results_test.g_alBend);
+
 }
 
 int
@@ -215,7 +217,7 @@ main(int argc, char* argv[])
  if(in_arg == "aa"){
  	proteinSampleRun(argv[2], argv[3]);
  }else{
- 	dnaSampleRun(argv[2], argv[3]);
+ 	dnaSampleRun(argv[2], argv[3], argv[4]);
  }
 
     return 0;
