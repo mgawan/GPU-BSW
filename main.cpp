@@ -143,7 +143,6 @@ void dnaSampleRun(string refFile, string queFile, string resultFile){
 
   int totSizeA = 0, totSizeB = 0;
 
-
   if(ref_file.is_open())
   {
       while(getline(ref_file, myInLine))
@@ -166,7 +165,6 @@ void dnaSampleRun(string refFile, string queFile, string resultFile){
       }
       ref_file.close();
   }
-
 
   if(quer_file.is_open())
   {
@@ -191,7 +189,6 @@ void dnaSampleRun(string refFile, string queFile, string resultFile){
       quer_file.close();
   }
 
-
   gpu_bsw_driver::alignment_results results_test;
 
 
@@ -205,7 +202,7 @@ void dnaSampleRun(string refFile, string queFile, string resultFile){
   }
   cout <<"Total Cells:"<<total_cells<<endl;
 
-//  gpu_bsw_driver::verificationTest(resultFile, results_test.g_alAbeg, results_test.g_alBbeg, results_test.g_alAend, results_test.g_alBend);
+  gpu_bsw_driver::verificationTest(resultFile, results_test.g_alAbeg, results_test.g_alBbeg, results_test.g_alAend, results_test.g_alBend);
 
 }
 

@@ -8,6 +8,8 @@
 #include <vector>
 #include <omp.h>
 
+#define NSTREAMS 2
+
 #define NOW std::chrono::high_resolution_clock::now()
 
 #define cudaErrchk(ans)                                                                  \
