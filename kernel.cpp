@@ -354,6 +354,8 @@ gpu_bsw::sequence_dna_kernel(char* seqA_array, char* seqB_array, unsigned* prefi
         seqA       = seqA_array + prefix_lengthA[block_Id - 1];
         seqB       = seqB_array + prefix_lengthB[block_Id - 1];
     }
+
+   // if(block_Id == 71 && thread_Id == 0)printf("prefix:%d\n",prefix_lengthB[block_Id-1]);
 //*************************************
 //forward scoring phase starts
 //*************************************

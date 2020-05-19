@@ -126,6 +126,7 @@ char *strA_d, *strB_d;
         float total_packing = 0;
 
         auto start2 = NOW;
+        std::cout<<"loop begin\n";
         for(int perGPUIts = 0; perGPUIts < its; perGPUIts++)
         {
           auto packing_start = NOW;
@@ -173,19 +174,29 @@ char *strA_d, *strB_d;
             std::vector<std::string> sequencesA(beginAVec, endAVec);
             std::vector<std::string> sequencesB(beginBVec, endBVec);
             unsigned running_sum = 0;
-
+            int sequences_per_stream = (blocksLaunched) / NSTREAMS;
+            int sequences_stream_leftover = (blocksLaunched) % NSTREAMS;
+            int half_length_A = 0;
+            int half_length_B = 0;
+           // std::cout<<"blocks launched:"<<blocksLaunched<<" sequesn_per_stream:"<<sequences_per_stream<<"\n";
             auto start_cpu = NOW;
             for(int i = 0; i < sequencesA.size(); i++)
             {
                 running_sum +=sequencesA[i].size();
                 offsetA_h[i] = running_sum;//sequencesA[i].size();
+                if(i == sequences_per_stream - 1)
+                    half_length_A = running_sum;
             }
             running_sum = 0;
             for(int i = 0; i < sequencesB.size(); i++)
             {
                 running_sum +=sequencesB[i].size();
                 offsetB_h[i] = running_sum; //sequencesB[i].size();
+                if(i == sequences_per_stream - 1)
+                    half_length_B = running_sum;
             }
+
+          //  std::cout<<"running sum A and B:"<<half_length_A<<" "<<half_length_B<<"\n";
             auto end_cpu = NOW;
             std::chrono::duration<double> cpu_dur = end_cpu - start_cpu;
 
@@ -212,36 +223,40 @@ char *strA_d, *strB_d;
 
             for(int i = 0; i < sequencesA.size(); i++)
             {
-                char* seqptrA =
-                    strA + offsetSumA;  // vec_offsetA_d[i] - sequencesA[i].size();
+                char* seqptrA = strA + offsetSumA;  // vec_offsetA_d[i] - sequencesA[i].size();
                 memcpy(seqptrA, sequencesA[i].c_str(), sequencesA[i].size());
 
-                char* seqptrB =
-                    strB + offsetSumB;  // vec_offsetB_d[i] - sequencesB[i].size();
+                char* seqptrB = strB + offsetSumB;  // vec_offsetB_d[i] - sequencesB[i].size();
                 memcpy(seqptrB, sequencesB[i].c_str(), sequencesB[i].size());
                 offsetSumA += sequencesA[i].size();
                 offsetSumB += sequencesB[i].size();
             }
 
-
-            // cudaErrchk(cudaMalloc(&strA_d, totalLengthA * sizeof(char)));
-            // cudaErrchk(cudaMalloc(&strB_d, totalLengthB * sizeof(char)));
-             auto packing_end = NOW;
+            auto packing_end = NOW;
             std::chrono::duration<double> packing_dur = packing_end - packing_start;
 
             total_packing += packing_dur.count();
-            int sequences_per_stream = stringsPerIt/NSTREAMS;
-            int sequences_stream_lefover = stringsPerIt%NSTREAMS;
 
-            cudaErrchk(cudaMemcpyAsync(offsetA_d, offsetA_h, (stringsPerIt + leftOvers) * sizeof(int),
-                                  cudaMemcpyHostToDevice,streams_cuda[0]));
-            cudaErrchk(cudaMemcpyAsync(offsetB_d, offsetB_h, (stringsPerIt + leftOvers) * sizeof(int),
-                                                        cudaMemcpyHostToDevice,streams_cuda[0]));
+            cudaErrchk(cudaMemcpyAsync(offsetA_d, offsetA_h, (sequences_per_stream) * sizeof(int),
+            cudaMemcpyHostToDevice,streams_cuda[0]));
+            cudaErrchk(cudaMemcpyAsync(offsetA_d + sequences_per_stream, offsetA_h + sequences_per_stream, 
+            (sequences_per_stream + sequences_stream_leftover) * sizeof(int), cudaMemcpyHostToDevice,streams_cuda[1]));
+
+            cudaErrchk(cudaMemcpyAsync(offsetB_d, offsetB_h, (sequences_per_stream) * sizeof(int),
+            cudaMemcpyHostToDevice,streams_cuda[0]));
+            cudaErrchk(cudaMemcpyAsync(offsetB_d + sequences_per_stream, offsetB_h + sequences_per_stream, 
+            (sequences_per_stream + sequences_stream_leftover) * sizeof(int), cudaMemcpyHostToDevice,streams_cuda[1]));
           //  auto host_device_begin = NOW;
-            cudaErrchk(cudaMemcpyAsync(strA_d, strA, totalLengthA * sizeof(char),
+          //  std::cout<<"loop begin asynch copies\n";
+            cudaErrchk(cudaMemcpyAsync(strA_d, strA, half_length_A * sizeof(char),
                                   cudaMemcpyHostToDevice,streams_cuda[0]));
-            cudaErrchk(cudaMemcpyAsync(strB_d, strB, totalLengthB * sizeof(char),
+            cudaErrchk(cudaMemcpyAsync(strA_d + half_length_A, strA + half_length_A, (totalLengthA - half_length_A) * sizeof(char),
+                                  cudaMemcpyHostToDevice,streams_cuda[1]));
+
+            cudaErrchk(cudaMemcpyAsync(strB_d, strB, half_length_B * sizeof(char),
                                   cudaMemcpyHostToDevice,streams_cuda[0]));
+            cudaErrchk(cudaMemcpyAsync(strB_d + half_length_B, strB + half_length_B, (totalLengthB - half_length_B) * sizeof(char),
+                                  cudaMemcpyHostToDevice,streams_cuda[1]));
 
           // unsigned maxSize = (maxReadSize > maxContigSize) ? maxReadSize : maxContigSize;
            unsigned minSize = (maxReadSize < maxContigSize) ? maxReadSize : maxContigSize;
@@ -257,18 +272,33 @@ char *strA_d, *strB_d;
                                      cudaFuncAttributeMaxDynamicSharedMemorySize,
                                      ShmemBytes);
 
-            gpu_bsw::sequence_dna_kernel<<<blocksLaunched, minSize, ShmemBytes, streams_cuda[0]>>>(
+           // std::cout<<"min size:"<<minSize<<"\n";
+
+            gpu_bsw::sequence_dna_kernel<<<sequences_per_stream, minSize, ShmemBytes, streams_cuda[0]>>>(
                 strA_d, strB_d, offsetA_d, offsetB_d, alAbeg_d,
                 alAend_d, alBbeg_d, alBend_d, top_scores_d, matchScore, misMatchScore, startGap, extendGap);
 
+            gpu_bsw::sequence_dna_kernel<<<sequences_per_stream + sequences_stream_leftover, minSize, ShmemBytes, streams_cuda[1]>>>(
+                strA_d + half_length_A, strB_d + half_length_B, offsetA_d , offsetB_d ,
+                 alAbeg_d + sequences_per_stream, alAend_d + sequences_per_stream, alBbeg_d + sequences_per_stream, alBend_d + sequences_per_stream, 
+                 top_scores_d + sequences_per_stream, matchScore, misMatchScore, startGap, extendGap);
+         
+
+          
                 // copyin back end index so that we can find new min
 
-                cudaErrchk(cudaMemcpyAsync(alAend, alAend_d, blocksLaunched * sizeof(short),
-                                      cudaMemcpyDeviceToHost, streams_cuda[0]));
-                cudaErrchk(
-                    cudaMemcpyAsync(alBend, alBend_d, blocksLaunched * sizeof(short),
-                               cudaMemcpyDeviceToHost, streams_cuda[0]));
+                cudaErrchk(cudaMemcpyAsync(alAend, alAend_d, sequences_per_stream * sizeof(short),
+                cudaMemcpyDeviceToHost, streams_cuda[0]));
+                cudaErrchk(cudaMemcpyAsync(alAend + sequences_per_stream, alAend_d + sequences_per_stream, 
+                (sequences_per_stream + sequences_stream_leftover) * sizeof(short), cudaMemcpyDeviceToHost, streams_cuda[1]));
+
+
+                cudaErrchk(cudaMemcpyAsync(alBend, alBend_d, sequences_per_stream * sizeof(short), cudaMemcpyDeviceToHost, streams_cuda[0]));
+                cudaErrchk(cudaMemcpyAsync(alBend + sequences_per_stream, alBend_d + sequences_per_stream, (sequences_per_stream + sequences_stream_leftover) * sizeof(short), 
+                cudaMemcpyDeviceToHost, streams_cuda[1]));
+
                 cudaStreamSynchronize (streams_cuda[0]);
+                cudaStreamSynchronize (streams_cuda[1]);
 
                 auto sec_cpu_start = NOW;
                 int newMin = 1000;
@@ -291,20 +321,35 @@ char *strA_d, *strB_d;
 
                   total_time_cpu += dur_sec_cpu.count();
 
-           gpu_bsw::sequence_dna_reverse<<<blocksLaunched, newMin, ShmemBytes, streams_cuda[0]>>>(
+           gpu_bsw::sequence_dna_reverse<<<sequences_per_stream, newMin, ShmemBytes, streams_cuda[0]>>>(
                      strA_d, strB_d, offsetA_d, offsetB_d, alAbeg_d,
                      alAend_d, alBbeg_d, alBend_d, top_scores_d, matchScore, misMatchScore, startGap, extendGap);
 
-            cudaErrchk(cudaMemcpyAsync(alAbeg, alAbeg_d, blocksLaunched * sizeof(short),
+           gpu_bsw::sequence_dna_reverse<<<sequences_per_stream + sequences_stream_leftover, newMin, ShmemBytes, streams_cuda[1]>>>(
+                     strA_d + half_length_A, strB_d + half_length_B, offsetA_d , offsetB_d ,
+                      alAbeg_d + sequences_per_stream, alAend_d + sequences_per_stream, alBbeg_d + sequences_per_stream, alBend_d + sequences_per_stream, 
+                      top_scores_d + sequences_per_stream, matchScore, misMatchScore, startGap, extendGap);
+
+            cudaErrchk(cudaMemcpyAsync(alAbeg, alAbeg_d, sequences_per_stream * sizeof(short),
                                   cudaMemcpyDeviceToHost, streams_cuda[0]));
-            cudaErrchk(cudaMemcpyAsync(alBbeg, alBbeg_d, blocksLaunched * sizeof(short),
+            cudaErrchk(cudaMemcpyAsync(alAbeg + sequences_per_stream, alAbeg_d + sequences_per_stream, (sequences_per_stream + sequences_stream_leftover) * sizeof(short),
+                                  cudaMemcpyDeviceToHost, streams_cuda[1]));
+
+            cudaErrchk(cudaMemcpyAsync(alBbeg, alBbeg_d, sequences_per_stream * sizeof(short),
                                   cudaMemcpyDeviceToHost, streams_cuda[0]));
+            cudaErrchk(cudaMemcpyAsync(alBbeg + sequences_per_stream, alBbeg_d + sequences_per_stream, (sequences_per_stream + sequences_stream_leftover) * sizeof(short),
+                                  cudaMemcpyDeviceToHost, streams_cuda[1]));
  // this does not cause the error
                                                       // the other three lines do.
-            cudaErrchk(cudaMemcpyAsync(top_scores_cpu, top_scores_d, blocksLaunched * sizeof(short),
+            cudaErrchk(cudaMemcpyAsync(top_scores_cpu, top_scores_d, sequences_per_stream * sizeof(short),
                                   cudaMemcpyDeviceToHost, streams_cuda[0]));
+            cudaErrchk(cudaMemcpyAsync(top_scores_cpu + sequences_per_stream, top_scores_d + sequences_per_stream, 
+            (sequences_per_stream + sequences_stream_leftover) * sizeof(short), cudaMemcpyDeviceToHost, streams_cuda[1]));
 
-          //  cudaDeviceSynchronize();
+           // cudaStreamSynchronize (streams_cuda[0]);
+          //  cudaStreamSynchronize (streams_cuda[1]);
+          //  std::cout<<"end of iter:"<<perGPUIts<<"\n";
+           // cudaDeviceSynchronize();
 
             //}
             alAbeg += stringsPerIt;  // perGPUIts;//*stringsPerIt;
@@ -321,6 +366,11 @@ char *strA_d, *strB_d;
             // cudaErrchk(cudaFree(strB_d));
             //}
         }  // for iterations end here
+
+        for(int i = 0; i < NSTREAMS; i++)
+          cudaStreamDestroy(streams_cuda[i]);
+          
+        std::cout<<"loop end\n";
 
         cudaErrchk(cudaFree(strA_d));
         cudaErrchk(cudaFree(strB_d));
@@ -342,6 +392,7 @@ std::cout <<"cpu time:"<<total_time_cpu<<std::endl;
 std::cout <<"packing time:"<<total_packing<<std::endl;
 #pragma omp barrier
     }  // paralle pragma ends
+      cudaDeviceSynchronize();
     auto                          end  = NOW;
     std::chrono::duration<double> diff = end - start;
 
