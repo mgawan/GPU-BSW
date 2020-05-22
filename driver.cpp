@@ -2,22 +2,11 @@
 #include <fstream>
 #include <iostream>
 
+#include "utils.hpp"
 #include <sstream>
 #include <thrust/device_vector.h>
 #include <thrust/host_vector.h>
 #include <thrust/scan.h>
-
-unsigned getMaxLength (std::vector<std::string> v)
-{
-  unsigned maxLength = 0;
-  for(auto str : v){
-    if(maxLength < str.length()){
-      maxLength = str.length();
-    }
-  }
-
-  return maxLength;
-}
 
 void
 gpu_bsw_driver::kernel_driver_dna(std::vector<std::string> reads, std::vector<std::string> contigs, gpu_bsw_driver::alignment_results *alignments, short scores[4])
@@ -40,30 +29,23 @@ gpu_bsw_driver::kernel_driver_dna(std::vector<std::string> reads, std::vector<st
 
 
     unsigned NBLOCKS             = totalAlignments;
-  //  unsigned maxMatrixSize       = (maxContigSize + 1) * (maxReadSize + 1);
     unsigned alignmentsPerDevice = NBLOCKS / deviceCount;
     unsigned leftOver_device     = NBLOCKS % deviceCount;
-//    unsigned maxAligns           = alignmentsPerDevice + leftOver_device;
 
-    // long long totMemEst = maxContigSize * (long) maxAligns +
-    //                       maxReadSize * (long) maxAligns /*+
-    //                       maxMatrixSize * (long) maxAligns * sizeof(short) * 2*/ +
-    //                       (long) maxAligns * sizeof(short) * (4+1); // + 1 for the top scores
-    //
-    // long long estMem = totMemEst;
-    int       its    = 50;//ceil((float)totalAlignments/10000);//ceil(estMem / (prop[0].totalGlobalMem * 0.90));
-    // its = 3;
+    int       its    = (totalAlignments>10000)?(ceil((float)totalAlignments/10000)):1;
 
-    short* g_alAbeg;// = new short[NBLOCKS];
-    cudaMallocHost(&g_alAbeg, sizeof(short)*NBLOCKS);
-    short* g_alBbeg;// = new short[NBLOCKS];
-    cudaMallocHost(&g_alBbeg, sizeof(short)*NBLOCKS);
-    short* g_alAend;// = new short[NBLOCKS];
-    cudaMallocHost(&g_alAend, sizeof(short)*NBLOCKS);
-    short* g_alBend;// = new short[NBLOCKS];  // memory on CPU for copying the results
-    cudaMallocHost(&g_alBend, sizeof(short)*NBLOCKS);
-    short* g_top_scores;// = new short[NBLOCKS];
-    cudaMallocHost(&g_top_scores, sizeof(short)*NBLOCKS);
+    // short* g_alAbeg;
+    // cudaMallocHost(&g_alAbeg, sizeof(short)*NBLOCKS);
+    // short* g_alBbeg;
+    // cudaMallocHost(&g_alBbeg, sizeof(short)*NBLOCKS);
+    // short* g_alAend;
+    // cudaMallocHost(&g_alAend, sizeof(short)*NBLOCKS);
+    // short* g_alBend;
+    // cudaMallocHost(&g_alBend, sizeof(short)*NBLOCKS);
+    // short* g_top_scores;
+    // cudaMallocHost(&g_top_scores, sizeof(short)*NBLOCKS);
+
+    initialize_alignments(alignments, totalAlignments);
 
     auto start = NOW;
 
@@ -89,14 +71,12 @@ gpu_bsw_driver::kernel_driver_dna(std::vector<std::string> reads, std::vector<st
 
         short *alAbeg_d, *alBbeg_d, *alAend_d, *alBend_d, *top_scores_d;
 
-        short* alAbeg = g_alAbeg + my_cpu_id * alignmentsPerDevice;
-        short* alBbeg = g_alBbeg + my_cpu_id * alignmentsPerDevice;
-        short* alAend = g_alAend + my_cpu_id * alignmentsPerDevice;
-        short* alBend =
-            g_alBend +
-            my_cpu_id * alignmentsPerDevice;  // memory on CPU for copying the results
+        short* alAbeg = alignments->ref_begin + my_cpu_id * alignmentsPerDevice;
+        short* alBbeg = alignments->query_begin + my_cpu_id * alignmentsPerDevice;
+        short* alAend = alignments->ref_end + my_cpu_id * alignmentsPerDevice;
+        short* alBend = alignments->query_begin + my_cpu_id * alignmentsPerDevice;  // memory on CPU for copying the results
 
-        short* top_scores_cpu = g_top_scores + my_cpu_id * alignmentsPerDevice;
+        short* top_scores_cpu = alignments->top_scores + my_cpu_id * alignmentsPerDevice;
 
         unsigned* offsetA_h = new unsigned[stringsPerIt + leftOvers];
         unsigned* offsetB_h = new unsigned[stringsPerIt + leftOvers];
@@ -416,15 +396,15 @@ std::cout <<"packing time:"<<total_packing<<std::endl;
 
 
 
-    alignments->g_alAbeg = g_alAbeg;
-    alignments->g_alBbeg = g_alBbeg;
-    alignments->g_alAend = g_alAend;
-    alignments->g_alBend = g_alBend;
-    alignments->top_scores = g_top_scores;
+    // alignments->g_alAbeg = g_alAbeg;
+    // alignments->g_alBbeg = g_alBbeg;
+    // alignments->g_alAend = g_alAend;
+    // alignments->g_alBend = g_alBend;
+    // alignments->top_scores = g_top_scores;
 }
 
 
-
+/*
 void
 gpu_bsw_driver::kernel_driver_aa(std::vector<std::string> reads, std::vector<std::string> contigs, gpu_bsw_driver::alignment_results *alignments, short scoring_matrix[], short openGap, short extendGap)
 {
@@ -453,23 +433,13 @@ gpu_bsw_driver::kernel_driver_aa(std::vector<std::string> reads, std::vector<std
     omp_set_num_threads(deviceCount);
     std::cout<<"Number of available GPUs:"<<deviceCount<<"\n";
 
-  // for(int i = 0; i < deviceCount; i++)
-  // {
-  //     std::cout << "total Global Memory available on Device: " << i
-  //          << " is:" << prop[i].totalGlobalMem << std::endl;
-  // }
+
 
   unsigned NBLOCKS             = totalAlignments;
   unsigned alignmentsPerDevice = NBLOCKS / deviceCount;
   unsigned leftOver_device     = NBLOCKS % deviceCount;
-//  unsigned maxAligns           = alignmentsPerDevice + leftOver_device;
 
-  // long long totMemEst = maxContigSize * (long) maxAligns +
-  //                       maxReadSize * (long) maxAligns /*+
-  //                       maxMatrixSize * (long) maxAligns * sizeof(short) * 2*/ +
-  //                       (long) maxAligns * sizeof(short) * (4+1);// +1 for scores
-
-  //long long estMem = totMemEst;
+  
   int       its    = 50;//ceil((float)maxAligns/10000);//50;//ceil(estMem / (prop[0].totalGlobalMem * 0.90));
  // its = 5;
 
@@ -625,16 +595,12 @@ gpu_bsw_driver::kernel_driver_aa(std::vector<std::string> reads, std::vector<std
                                 cudaMemcpyHostToDevice));
 
 
-
-        // unsigned maxSize = (maxReadSize > maxContigSize) ? maxReadSize : maxContigSize;
          unsigned minSize = (maxReadSize < maxContigSize) ? maxReadSize : maxContigSize;
 
-          unsigned totShmem = 3*sizeof(short)*(minSize+1);//3 * 3 * (minSize + 1) * sizeof(short);// +
-                              //3 * minSize + (minSize & 1) + maxSize;
+          unsigned totShmem = 3*sizeof(short)*(minSize+1);
 
           unsigned alignmentPad = 4 + (4 - totShmem % 4);
-          size_t   ShmemBytes = totShmem + alignmentPad; /*+ sizeof(int) * (maxContigSize + maxReadSize + 2*/
-
+          size_t   ShmemBytes = totShmem + alignmentPad; 
           if(ShmemBytes > 48000)
               cudaFuncSetAttribute(gpu_bsw::sequence_aa_kernel,
                                    cudaFuncAttributeMaxDynamicSharedMemorySize,
@@ -720,6 +686,7 @@ std::cout <<"Total Alignments:"<< totalAlignments<<"\n"<<"Max Reference Size:"<<
   alignments->top_scores = g_top_scores;
 }
 
+*/
 
 void
 gpu_bsw_driver::verificationTest(std::string rstFile, short* g_alAbeg, short* g_alBbeg, short* g_alAend,
