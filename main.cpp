@@ -132,7 +132,7 @@ void proteinSampleRun(string refFile, string queFile){
 }
 
 
-void dnaSampleRun(string refFile, string queFile, string resultFile){
+void dnaSampleRun(string refFile, string queFile, string out_file){
   vector<string> G_sequencesA,
       G_sequencesB;
 
@@ -192,17 +192,24 @@ void dnaSampleRun(string refFile, string queFile, string resultFile){
   gpu_bsw_driver::alignment_results results_test;
 
 
-  short scores[] = {3, -3, -6, -1};
+  short scores[] = {1, -3, -3, -1};
+  ofstream results_file(out_file);
+
 
   gpu_bsw_driver::kernel_driver_dna(G_sequencesB, G_sequencesA,&results_test, scores);
 
+  // for(int k = 0; k < G_sequencesA.size(); k++){
+  //   results_file<<results_test.top_scores[k]<<endl;
+  // }
+  results_file.flush();
+  results_file.close();
   long long int total_cells = 0;
   for(int l = 0; l < G_sequencesA.size(); l++){
     total_cells += G_sequencesA.at(l).size()*G_sequencesB.at(l).size();
   }
   cout <<"Total Cells:"<<total_cells<<endl;
 
-  gpu_bsw_driver::verificationTest(resultFile, results_test.g_alAbeg, results_test.g_alBbeg, results_test.g_alAend, results_test.g_alBend);
+  //gpu_bsw_driver::verificationTest(resultFile, results_test.g_alAbeg, results_test.g_alBbeg, results_test.g_alAend, results_test.g_alBend);
 
 }
 

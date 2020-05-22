@@ -71,9 +71,10 @@ gpu_bsw_driver::kernel_driver_dna(std::vector<std::string> reads, std::vector<st
     {
       float total_time_cpu = 0;
       cudaStream_t streams_cuda[NSTREAMS];
-      for(cudaStream_t stream : streams_cuda){
-        cudaStreamCreate(&stream);
+      for(int stm = 0; stm < NSTREAMS; stm++){
+        cudaStreamCreate(&streams_cuda[stm]);
       }
+
 
         int my_cpu_id = omp_get_thread_num();
         cudaSetDevice(my_cpu_id);
@@ -123,12 +124,18 @@ char *strA_d, *strB_d;
         cudaErrchk(cudaMalloc(&strA_d, maxContigSize * (stringsPerIt + leftOvers) * sizeof(char)));
         cudaErrchk(cudaMalloc(&strB_d, maxReadSize *(stringsPerIt + leftOvers)* sizeof(char)));
 
+        char* strA;// = new char[totalLengthA];
+        cudaMallocHost(&strA, sizeof(char)*maxContigSize * (stringsPerIt + leftOvers));
+        char* strB;// = new char[totalLengthB];
+        cudaMallocHost(&strB, sizeof(char)* maxReadSize *(stringsPerIt + leftOvers));
+
         float total_packing = 0;
 
         auto start2 = NOW;
         std::cout<<"loop begin\n";
         for(int perGPUIts = 0; perGPUIts < its; perGPUIts++)
         {
+          //std::cout << "its:"<<perGPUIts<<"\n";
           auto packing_start = NOW;
             int                                      blocksLaunched = 0;
             std::vector<std::string>::const_iterator beginAVec;
@@ -178,25 +185,34 @@ char *strA_d, *strB_d;
             int sequences_stream_leftover = (blocksLaunched) % NSTREAMS;
             int half_length_A = 0;
             int half_length_B = 0;
-           // std::cout<<"blocks launched:"<<blocksLaunched<<" sequesn_per_stream:"<<sequences_per_stream<<"\n";
+          //  std::cout<<"blocks launched:"<<blocksLaunched<<" sequesn_per_stream:"<<sequences_per_stream<<"\n";
             auto start_cpu = NOW;
+
             for(int i = 0; i < sequencesA.size(); i++)
             {
                 running_sum +=sequencesA[i].size();
                 offsetA_h[i] = running_sum;//sequencesA[i].size();
-                if(i == sequences_per_stream - 1)
+                if(i == sequences_per_stream - 1){
                     half_length_A = running_sum;
+                    running_sum = 0;
+                  }
             }
+            unsigned totalLengthA = half_length_A + offsetA_h[sequencesA.size() - 1];
+
             running_sum = 0;
             for(int i = 0; i < sequencesB.size(); i++)
             {
                 running_sum +=sequencesB[i].size();
                 offsetB_h[i] = running_sum; //sequencesB[i].size();
-                if(i == sequences_per_stream - 1)
-                    half_length_B = running_sum;
+                if(i == sequences_per_stream - 1){
+                  half_length_B = running_sum;
+                  running_sum = 0;
+                }
             }
+            unsigned totalLengthB = half_length_B + offsetB_h[sequencesB.size() - 1];//vec_offsetB_d[sequencesB.size() - 1];
 
           //  std::cout<<"running sum A and B:"<<half_length_A<<" "<<half_length_B<<"\n";
+          //   std::cout<<"total sum A and B:"<<totalLengthA<<" "<<totalLengthB<<"\n";
             auto end_cpu = NOW;
             std::chrono::duration<double> cpu_dur = end_cpu - start_cpu;
 
@@ -209,17 +225,15 @@ char *strA_d, *strB_d;
             //                        vec_offsetA_d.begin());
             // thrust::inclusive_scan(vec_offsetB_d.begin(), vec_offsetB_d.end(),
             //                        vec_offsetB_d.begin());
-            unsigned totalLengthA = offsetA_h[sequencesA.size() - 1];//vec_offsetA_d[sequencesA.size() - 1];
 
-            unsigned totalLengthB = offsetB_h[sequencesB.size() - 1];//vec_offsetB_d[sequencesB.size() - 1];
 
             unsigned offsetSumA = 0;
             unsigned offsetSumB = 0;
 
-            char* strA;// = new char[totalLengthA];
-            cudaMallocHost(&strA, sizeof(char)*totalLengthA);
-            char* strB;// = new char[totalLengthB];
-            cudaMallocHost(&strB, sizeof(char)*totalLengthB);
+            // char* strA;// = new char[totalLengthA];
+            // cudaMallocHost(&strA, sizeof(char)*totalLengthA);
+            // char* strB;// = new char[totalLengthB];
+            // cudaMallocHost(&strB, sizeof(char)*totalLengthB);
 
             for(int i = 0; i < sequencesA.size(); i++)
             {
@@ -279,7 +293,7 @@ char *strA_d, *strB_d;
                 alAend_d, alBbeg_d, alBend_d, top_scores_d, matchScore, misMatchScore, startGap, extendGap);
 
             gpu_bsw::sequence_dna_kernel<<<sequences_per_stream + sequences_stream_leftover, minSize, ShmemBytes, streams_cuda[1]>>>(
-                strA_d + half_length_A, strB_d + half_length_B, offsetA_d , offsetB_d ,
+                strA_d + half_length_A, strB_d + half_length_B, offsetA_d + sequences_per_stream, offsetB_d + sequences_per_stream,
                  alAbeg_d + sequences_per_stream, alAend_d + sequences_per_stream, alBbeg_d + sequences_per_stream, alBend_d + sequences_per_stream, 
                  top_scores_d + sequences_per_stream, matchScore, misMatchScore, startGap, extendGap);
          
@@ -326,7 +340,7 @@ char *strA_d, *strB_d;
                      alAend_d, alBbeg_d, alBend_d, top_scores_d, matchScore, misMatchScore, startGap, extendGap);
 
            gpu_bsw::sequence_dna_reverse<<<sequences_per_stream + sequences_stream_leftover, newMin, ShmemBytes, streams_cuda[1]>>>(
-                     strA_d + half_length_A, strB_d + half_length_B, offsetA_d , offsetB_d ,
+                     strA_d + half_length_A, strB_d + half_length_B, offsetA_d + sequences_per_stream, offsetB_d + sequences_per_stream ,
                       alAbeg_d + sequences_per_stream, alAend_d + sequences_per_stream, alBbeg_d + sequences_per_stream, alBend_d + sequences_per_stream, 
                       top_scores_d + sequences_per_stream, matchScore, misMatchScore, startGap, extendGap);
 
@@ -359,8 +373,8 @@ char *strA_d, *strB_d;
 
             top_scores_cpu += stringsPerIt;
 
-            cudaFreeHost(strA);
-            cudaFreeHost(strB);
+            // cudaFreeHost(strA);
+            // cudaFreeHost(strB);
 
             // cudaErrchk(cudaFree(strA_d));
             // cudaErrchk(cudaFree(strB_d));
@@ -370,7 +384,7 @@ char *strA_d, *strB_d;
         for(int i = 0; i < NSTREAMS; i++)
           cudaStreamDestroy(streams_cuda[i]);
           
-        std::cout<<"loop end\n";
+       // std::cout<<"loop end\n";
 
         cudaErrchk(cudaFree(strA_d));
         cudaErrchk(cudaFree(strB_d));
@@ -378,6 +392,8 @@ char *strA_d, *strB_d;
         std::chrono::duration<double> diff2 = end1 - start2;
         cudaFreeHost(offsetA_h);
         cudaFreeHost(offsetB_h);
+                    cudaFreeHost(strA);
+            cudaFreeHost(strB);
         cudaErrchk(cudaFree(offsetA_d));
         cudaErrchk(cudaFree(offsetB_d));
 
