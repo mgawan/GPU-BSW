@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 #include <omp.h>
+#include "alignments.hpp"
 
 #define NSTREAMS 2
 

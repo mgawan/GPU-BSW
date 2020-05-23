@@ -1,6 +1,5 @@
 #ifndef ALIGNMENTS_HPP
 #define ALIGNMENTS_HPP
-#include"utils.hpp"
 
 class gpu_alignments{
     public:
