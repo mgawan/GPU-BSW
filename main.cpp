@@ -10,7 +10,7 @@
 
 using namespace std;
 
-void proteinSampleRun(string refFile, string queFile){
+void proteinSampleRun(string refFile, string queFile, string out_file){
   long long int total_cells = 0;
   vector<string> G_sequencesA, G_sequencesB;
   string myInLine;
@@ -120,9 +120,18 @@ void proteinSampleRun(string refFile, string queFile){
    };*/
 
     gpu_bsw_driver::alignment_results results_test;
-  //  gpu_bsw_driver::kernel_driver_aa(G_sequencesB, G_sequencesA, &results_test, scores_matrix, -6, -1);
+    gpu_bsw_driver::kernel_driver_aa(G_sequencesB, G_sequencesA, &results_test, scores_matrix, -6, -1);
 
   //  gpu_bsw_driver::verificationTest(resultFile, results_test.g_alAbeg, results_test.g_alBbeg, results_test.g_alAend, results_test.g_alBend);
+
+  ofstream results_file(out_file);
+
+
+  for(int k = 0; k < G_sequencesA.size(); k++){
+    results_file<<results_test.top_scores[k]<<endl;
+  }
+  results_file.flush();
+  results_file.close();
 
   for(int l = 0; l < G_sequencesA.size(); l++){
     total_cells += G_sequencesA.at(l).size()*G_sequencesB.at(l).size();
@@ -222,7 +231,7 @@ main(int argc, char* argv[])
   string in_arg = argv[1];
 
  if(in_arg == "aa"){
- 	proteinSampleRun(argv[2], argv[3]);
+ 	proteinSampleRun(argv[2], argv[3], argv[4]);
  }else{
  	dnaSampleRun(argv[2], argv[3], argv[4]);
  }
