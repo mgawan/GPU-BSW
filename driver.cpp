@@ -10,8 +10,6 @@
 void
 gpu_bsw_driver::kernel_driver_dna(std::vector<std::string> reads, std::vector<std::string> contigs, gpu_bsw_driver::alignment_results *alignments, short scores[4])
 {
-
-
     short matchScore = scores[0], misMatchScore = scores[1], startGap = scores[2], extendGap = scores[3];
     unsigned maxContigSize = getMaxLength(contigs);
     unsigned maxReadSize = getMaxLength(reads);
@@ -29,11 +27,11 @@ gpu_bsw_driver::kernel_driver_dna(std::vector<std::string> reads, std::vector<st
     unsigned NBLOCKS             = totalAlignments;
     unsigned alignmentsPerDevice = NBLOCKS / deviceCount;
     unsigned leftOver_device     = NBLOCKS % deviceCount;
-    int       its    = (totalAlignments>10000)?(ceil((float)totalAlignments/10000)):1;
+    int       its    = (totalAlignments>20000)?(ceil((float)totalAlignments/20000)):1;
     initialize_alignments(alignments, totalAlignments); // pinned memory allocation
     auto start = NOW;
 
-#pragma omp parallel
+    #pragma omp parallel
     {
       float total_time_cpu = 0;
       cudaStream_t streams_cuda[NSTREAMS];
@@ -59,9 +57,9 @@ gpu_bsw_driver::kernel_driver_dna(std::vector<std::string> reads, std::vector<st
         short* alBend = alignments->query_begin + my_cpu_id * alignmentsPerDevice;  // memory on CPU for copying the results
         short* top_scores_cpu = alignments->top_scores + my_cpu_id * alignmentsPerDevice;
         unsigned* offsetA_h;// = new unsigned[stringsPerIt + leftOvers];
-        cudaMallocHost(&offsetA_h, sizeof(int)*stringsPerIt + leftOvers);
+        cudaMallocHost(&offsetA_h, sizeof(int)*(stringsPerIt + leftOvers));
         unsigned* offsetB_h;// = new unsigned[stringsPerIt + leftOvers];
-        cudaMallocHost(&offsetB_h, sizeof(int)*stringsPerIt + leftOvers);
+        cudaMallocHost(&offsetB_h, sizeof(int)*(stringsPerIt + leftOvers));
 
         char *strA_d, *strB_d;
         cudaErrchk(cudaMalloc(&strA_d, maxContigSize * (stringsPerIt + leftOvers) * sizeof(char)));
@@ -77,7 +75,7 @@ gpu_bsw_driver::kernel_driver_dna(std::vector<std::string> reads, std::vector<st
         auto start2 = NOW;
         std::cout<<"loop begin\n";
         for(int perGPUIts = 0; perGPUIts < its; perGPUIts++)
-        {
+        {   
             auto packing_start = NOW;
             int                                      blocksLaunched = 0;
             std::vector<std::string>::const_iterator beginAVec;
@@ -106,8 +104,8 @@ gpu_bsw_driver::kernel_driver_dna(std::vector<std::string> reads, std::vector<st
             unsigned running_sum = 0;
             int sequences_per_stream = (blocksLaunched) / NSTREAMS;
             int sequences_stream_leftover = (blocksLaunched) % NSTREAMS;
-            int half_length_A = 0;
-            int half_length_B = 0;
+            unsigned half_length_A = 0;
+            unsigned half_length_B = 0;
             
             auto start_cpu = NOW;
 
@@ -202,19 +200,19 @@ gpu_bsw_driver::kernel_driver_dna(std::vector<std::string> reads, std::vector<st
                  alBend += stringsPerIt;  
                  top_scores_cpu += stringsPerIt;
 
-             }  // for iterations end here
+        }  // for iterations end here
 
-        for(int i = 0; i < NSTREAMS; i++)
-          cudaStreamDestroy(streams_cuda[i]);
-
-        cudaErrchk(cudaFree(strA_d));
-        cudaErrchk(cudaFree(strB_d));
         auto end1  = NOW;
         std::chrono::duration<double> diff2 = end1 - start2;
+        cudaErrchk(cudaFree(strA_d));
+        cudaErrchk(cudaFree(strB_d));
         cudaFreeHost(offsetA_h);
         cudaFreeHost(offsetB_h);
         cudaFreeHost(strA);
         cudaFreeHost(strB);
+
+        for(int i = 0; i < NSTREAMS; i++)
+          cudaStreamDestroy(streams_cuda[i]);
 
         std::cout <<"cpu time:"<<total_time_cpu<<std::endl;
         std::cout <<"packing time:"<<total_packing<<std::endl;
@@ -222,7 +220,6 @@ gpu_bsw_driver::kernel_driver_dna(std::vector<std::string> reads, std::vector<st
     }  // paralle pragma ends
     auto                          end  = NOW;
     std::chrono::duration<double> diff = end - start;
-
     std::cout << "Total Alignments:"<<totalAlignments<<"\n"<<"Max Reference Size:"<<maxContigSize<<"\n"<<"Max Query Size:"<<maxReadSize<<"\n" <<"Total Execution Time (seconds):"<< diff.count() <<std::endl;
 }
 
