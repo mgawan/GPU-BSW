@@ -205,9 +205,7 @@ void dnaSampleRun(string refFile, string queFile, string out_file){
   short scores[] = {1, -3, -3, -1};
   ofstream results_file(out_file);
 
-
   gpu_bsw_driver::kernel_driver_dna(G_sequencesB, G_sequencesA,&results_test, scores);
-
   for(int k = 0; k < G_sequencesA.size(); k++){
     results_file<<results_test.top_scores[k]<<endl;
   }
