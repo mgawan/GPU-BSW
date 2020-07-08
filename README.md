@@ -20,25 +20,23 @@ so.**
        
 
 
-To Build:<br />
-mkdir build <br />
-cd build <br />
-cmake CMAKE_BUILD_TYPE=Release .. <br />
-make <br />
+To Build:
 
-<br />
-To Execute DNA test run: <br />
+    mkdir build 
+    cd build 
+    cmake CMAKE_BUILD_TYPE=Release .. 
+    make 
 
-./program_gpu dna ../test-data/dna-reference.fasta ../test-data/dna-query.fasta <br />
+To Execute DNA test run:
 
-To Execute Protein test run: <br />
+    ./program_gpu dna ../test-data/dna-reference.fasta ../test-data/dna-query.fasta output
 
-./program_gpu aa ../test-data/protein-reference.fasta ../test-data/protein-query.fasta <br />
+To Execute Protein test run:
 
-<br />
+    ./program_gpu aa ../test-data/protein-reference.fasta ../test-data/protein-query.fasta output
+
 Contact: mgawan@lbl.gov
 
-<br />
 If you use GPU-BSW in your project, please cite this repo as:  
 
 *Muaaz G. Awan, GPU accelerated Smith-Waterman for performing batch alignments (GPU-BSW), 2019, Github Repository: https://github.com/m-gul/GPU-BSW/*
