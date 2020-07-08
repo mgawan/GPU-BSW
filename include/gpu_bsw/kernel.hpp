@@ -1,8 +1,27 @@
 #pragma once
 
+#include <cuda_runtime.h>
+
+#include <cstdlib>
+#include <cstdio>
+#include <omp.h>
+
 #define NUM_OF_AA 21
 #define ENCOD_MAT_SIZE 91
 #define SCORE_MAT_SIZE 576
+
+#define cudaErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
+
+inline void
+gpuAssert(const cudaError_t code, const char* file, int line, bool abort = true)
+{
+    if(code != cudaSuccess)
+    {
+        fprintf(stderr, "GPUassert: %s %s %d cpu:%d\n", cudaGetErrorString(code), file, line, omp_get_thread_num());
+        if(abort)
+            exit(code);
+    }
+}
 
 namespace gpu_bsw{
 __device__ short

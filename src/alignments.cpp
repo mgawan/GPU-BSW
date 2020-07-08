@@ -1,5 +1,6 @@
-#include "alignments.hpp"
-#include"utils.hpp"
+#include <gpu_bsw/alignments.hpp>
+#include <gpu_bsw/utils.hpp>
+
 gpu_alignments::gpu_alignments(int max_alignments){
     cudaErrchk(cudaMalloc(&offset_query_gpu, max_alignments * sizeof(int)));
     cudaErrchk(cudaMalloc(&offset_ref_gpu,   max_alignments * sizeof(int)));

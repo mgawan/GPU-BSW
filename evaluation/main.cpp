@@ -1,12 +1,13 @@
-#include "driver.hpp"
+#include <gpu_bsw/driver.hpp>
+#include <gpu_bsw/utils.hpp>
+
+#include <bits/stdc++.h>
 #include <cmath>
 #include <fstream>
 #include <iostream>
 #include <omp.h>
 #include <sstream>
 #include <string>
-#include<bits/stdc++.h>
-#include"utils.hpp"
 
 using namespace std;
 
@@ -238,7 +239,7 @@ main(int argc, char* argv[])
  }else if(in_arg == "dna"){
  	dnaSampleRun(argv[2], argv[3], argv[4]);
  } else {
-  cerr<<"Data type must be 'aa' or 'dna'!"<<endl;  
+  cerr<<"Data type must be 'aa' or 'dna'!"<<endl;
   return -1;
  }
 
