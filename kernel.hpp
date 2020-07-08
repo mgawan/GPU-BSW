@@ -1,9 +1,5 @@
-#ifndef KERNEL_HPP
-#define KERNEL_HPP
-#include <cstdlib>
-#include <fstream>
-#include <iostream>
-#include <sys/time.h>
+#pragma once
+
 #define NUM_OF_AA 21
 #define ENCOD_MAT_SIZE 91
 #define SCORE_MAT_SIZE 576
@@ -58,4 +54,3 @@ sequence_aa_reverse(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA
                     unsigned* prefix_lengthB, short* seqA_align_begin, short* seqA_align_end,
                     short* seqB_align_begin, short* seqB_align_end, short* top_scores, short startGap, short extendGap, short* scoring_matrix, short* encoding_matrix);
 }
-#endif

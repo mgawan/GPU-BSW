@@ -1,19 +1,15 @@
-#ifndef DRIVER_HPP
-#define DRIVER_HPP
+#pragma once
 
+#include "alignments.hpp"
 #include "kernel.hpp"
+
 #include <chrono>
-#include <cmath>
 #include <string>
 #include <vector>
-#include <omp.h>
-#include "alignments.hpp"
 
 #define NSTREAMS 2
 
 #define NOW std::chrono::high_resolution_clock::now()
-
-
 
 namespace gpu_bsw_driver{
 
@@ -26,15 +22,10 @@ struct alignment_results{
   short* top_scores;
 };
 
-void
-kernel_driver_dna(std::vector<std::string> reads, std::vector<std::string> contigs, alignment_results *alignments, short scores[4]);
+void kernel_driver_dna(std::vector<std::string> reads, std::vector<std::string> contigs, alignment_results *alignments, short scores[4]);
 
+void kernel_driver_aa(std::vector<std::string> reads, std::vector<std::string> contigs, alignment_results *alignments, short scoring_matrix[], short openGap, short extendGap);
 
-void
-kernel_driver_aa(std::vector<std::string> reads, std::vector<std::string> contigs, alignment_results *alignments, short scoring_matrix[], short openGap, short extendGap);
+void verificationTest(std::string rstFile, short* g_alAbeg, short* g_alBbeg, short* g_alAend, short* g_alBend);
 
-void
-verificationTest(std::string rstFile, short* g_alAbeg, short* g_alBbeg, short* g_alAend,
-                 short* g_alBend);
 }
-#endif
