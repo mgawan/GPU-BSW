@@ -226,12 +226,20 @@ void dnaSampleRun(string refFile, string queFile, string out_file){
 int
 main(int argc, char* argv[])
 {
+  if(argc<4){
+    cerr<<"Syntax: "<<argv[0]<<" <aa/dna> <Reference FASTA> <Query FASTA> <Output File>"<<endl;
+    return -1;
+  }
+
   string in_arg = argv[1];
 
  if(in_arg == "aa"){
  	proteinSampleRun(argv[2], argv[3], argv[4]);
- }else{
+ }else if(in_arg == "dna"){
  	dnaSampleRun(argv[2], argv[3], argv[4]);
+ } else {
+  cerr<<"Data type must be 'aa' or 'dna'!"<<endl;  
+  return -1;
  }
 
     return 0;
