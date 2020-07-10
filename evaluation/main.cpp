@@ -1,14 +1,11 @@
-#include "driver.hpp"
-#include <cmath>
+#include <gpu_bsw/driver.hpp>
+#include <gpu_bsw/read_fasta.hpp>
+
 #include <fstream>
 #include <iostream>
 #include <omp.h>
-#include <sstream>
 #include <string>
-#include<bits/stdc++.h>
-#include"utils.hpp"
-
-#include "read_fasta.hpp"
+#include <bits/stdc++.h>
 
 constexpr short blosum62[] = {
  //  A   R   N   D   C   Q   E   G   H   I   L   K   M   F   P   S   T   W   Y   V   B   Z   X   *

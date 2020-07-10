@@ -1,4 +1,4 @@
-#include "driver.hpp"
+#include <gpu_bsw/driver.hpp>
 
 void initialize_alignments(gpu_bsw_driver::alignment_results *alignments, int max_alignments){
     cudaMallocHost(&(alignments->ref_begin), sizeof(short)*max_alignments);

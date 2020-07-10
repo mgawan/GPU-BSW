@@ -1,4 +1,4 @@
-#include <read_fasta.hpp>
+#include <gpu_bsw/read_fasta.hpp>
 
 #include <algorithm>
 #include <cassert>

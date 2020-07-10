@@ -1,22 +1,22 @@
 #ifndef DRIVER_HPP
 #define DRIVER_HPP
 
-#include "kernel.hpp"
-#include <chrono>
-#include <cmath>
-#include <string>
-#include <vector>
-#include <omp.h>
-#include "alignments.hpp"
-#include "driver.hpp"
-#include "utils.hpp"
-#include <fstream>
-#include <iostream>
-#include <sstream>
+#include <gpu_bsw/alignments.hpp>
+#include <gpu_bsw/driver.hpp>
+#include <gpu_bsw/kernel.hpp>
+#include <gpu_bsw/utils.hpp>
+
 #include <thrust/device_vector.h>
 #include <thrust/host_vector.h>
 #include <thrust/scan.h>
 
+#include <chrono>
+#include <cmath>
+#include <fstream>
+#include <iostream>
+#include <omp.h>
+#include <string>
+#include <vector>
 
 #define NSTREAMS 2
 
