@@ -12,8 +12,8 @@ set(CMAKE_CUDA_EXTENSIONS OFF CACHE BOOL "")
 find_package(OpenMP REQUIRED)
 
 
-file(GLOB sources ${PROJECT_SOURCE_DIR}/ utils.cpp alignments.cpp kernel.cpp driver.cpp main.cpp)
-file(GLOB headers ${PROJECT_SOURCE_DIR}/utils.hpp alignments.hpp kernel.hpp driver.hpp)
+file(GLOB sources ${PROJECT_SOURCE_DIR}/ utils.cpp alignments.cpp kernel.cpp driver.cpp main.cpp read_fasta.cpp)
+file(GLOB headers ${PROJECT_SOURCE_DIR}/utils.hpp alignments.hpp kernel.hpp driver.hpp read_fasta.hpp)
 
 set_source_files_properties(${sources} PROPERTIES
     LANGUAGE CUDA
