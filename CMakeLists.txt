@@ -18,7 +18,13 @@ set(sources
   src/read_fasta.cpp
 )
 
-set_source_files_properties(${sources} evaluation/main.cpp
+set(test_sources
+  unittest/test_main.cpp
+  unittest/test_read_fasta.cpp
+  unittest/test_timer.cpp
+)
+
+set_source_files_properties(${sources} ${test_sources} evaluation/main.cpp
 PROPERTIES
   LANGUAGE CUDA
   LINKER_LANGUAGE CUDA
@@ -37,6 +43,9 @@ endif()
 
 add_executable(program_gpu evaluation/main.cpp)
 target_link_libraries(program_gpu PRIVATE gpu_bsw)
+
+add_executable(unittest ${test_sources})
+target_link_libraries(unittest PRIVATE gpu_bsw)
 
 add_custom_target(
     regression_tests ALL
