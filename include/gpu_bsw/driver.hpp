@@ -53,8 +53,8 @@ void kernel_driver(
   const short openGap,
   const short extendGap
 ){
-    unsigned maxContigSize = getMaxLength(contigs);
-    unsigned maxReadSize = getMaxLength(reads);
+    const auto maxContigSize = getMaxLength(contigs);
+    const auto maxReadSize = getMaxLength(reads);
     unsigned totalAlignments = contigs.size(); // assuming that read and contig vectors are same length
 
     //These scores are used only by the DNA kernel

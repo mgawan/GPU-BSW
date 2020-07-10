@@ -1,15 +1,14 @@
+#include <algorithm>
 #include <gpu_bsw/utils.hpp>
 
-unsigned getMaxLength (std::vector<std::string> v)
-{
-  unsigned maxLength = 0;
-  for(auto str : v){
-    if(maxLength < str.length()){
-      maxLength = str.length();
-    }
-  }
-  return maxLength;
+size_t getMaxLength(const std::vector<std::string> &v){
+  const auto maxi = std::max_element(v.begin(), v.end(),
+    [](const auto &a, const auto &b) { return a.size()<b.size(); }
+  );
+  return maxi->size();
 }
+
+
 
 int get_new_min_length(short* alAend, short* alBend, int blocksLaunched){
         int newMin = 1000;

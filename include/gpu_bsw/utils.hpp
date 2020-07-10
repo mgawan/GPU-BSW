@@ -21,6 +21,6 @@ gpuAssert(cudaError_t code, const char* file, int line, bool abort = true)
     }
 }
 
-unsigned getMaxLength (std::vector<std::string> v);
+size_t getMaxLength(const std::vector<std::string> &v);
 int get_new_min_length(short* alAend, short* alBend, int blocksLaunched);
 #endif
