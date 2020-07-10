@@ -1,5 +1,6 @@
 #include <gpu_bsw/driver.hpp>
 #include <gpu_bsw/read_fasta.hpp>
+#include <gpu_bsw/timer.hpp>
 
 #include <fstream>
 #include <iostream>
@@ -82,6 +83,9 @@ int main(int argc, char* argv[]){
 
   const auto input_data = ReadFastaQueryTargetPair(refFile, queFile);
 
+  Timer timer_calc;
+  timer_calc.start();
+
   gpu_bsw_driver::alignment_results results;
   if(in_arg == "aa"){
  	  gpu_bsw_driver::kernel_driver<DataType::RNA>(input_data.a.sequences, input_data.b.sequences,  &results, blosum62, -6, -1);
@@ -92,6 +96,8 @@ int main(int argc, char* argv[]){
     return -1;
   }
 
+  timer_calc.stop();
+
   std::ofstream results_file(out_file);
   for(size_t k = 0; k < input_data.sequence_count(); k++){
     results_file<<results.top_scores[k]<<std::endl;
@@ -101,6 +107,8 @@ int main(int argc, char* argv[]){
   free_alignments(&results);
 
   std::cout << "Total Cells = "<<input_data.total_cells_1_to_1()<<std::endl;
+  std::cout << "Wall-time   = "<<timer_calc.getSeconds()<<std::endl;
+  std::cout << "GCUPS       = "<<(input_data.total_cells_1_to_1()/timer_calc.getSeconds()/(1e9))<<std::endl;
 
   return 0;
 }

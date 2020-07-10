@@ -4,6 +4,7 @@
 #include <gpu_bsw/alignments.hpp>
 #include <gpu_bsw/driver.hpp>
 #include <gpu_bsw/kernel.hpp>
+#include <gpu_bsw/timer.hpp>
 #include <gpu_bsw/utils.hpp>
 
 #include <thrust/device_vector.h>
@@ -13,14 +14,13 @@
 #include <chrono>
 #include <cmath>
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <omp.h>
 #include <string>
 #include <vector>
 
 #define NSTREAMS 2
-
-#define NOW std::chrono::high_resolution_clock::now()
 
 
 namespace gpu_bsw_driver {
@@ -85,7 +85,9 @@ void kernel_driver(
     unsigned max_per_device = alignmentsPerDevice + leftOver_device;
     int       its    = (max_per_device>20000)?(ceil((float)max_per_device/20000)):1;
     initialize_alignments(alignments, totalAlignments); // pinned memory allocation
-    auto start = NOW;
+
+    Timer timer_total;
+    timer_total.start();
 
     #pragma omp parallel
     {
@@ -93,7 +95,8 @@ void kernel_driver(
         cudaSetDevice(my_cpu_id);
         int myGPUid;
         cudaGetDevice(&myGPUid);
-        float total_time_cpu = 0;
+        Timer timer_cpu;
+
         cudaStream_t streams_cuda[NSTREAMS];
         for(int stm = 0; stm < NSTREAMS; stm++){
         cudaStreamCreate(&streams_cuda[stm]);
@@ -137,13 +140,12 @@ void kernel_driver(
         char* strB;
         cudaMallocHost(&strB, sizeof(char)* maxReadSize *(stringsPerIt + leftOvers));
 
-        float total_packing = 0;
+        Timer timer_packing;
 
-        auto start2 = NOW;
         std::cout<<"loop begin\n";
         for(int perGPUIts = 0; perGPUIts < its; perGPUIts++)
         {
-            auto packing_start = NOW;
+            timer_packing.start();
             int                                      blocksLaunched = 0;
             std::vector<std::string>::const_iterator beginAVec;
             std::vector<std::string>::const_iterator endAVec;
@@ -174,7 +176,7 @@ void kernel_driver(
             unsigned half_length_A = 0;
             unsigned half_length_B = 0;
 
-            auto start_cpu = NOW;
+            timer_cpu.start();
 
             for(int i = 0; i < sequencesA.size(); i++)
             {
@@ -199,10 +201,8 @@ void kernel_driver(
             }
             unsigned totalLengthB = half_length_B + offsetB_h[sequencesB.size() - 1];
 
-            auto end_cpu = NOW;
-            std::chrono::duration<double> cpu_dur = end_cpu - start_cpu;
+            timer_cpu.stop();
 
-            total_time_cpu += cpu_dur.count();
             unsigned offsetSumA = 0;
             unsigned offsetSumB = 0;
 
@@ -216,10 +216,7 @@ void kernel_driver(
                 offsetSumB += sequencesB[i].size();
             }
 
-            auto packing_end = NOW;
-            std::chrono::duration<double> packing_dur = packing_end - packing_start;
-
-            total_packing += packing_dur.count();
+            timer_packing.stop();
 
             asynch_mem_copies_htd(&gpu_data, offsetA_h, offsetB_h, strA, strA_d, strB, strB_d, half_length_A, half_length_B, totalLengthA, totalLengthB, sequences_per_stream, sequences_stream_leftover, streams_cuda);
             unsigned minSize = (maxReadSize < maxContigSize) ? maxReadSize : maxContigSize;
@@ -256,11 +253,9 @@ void kernel_driver(
             cudaStreamSynchronize (streams_cuda[0]);
             cudaStreamSynchronize (streams_cuda[1]);
 
-            auto sec_cpu_start = NOW;
+            timer_cpu.start();
             int newMin = get_new_min_length(alAend, alBend, blocksLaunched); // find the new largest of smaller lengths
-            auto sec_cpu_end = NOW;
-            std::chrono::duration<double> dur_sec_cpu = sec_cpu_end - sec_cpu_start;
-            total_time_cpu += dur_sec_cpu.count();
+            timer_cpu.stop();
 
             if(DT==DataType::RNA){
               gpu_bsw::sequence_aa_reverse<<<sequences_per_stream, newMin, ShmemBytes, streams_cuda[0]>>>(
@@ -293,8 +288,6 @@ void kernel_driver(
 
         }  // for iterations end here
 
-        auto end1  = NOW;
-        std::chrono::duration<double> diff2 = end1 - start2;
         cudaErrchk(cudaFree(strA_d));
         cudaErrchk(cudaFree(strB_d));
         cudaFreeHost(offsetA_h);
@@ -305,14 +298,16 @@ void kernel_driver(
         for(int i = 0; i < NSTREAMS; i++)
           cudaStreamDestroy(streams_cuda[i]);
 
-        std::cout <<"cpu time:"<<total_time_cpu<<std::endl;
-        std::cout <<"packing time:"<<total_packing<<std::endl;
+        std::cout <<"CPU time     = "<<std::fixed<<timer_cpu.getSeconds()    <<std::endl;
+        std::cout <<"Packing time = "<<std::fixed<<timer_packing.getSeconds()<<std::endl;
         #pragma omp barrier
     }  // paralle pragma ends
 
-    auto                          end  = NOW;
-    std::chrono::duration<double> diff = end - start;
-    std::cout << "Total Alignments:"<<totalAlignments<<"\n"<<"Max Reference Size:"<<maxContigSize<<"\n"<<"Max Query Size:"<<maxReadSize<<"\n" <<"Total Execution Time (seconds):"<< diff.count() <<std::endl;
+    timer_total.stop();
+    std::cout <<"Total Alignments   ="<<totalAlignments<<"\n"
+              <<"Max Reference Size ="<<maxContigSize  <<"\n"
+              <<"Max Query Size     ="<<maxReadSize    <<"\n"
+              <<"Total Execution Time (seconds) = "<<timer_total.getSeconds() <<std::endl;
 }
 
 
