@@ -8,6 +8,11 @@
 #define ENCOD_MAT_SIZE 91
 #define SCORE_MAT_SIZE 576
 
+enum class DataType {
+  DNA,
+  RNA
+};
+
 namespace gpu_bsw{
 __device__ short
 warpReduceMax_with_index(short val, short& myIndex, short& myIndex2, unsigned lengthSeqB);
