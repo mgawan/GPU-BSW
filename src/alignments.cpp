@@ -2,13 +2,13 @@
 #include <gpu_bsw/utils.hpp>
 
 gpu_alignments::gpu_alignments(int max_alignments){
-    cudaErrchk(cudaMalloc(&offset_query_gpu, (max_alignments) * sizeof(int)));
-    cudaErrchk(cudaMalloc(&offset_ref_gpu, (max_alignments) * sizeof(int)));
-    cudaErrchk(cudaMalloc(&ref_start_gpu, (max_alignments) * sizeof(short)));
-    cudaErrchk(cudaMalloc(&ref_end_gpu, (max_alignments) * sizeof(short)));
-    cudaErrchk(cudaMalloc(&query_end_gpu, (max_alignments) * sizeof(short)));
-    cudaErrchk(cudaMalloc(&query_start_gpu, (max_alignments) * sizeof(short)));
-    cudaErrchk(cudaMalloc(&scores_gpu, (max_alignments) * sizeof(short)));
+    offset_query_gpu = DeviceMalloc<unsigned>(max_alignments);
+    offset_ref_gpu   = DeviceMalloc<unsigned>(max_alignments);
+    ref_start_gpu    = DeviceMalloc<short>(max_alignments);
+    ref_end_gpu      = DeviceMalloc<short>(max_alignments);
+    query_end_gpu    = DeviceMalloc<short>(max_alignments);
+    query_start_gpu  = DeviceMalloc<short>(max_alignments);
+    scores_gpu       = DeviceMalloc<short>(max_alignments);
 }
 
 gpu_alignments::~gpu_alignments(){

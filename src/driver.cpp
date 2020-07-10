@@ -1,11 +1,11 @@
 #include <gpu_bsw/driver.hpp>
 
 void initialize_alignments(gpu_bsw_driver::alignment_results *alignments, int max_alignments){
-    cudaMallocHost(&(alignments->ref_begin), sizeof(short)*max_alignments);
-    cudaMallocHost(&(alignments->ref_end), sizeof(short)*max_alignments);
-    cudaMallocHost(&(alignments->query_begin), sizeof(short)*max_alignments);
-    cudaMallocHost(&(alignments->query_end), sizeof(short)*max_alignments);
-    cudaMallocHost(&(alignments->top_scores), sizeof(short)*max_alignments);
+    alignments->ref_begin   = PageLockedMalloc<short>(max_alignments);
+    alignments->ref_end     = PageLockedMalloc<short>(max_alignments);
+    alignments->query_begin = PageLockedMalloc<short>(max_alignments);
+    alignments->query_end   = PageLockedMalloc<short>(max_alignments);
+    alignments->top_scores  = PageLockedMalloc<short>(max_alignments);
 }
 
 void free_alignments(gpu_bsw_driver::alignment_results *alignments){
