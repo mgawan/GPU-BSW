@@ -17,7 +17,7 @@ void free_alignments(gpu_bsw_driver::alignment_results *alignments){
 }
 
 void asynch_mem_copies_htd(gpu_alignments* gpu_data, unsigned* offsetA_h, unsigned* offsetB_h, char* strA, char* strA_d, char* strB, char* strB_d, unsigned half_length_A,
-unsigned half_length_B, unsigned totalLengthA, unsigned totalLengthB, int sequences_per_stream, int sequences_stream_leftover, cudaStream_t* streams_cuda){
+unsigned half_length_B, unsigned totalLengthA, unsigned totalLengthB, int sequences_per_stream, int sequences_stream_leftover, const std::array<cudaStream_t,2> &streams_cuda){
 
         cudaErrchk(cudaMemcpyAsync(gpu_data->offset_ref_gpu, offsetA_h, (sequences_per_stream) * sizeof(int),
         cudaMemcpyHostToDevice,streams_cuda[0]));
@@ -42,7 +42,7 @@ unsigned half_length_B, unsigned totalLengthA, unsigned totalLengthB, int sequen
 
 }
 
-void asynch_mem_copies_dth_mid(gpu_alignments* gpu_data, short* alAend, short* alBend, int sequences_per_stream, int sequences_stream_leftover, cudaStream_t* streams_cuda){
+void asynch_mem_copies_dth_mid(gpu_alignments* gpu_data, short* alAend, short* alBend, int sequences_per_stream, int sequences_stream_leftover, const std::array<cudaStream_t,2> &streams_cuda){
             cudaErrchk(cudaMemcpyAsync(alAend, gpu_data->ref_end_gpu, sequences_per_stream * sizeof(short),
                 cudaMemcpyDeviceToHost, streams_cuda[0]));
             cudaErrchk(cudaMemcpyAsync(alAend + sequences_per_stream, gpu_data->ref_end_gpu + sequences_per_stream,
@@ -53,7 +53,7 @@ void asynch_mem_copies_dth_mid(gpu_alignments* gpu_data, short* alAend, short* a
                 cudaMemcpyDeviceToHost, streams_cuda[1]));
 }
 
-void asynch_mem_copies_dth(gpu_alignments* gpu_data, short* alAbeg, short* alBbeg, short* top_scores_cpu, int sequences_per_stream, int sequences_stream_leftover, cudaStream_t* streams_cuda){
+void asynch_mem_copies_dth(gpu_alignments* gpu_data, short* alAbeg, short* alBbeg, short* top_scores_cpu, int sequences_per_stream, int sequences_stream_leftover, const std::array<cudaStream_t,2> &streams_cuda){
            cudaErrchk(cudaMemcpyAsync(alAbeg, gpu_data->ref_start_gpu, sequences_per_stream * sizeof(short),
                                   cudaMemcpyDeviceToHost, streams_cuda[0]));
           cudaErrchk(cudaMemcpyAsync(alAbeg + sequences_per_stream, gpu_data->ref_start_gpu + sequences_per_stream, (sequences_per_stream + sequences_stream_leftover) * sizeof(short),

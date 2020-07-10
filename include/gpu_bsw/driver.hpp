@@ -20,7 +20,7 @@
 #include <string>
 #include <vector>
 
-#define NSTREAMS 2
+constexpr int NSTREAMS = 2;
 
 
 namespace gpu_bsw_driver {
@@ -36,9 +36,9 @@ namespace gpu_bsw_driver {
 
 void initialize_alignments(gpu_bsw_driver::alignment_results *alignments, int max_alignments);
 void free_alignments(gpu_bsw_driver::alignment_results *alignments);
-void asynch_mem_copies_htd(gpu_alignments* gpu_data, unsigned* offsetA_h, unsigned* offsetB_h, char* strA, char* strA_d, char* strB, char* strB_d, unsigned half_length_A, unsigned half_length_B, unsigned totalLengthA, unsigned totalLengthB, int sequences_per_stream, int sequences_stream_leftover, cudaStream_t* streams_cuda);
-void asynch_mem_copies_dth_mid(gpu_alignments* gpu_data, short* alAend, short* alBend, int sequences_per_stream, int sequences_stream_leftover, cudaStream_t* streams_cuda);
-void asynch_mem_copies_dth(gpu_alignments* gpu_data, short* alAbeg, short* alBbeg, short* top_scores_cpu, int sequences_per_stream, int sequences_stream_leftover, cudaStream_t* streams_cuda);
+void asynch_mem_copies_htd(gpu_alignments* gpu_data, unsigned* offsetA_h, unsigned* offsetB_h, char* strA, char* strA_d, char* strB, char* strB_d, unsigned half_length_A, unsigned half_length_B, unsigned totalLengthA, unsigned totalLengthB, int sequences_per_stream, int sequences_stream_leftover, const std::array<cudaStream_t,2> &streams_cuda);
+void asynch_mem_copies_dth_mid(gpu_alignments* gpu_data, short* alAend, short* alBend, int sequences_per_stream, int sequences_stream_leftover, const std::array<cudaStream_t,2> &streams_cuda);
+void asynch_mem_copies_dth(gpu_alignments* gpu_data, short* alAbeg, short* alBbeg, short* top_scores_cpu, int sequences_per_stream, int sequences_stream_leftover, const std::array<cudaStream_t,2> &streams_cuda);
 
 
 
@@ -91,15 +91,15 @@ void kernel_driver(
 
     #pragma omp parallel
     {
-        int my_cpu_id = omp_get_thread_num();
+        const int my_cpu_id = omp_get_thread_num();
         cudaSetDevice(my_cpu_id);
         int myGPUid;
         cudaGetDevice(&myGPUid);
         Timer timer_cpu;
 
-        cudaStream_t streams_cuda[NSTREAMS];
-        for(int stm = 0; stm < NSTREAMS; stm++){
-        cudaStreamCreate(&streams_cuda[stm]);
+        std::array<cudaStream_t, 2> streams_cuda;
+        for(auto &stream: streams_cuda){
+          cudaStreamCreate(&stream);
         }
 
         int BLOCKS_l = alignmentsPerDevice;
@@ -146,7 +146,7 @@ void kernel_driver(
         for(int perGPUIts = 0; perGPUIts < its; perGPUIts++)
         {
             timer_packing.start();
-            int                                      blocksLaunched = 0;
+            size_t blocksLaunched;
             std::vector<std::string>::const_iterator beginAVec;
             std::vector<std::string>::const_iterator endAVec;
             std::vector<std::string>::const_iterator beginBVec;
@@ -171,14 +171,14 @@ void kernel_driver(
             std::vector<std::string> sequencesA(beginAVec, endAVec);
             std::vector<std::string> sequencesB(beginBVec, endBVec);
             unsigned running_sum = 0;
-            int sequences_per_stream = (blocksLaunched) / NSTREAMS;
-            int sequences_stream_leftover = (blocksLaunched) % NSTREAMS;
+            const auto sequences_per_stream = (blocksLaunched) / NSTREAMS;
+            const auto sequences_stream_leftover = (blocksLaunched) % NSTREAMS;
             unsigned half_length_A = 0;
             unsigned half_length_B = 0;
 
             timer_cpu.start();
 
-            for(int i = 0; i < sequencesA.size(); i++)
+            for(size_t i = 0; i < sequencesA.size(); i++)
             {
                 running_sum +=sequencesA[i].size();
                 offsetA_h[i] = running_sum;//sequencesA[i].size();
@@ -190,7 +190,7 @@ void kernel_driver(
             unsigned totalLengthA = half_length_A + offsetA_h[sequencesA.size() - 1];
 
             running_sum = 0;
-            for(int i = 0; i < sequencesB.size(); i++)
+            for(size_t i = 0; i < sequencesB.size(); i++)
             {
                 running_sum +=sequencesB[i].size();
                 offsetB_h[i] = running_sum; //sequencesB[i].size();
@@ -206,7 +206,7 @@ void kernel_driver(
             unsigned offsetSumA = 0;
             unsigned offsetSumB = 0;
 
-            for(int i = 0; i < sequencesA.size(); i++)
+            for(size_t i = 0; i < sequencesA.size(); i++)
             {
                 char* seqptrA = strA + offsetSumA;
                 memcpy(seqptrA, sequencesA[i].c_str(), sequencesA[i].size());
