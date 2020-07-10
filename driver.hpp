@@ -32,7 +32,9 @@ void kernel_driver_dna(
   const std::vector<std::string> &reads,
   const std::vector<std::string> &contigs,
   gpu_bsw_driver::alignment_results *const alignments,
-  const short scores[4]
+  const short scores[2],
+  const short openGap,
+  const short extendGap
 );
 
 
