@@ -2,13 +2,14 @@
 #include <gpu_bsw/read_fasta.hpp>
 #include <gpu_bsw/timer.hpp>
 
+#include <array>
 #include <fstream>
 #include <iostream>
 #include <omp.h>
 #include <string>
 #include <bits/stdc++.h>
 
-constexpr short blosum62[] = {
+constexpr std::array<short,576> blosum62 = {
  //  A   R   N   D   C   Q   E   G   H   I   L   K   M   F   P   S   T   W   Y   V   B   Z   X   *
      4, -1, -2, -2,  0, -1, -1,  0, -2, -1, -1, -1, -1, -2, -1,  1,  0, -3, -2,  0, -2, -1,  0, -4, // A
     -1,  5,  0, -2, -3,  1,  0, -2,  0, -3, -2,  2, -1, -3, -2, -1, -1, -3, -2, -3, -1,  0, -1, -4, // R
@@ -38,7 +39,7 @@ constexpr short blosum62[] = {
 
 
 
-constexpr short blosum50[] = {// 24 x 24 table
+constexpr std::array<short,576> blosum50 = {// 24 x 24 table
 //  A   R   N   D   C   Q   E   G   H   I   L   K   M   F   P   S   T   W   Y   V   B   Z   X   *
     5, -2, -1, -2, -1, -1, -1,  0, -2, -1, -2, -1, -1, -3, -1,  1,  0, -3, -2,  0, -2, -1, -1, -5, // A
    -2,  7, -1, -2, -4,  1,  0, -3,  0, -4, -3,  3, -2, -3, -3, -1, -1, -3, -1, -3, -1,  0, -1, -5, // R
@@ -69,7 +70,11 @@ constexpr short blosum50[] = {// 24 x 24 table
 
 
 int main(int argc, char* argv[]){
-  const short match_mismatch_scores[] = {1, -3, -3, -1};
+  constexpr std::array<short,2> match_mismatch_scores = {1, -3};
+
+  //Prevent compiler warnings
+  (void)blosum62;
+  (void)blosum50;
 
   if(argc!=5){
     std::cerr<<"Syntax: "<<argv[0]<<" <aa/dna> <Reference FASTA> <Query FASTA> <Output File>"<<std::endl;
@@ -88,9 +93,9 @@ int main(int argc, char* argv[]){
 
   gpu_bsw_driver::alignment_results results;
   if(in_arg == "aa"){
- 	  gpu_bsw_driver::kernel_driver<DataType::RNA>(input_data.a.sequences, input_data.b.sequences,  &results, blosum62, -6, -1);
+ 	  gpu_bsw_driver::kernel_driver<DataType::RNA>(input_data.a.sequences, input_data.b.sequences, &results, blosum62.data(), -6, -1);
   } else if(in_arg == "dna") {
- 	  gpu_bsw_driver::kernel_driver<DataType::DNA>(input_data.a.sequences, input_data.b.sequences, &results, match_mismatch_scores, -3, -1);
+ 	  gpu_bsw_driver::kernel_driver<DataType::DNA>(input_data.a.sequences, input_data.b.sequences, &results, match_mismatch_scores.data(), -3, -1);
   } else {
     std::cerr<<"Data type must be 'aa' or 'dna'!"<<std::endl;
     return -1;
