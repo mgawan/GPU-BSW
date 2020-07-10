@@ -14,9 +14,11 @@ kernel_driver_dna(
   const std::vector<std::string> &reads,
   const std::vector<std::string> &contigs,
   gpu_bsw_driver::alignment_results *const alignments,
-  const short scores[4]
+  const short scores[2],
+  const short startGap,
+  const short extendGap
 ){
-    short matchScore = scores[0], misMatchScore = scores[1], startGap = scores[2], extendGap = scores[3];
+    short matchScore = scores[0], misMatchScore = scores[1];
     unsigned maxContigSize = getMaxLength(contigs);
     unsigned maxReadSize = getMaxLength(reads);
     unsigned totalAlignments = contigs.size(); // assuming that read and contig vectors are same length
