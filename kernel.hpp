@@ -28,34 +28,78 @@ __device__ short
 blockShuffleReduce(short val, unsigned lengthSeqB);
 
 __device__ __host__ short
-           findMax(short array[], int length, int* ind);
+findMax(short array[], int length, int* ind);
 
 __device__ __host__ short
-            findMaxFour(short first, short second, short third, short fourth);
-
-__device__ void
-traceBack(short current_i, short current_j, short* seqA_align_begin,
-          short* seqB_align_begin, const char* seqA, const char* seqB, short* I_i,
-          short* I_j, unsigned lengthSeqB, unsigned lengthSeqA, unsigned int* diagOffset);
+findMaxFour(short first, short second, short third, short fourth);
 
 __global__ void
-sequence_dna_kernel(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA,
-                    unsigned* prefix_lengthB, short* seqA_align_begin, short* seqA_align_end,
-                    short* seqB_align_begin, short* seqB_align_end, short* top_scores, short matchScore, short misMatchScore, short startGap, short extendGap);
+sequence_dna_kernel(
+  char       *const seqA_array,
+  char       *const seqB_array,
+  unsigned   *const prefix_lengthA,
+  unsigned   *const prefix_lengthB,
+  short      *const seqA_align_begin,
+  short      *const seqA_align_end,
+  short      *const seqB_align_begin,
+  short      *const seqB_align_end,
+  short      *const top_scores,
+  const short       matchScore,
+  const short       misMatchScore,
+  const short       startGap,
+  const short       extendGap
+);
 
 __global__ void
-sequence_dna_reverse(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA,
-                    unsigned* prefix_lengthB, short* seqA_align_begin, short* seqA_align_end,
-                    short* seqB_align_begin, short* seqB_align_end, short* top_scores, short matchScore, short misMatchScore, short startGap, short extendGap);
+sequence_dna_reverse(
+  char       *const seqA_array,
+  char       *const seqB_array,
+  unsigned   *const prefix_lengthA,
+  unsigned   *const prefix_lengthB,
+  short      *const seqA_align_begin,
+  short      *const seqA_align_end,
+  short      *const seqB_align_begin,
+  short      *const seqB_align_end,
+  short      *const top_scores,
+  const short       matchScore,
+  const short       misMatchScore,
+  const short       startGap,
+  const short       extendGap
+);
 
 __global__ void
-sequence_aa_kernel(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA,
-                    unsigned* prefix_lengthB, short* seqA_align_begin, short* seqA_align_end,
-                    short* seqB_align_begin, short* seqB_align_end, short* top_scores, short startGap, short extendGap, short* scoring_matrix, short* encoding_matrix);
+sequence_aa_kernel(
+  char        *const seqA_array,
+  char        *const seqB_array,
+  unsigned    *const prefix_lengthA,
+  unsigned    *const prefix_lengthB,
+  short       *const seqA_align_begin,
+  short       *const seqA_align_end,
+  short       *const seqB_align_begin,
+  short       *const seqB_align_end,
+  short       *const top_scores,
+  const short        startGap,
+  const short        extendGap,
+  const short *const scoring_matrix,
+  const short *const encoding_matrix
+);
 
 __global__ void
-sequence_aa_reverse(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA,
-                    unsigned* prefix_lengthB, short* seqA_align_begin, short* seqA_align_end,
-                    short* seqB_align_begin, short* seqB_align_end, short* top_scores, short startGap, short extendGap, short* scoring_matrix, short* encoding_matrix);
+sequence_aa_reverse(
+  char        *const seqA_array,
+  char        *const seqB_array,
+  unsigned    *const prefix_lengthA,
+  unsigned    *const prefix_lengthB,
+  short       *const seqA_align_begin,
+  short       *const seqA_align_end,
+  short       *const seqB_align_begin,
+  short       *const seqB_align_end,
+  short       *const top_scores,
+  const short        startGap,
+  const short        extendGap,
+  const short *const scoring_matrix,
+  const short *const encoding_matrix
+);
+
 }
 #endif
