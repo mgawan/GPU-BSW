@@ -7,9 +7,15 @@
 #include <thrust/host_vector.h>
 #include <thrust/scan.h>
 
+namespace gpu_bsw_driver{
+
 void
-gpu_bsw_driver::kernel_driver_dna(std::vector<std::string> reads, std::vector<std::string> contigs, gpu_bsw_driver::alignment_results *alignments, short scores[4])
-{
+kernel_driver_dna(
+  const std::vector<std::string> &reads,
+  const std::vector<std::string> &contigs,
+  gpu_bsw_driver::alignment_results *const alignments,
+  const short scores[4]
+){
     short matchScore = scores[0], misMatchScore = scores[1], startGap = scores[2], extendGap = scores[3];
     unsigned maxContigSize = getMaxLength(contigs);
     unsigned maxReadSize = getMaxLength(reads);
@@ -228,9 +234,14 @@ gpu_bsw_driver::kernel_driver_dna(std::vector<std::string> reads, std::vector<st
 
 
 
-void
-gpu_bsw_driver::kernel_driver_aa(std::vector<std::string> reads, std::vector<std::string> contigs, gpu_bsw_driver::alignment_results *alignments, short scoring_matrix[], short openGap, short extendGap)
-{
+void kernel_driver_aa(
+  const std::vector<std::string> &reads,
+  const std::vector<std::string> &contigs,
+  gpu_bsw_driver::alignment_results *const alignments,
+  const short scoring_matrix[],
+  const short openGap,
+  const short extendGap
+){
     unsigned maxContigSize = getMaxLength(contigs);
     unsigned maxReadSize = getMaxLength(reads);
     unsigned totalAlignments = contigs.size(); // assuming that read and contig vectors are same length
@@ -458,3 +469,5 @@ gpu_bsw_driver::kernel_driver_aa(std::vector<std::string> reads, std::vector<std
     std::chrono::duration<double> diff = end - start;
     std::cout << "Total Alignments:"<<totalAlignments<<"\n"<<"Max Reference Size:"<<maxContigSize<<"\n"<<"Max Query Size:"<<maxReadSize<<"\n" <<"Total Execution Time (seconds):"<< diff.count() <<std::endl;
 }// end of amino acids kernel
+
+}
