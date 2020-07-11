@@ -4,6 +4,7 @@
 #include <gpu_bsw/alignments.hpp>
 #include <gpu_bsw/driver.hpp>
 #include <gpu_bsw/kernel.hpp>
+#include <gpu_bsw/page_locked_string.hpp>
 #include <gpu_bsw/timer.hpp>
 #include <gpu_bsw/utils.hpp>
 
@@ -130,8 +131,8 @@ void kernel_driver(
         char *const strA_d = DeviceMalloc<char>(maxContigSize * (stringsPerIt + leftOvers));
         char *const strB_d = DeviceMalloc<char>(maxReadSize   * (stringsPerIt + leftOvers));
 
-        char *const strA = PageLockedMalloc<char>(maxContigSize * (stringsPerIt + leftOvers));
-        char *const strB = PageLockedMalloc<char>(maxReadSize   * (stringsPerIt + leftOvers));
+        auto strA = PageLockedString(maxContigSize * (stringsPerIt + leftOvers));
+        auto strB = PageLockedString(maxReadSize   * (stringsPerIt + leftOvers));
 
         Timer timer_packing;
 
@@ -188,22 +189,17 @@ void kernel_driver(
 
             timer_cpu.stop();
 
-            unsigned offsetSumA = 0;
-            unsigned offsetSumB = 0;
-
+            strA.clear();
+            strB.clear();
             for(size_t i = 0; i < sequencesA.size(); i++)
             {
-                char* seqptrA = strA + offsetSumA;
-                memcpy(seqptrA, sequencesA[i].c_str(), sequencesA[i].size());
-                char* seqptrB = strB + offsetSumB;
-                memcpy(seqptrB, sequencesB[i].c_str(), sequencesB[i].size());
-                offsetSumA += sequencesA[i].size();
-                offsetSumB += sequencesB[i].size();
+              strA += sequencesA.at(i);
+              strB += sequencesB.at(i);
             }
 
             timer_packing.stop();
 
-            asynch_mem_copies_htd(&gpu_data, offsetA_h, offsetB_h, strA, strA_d, strB, strB_d, half_length_A, half_length_B, totalLengthA, totalLengthB, sequences_per_stream, sequences_stream_leftover, streams_cuda);
+            asynch_mem_copies_htd(&gpu_data, offsetA_h, offsetB_h, strA.data(), strA_d, strB.data(), strB_d, half_length_A, half_length_B, totalLengthA, totalLengthB, sequences_per_stream, sequences_stream_leftover, streams_cuda);
             unsigned minSize = (maxReadSize < maxContigSize) ? maxReadSize : maxContigSize;
             unsigned totShmem = 3 * (minSize + 1) * sizeof(short);
             unsigned alignmentPad = 4 + (4 - totShmem % 4);
@@ -277,8 +273,6 @@ void kernel_driver(
         cudaErrchk(cudaFree(strB_d));
         cudaFreeHost(offsetA_h);
         cudaFreeHost(offsetB_h);
-        cudaFreeHost(strA);
-        cudaFreeHost(strB);
 
         for(int i = 0; i < NSTREAMS; i++)
           cudaStreamDestroy(streams_cuda[i]);
