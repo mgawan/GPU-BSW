@@ -139,26 +139,18 @@ void kernel_driver(
         for(int perGPUIts = 0; perGPUIts < its; perGPUIts++)
         {
             timer_packing.start();
-            size_t blocksLaunched;
-            std::vector<std::string>::const_iterator beginAVec;
-            std::vector<std::string>::const_iterator endAVec;
-            std::vector<std::string>::const_iterator beginBVec;
-            std::vector<std::string>::const_iterator endBVec;
+            size_t blocksLaunched = stringsPerIt;
+
+            // so that each openmp thread has a copy of strings it needs to align
+            auto beginAVec = contigs.cbegin() + alignmentsPerDevice * my_cpu_id + perGPUIts       * stringsPerIt;
+            auto endAVec   = contigs.cbegin() + alignmentsPerDevice * my_cpu_id + (perGPUIts + 1) * stringsPerIt;
+            auto beginBVec = reads.cbegin()   + alignmentsPerDevice * my_cpu_id + perGPUIts       * stringsPerIt;
+            auto endBVec   = reads.cbegin()   + alignmentsPerDevice * my_cpu_id + (perGPUIts + 1) * stringsPerIt;
             if(perGPUIts == its - 1)
             {
-                beginAVec = contigs.begin() + alignmentsPerDevice * my_cpu_id + perGPUIts       * stringsPerIt;
-                endAVec   = contigs.begin() + alignmentsPerDevice * my_cpu_id + (perGPUIts + 1) * stringsPerIt + leftOvers;  // so that each openmp thread has a copy of strings it needs to align
-                beginBVec = reads.begin()   + alignmentsPerDevice * my_cpu_id + perGPUIts       * stringsPerIt;
-                endBVec   = reads.begin()   + alignmentsPerDevice * my_cpu_id + (perGPUIts + 1) * stringsPerIt + leftOvers;  // so that each openmp thread has a copy of strings it needs to align
-                blocksLaunched = stringsPerIt + leftOvers;
-            }
-            else
-            {
-                beginAVec = contigs.begin() + alignmentsPerDevice * my_cpu_id + perGPUIts       * stringsPerIt;
-                endAVec   = contigs.begin() + alignmentsPerDevice * my_cpu_id + (perGPUIts + 1) * stringsPerIt; // so that each openmp thread has a copy of strings it needs to align
-                beginBVec = reads.begin()   + alignmentsPerDevice * my_cpu_id + perGPUIts       * stringsPerIt;
-                endBVec   = reads.begin()   + alignmentsPerDevice * my_cpu_id + (perGPUIts + 1) * stringsPerIt;  // so that each openmp thread has a copy of strings it needs to align
-                blocksLaunched = stringsPerIt;
+              blocksLaunched += leftOvers;
+              endAVec += leftOvers;
+              endBVec += leftOvers;
             }
 
             std::vector<std::string> sequencesA(beginAVec, endAVec);
