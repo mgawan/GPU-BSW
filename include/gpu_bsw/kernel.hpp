@@ -149,16 +149,18 @@ sequence_reverse(
   int thread_Id = threadIdx.x;
   short laneId = threadIdx.x%32;
   short warpId = threadIdx.x/32;
-  // local pointers
-  char*    seqA;
-  char*    seqB;
-  extern __shared__ char is_valid_array[];
-  char*                  is_valid = &is_valid_array[0];
-  char* longer_seq;
 
   //Only used by DNA sequencing
   const short matchScore    = scoring_matrix[0];
   const short misMatchScore = scoring_matrix[1];
+
+  // local pointers
+  char*    seqA;
+  char*    seqB;
+  char* longer_seq;
+
+  extern __shared__ char is_valid_array[];
+  char*                  is_valid = &is_valid_array[0];
 
   // setting up block local sequences and their lengths.
   if(block_Id == 0)
@@ -180,6 +182,8 @@ sequence_reverse(
   char myColumnChar;
 
   is_valid = &is_valid_array[0]; //reset is_valid array for second iter
+
+// shared memory space for storing longer of the two strings
   memset(is_valid, 0, minSize);
   is_valid += minSize;
   memset(is_valid, 1, minSize);
@@ -206,7 +210,7 @@ sequence_reverse(
     }
   }
 
-  __syncthreads(); // this is required  because sequence has been re-written in shmem
+  __syncthreads(); // this is required here so that complete sequence has been copied to shared memory
 
   int   i            = 1;
   short thread_max   = 0; // to maintain the thread max score
@@ -234,7 +238,6 @@ sequence_reverse(
 
   if(DT==DataType::RNA){
     int max_threads = blockDim.x;
-
     for(int p = thread_Id; p < SCORE_MAT_SIZE; p+=max_threads){
       sh_aa_scoring[p] = scoring_matrix[p];
     }
@@ -243,16 +246,19 @@ sequence_reverse(
     }
   }
 
-  __syncthreads(); // this is required because shmem has been updated
+  __syncthreads(); // to make sure all shmem allocations have been initialized
+
+  // iterate for the number of anti-diagonals
   for(int diag = 0; diag <  newlengthSeqA + newlengthSeqB - 1; diag++)
   {
-    is_valid = is_valid - (diag < minSize || diag >= maxSize);
 
+    is_valid = is_valid - (diag < minSize || diag >= maxSize); //move the pointer to left by 1 if cnd true
+
+    // value exchange happens here to setup registers for next iteration
     _temp_Val = _prev_H;
     _prev_H = _curr_H;
     _curr_H = _prev_prev_H;
     _prev_prev_H = _temp_Val;
-
     _curr_H = 0;
 
     _temp_Val = _prev_E;
@@ -268,20 +274,20 @@ sequence_reverse(
     _curr_F = 0;
 
     if(laneId == 31)
-    {
+    { // if you are the last thread in your warp then spill your values to shmem
       sh_prev_E[warpId] = _prev_E;
       sh_prev_H[warpId] = _prev_H;
       sh_prev_prev_H[warpId] = _prev_prev_H;
     }
 
-    if(diag>= maxSize)
+    if(diag >= maxSize)
     { // if you are invalid in this iteration, spill your values to shmem
       local_spill_prev_E[thread_Id] = _prev_E;
       local_spill_prev_H[thread_Id] = _prev_H;
       local_spill_prev_prev_H[thread_Id] = _prev_prev_H;
     }
 
-    __syncthreads();
+    __syncthreads(); // this is needed so that all the shmem writes are completed.
 
     if(is_valid[thread_Id] && thread_Id < minSize)
     {
@@ -290,37 +296,30 @@ sequence_reverse(
       short hfVal = _prev_H + startGap;
       short valeShfl = __shfl_sync(mask, _prev_E, laneId- 1, 32);
       short valheShfl = __shfl_sync(mask, _prev_H, laneId - 1, 32);
-
       short eVal=0;
       short heVal = 0;
 
-      if(diag >= maxSize)
+      if(diag >= maxSize) // when the previous thread has phased out, get value from shmem
       {
         eVal = local_spill_prev_E[thread_Id - 1] + extendGap;
-      }
-      else
-      {
-        eVal =((warpId !=0 && laneId == 0)?sh_prev_E[warpId-1]: valeShfl) + extendGap;
-      }
-
-      if(diag >= maxSize)
-      {
         heVal = local_spill_prev_H[thread_Id - 1]+ startGap;
       }
       else
       {
+        eVal =((warpId !=0 && laneId == 0)?sh_prev_E[warpId-1]: valeShfl) + extendGap;
         heVal =((warpId !=0 && laneId == 0)?sh_prev_H[warpId-1]:valheShfl) + startGap;
       }
 
-      if(warpId == 0 && laneId == 0)
+      if(warpId == 0 && laneId == 0) // make sure that values for lane 0 in warp 0 is not undefined
       {
         eVal = 0;
         heVal = 0;
       }
       _curr_F = (fVal > hfVal) ? fVal : hfVal;
       _curr_E = (eVal > heVal) ? eVal : heVal;
+
       short testShufll = __shfl_sync(mask, _prev_prev_H, laneId - 1, 32);
-      short final_prev_prev_H =0;
+      short final_prev_prev_H = 0;
 
       if(diag >= maxSize)
       {
@@ -337,7 +336,7 @@ sequence_reverse(
       if(DT==DataType::DNA){
         diag_score = final_prev_prev_H + ((longer_seq[(maxSize - i )] == myColumnChar)? matchScore : misMatchScore);
       } else {
-        short mat_index_q = sh_aa_encoding[(int)longer_seq[maxSize-i]];
+        short mat_index_q = sh_aa_encoding[(int)longer_seq[maxSize-i]]; //encoding_matrix
         short mat_index_r = sh_aa_encoding[(int)myColumnChar];
         short add_score = sh_aa_scoring[mat_index_q*24 + mat_index_r]; // doesnt really matter in what order these indices are used, since the scoring table is symmetrical
 
@@ -349,11 +348,12 @@ sequence_reverse(
       thread_max   = (thread_max >= _curr_H) ? thread_max : _curr_H;
       i++;
     }
-    __syncthreads();
+    __syncthreads(); // why do I need this? commenting it out breaks it
   }
   __syncthreads();
 
   thread_max = blockShuffleReduce_with_index<ReduceDirection::REVERSE>(thread_max, thread_max_i, thread_max_j, minSize);  // thread 0 will have the correct values
+
   if(thread_Id == 0)
   {
     if(newlengthSeqA < newlengthSeqB)
@@ -488,12 +488,14 @@ sequence_kernel(
 
   __syncthreads(); // to make sure all shmem allocations have been initialized
 
+  // iterate for the number of anti-diagonals
   for(int diag = 0; diag < lengthSeqA + lengthSeqB - 1; diag++)
-  {  // iterate for the number of anti-diagonals
+  {
 
     is_valid = is_valid - (diag < minSize || diag >= maxSize); //move the pointer to left by 1 if cnd true
 
-    _temp_Val = _prev_H; // value exchange happens here to setup registers for next iteration
+    // value exchange happens here to setup registers for next iteration
+    _temp_Val = _prev_H;
     _prev_H = _curr_H;
     _curr_H = _prev_prev_H;
     _prev_prev_H = _temp_Val;
@@ -534,7 +536,8 @@ sequence_kernel(
       short hfVal = _prev_H + startGap;
       short valeShfl = __shfl_sync(mask, _prev_E, laneId- 1, 32);
       short valheShfl = __shfl_sync(mask, _prev_H, laneId - 1, 32);
-      short eVal=0, heVal = 0;
+      short eVal=0;
+      short heVal = 0;
 
       if(diag >= maxSize) // when the previous thread has phased out, get value from shmem
       {
@@ -557,6 +560,7 @@ sequence_kernel(
 
       short testShufll = __shfl_sync(mask, _prev_prev_H, laneId - 1, 32);
       short final_prev_prev_H = 0;
+
       if(diag >= maxSize)
       {
         final_prev_prev_H = local_spill_prev_prev_H[thread_Id - 1];
@@ -572,9 +576,8 @@ sequence_kernel(
       if(DT==DataType::DNA){
         diag_score = final_prev_prev_H + ((longer_seq[i - 1] == myColumnChar) ? matchScore : misMatchScore);
       } else {
-        short mat_index_q = sh_aa_encoding[(int)longer_seq[i-1]];//encoding_matrix
+        short mat_index_q = sh_aa_encoding[(int)longer_seq[i-1]]; //encoding_matrix
         short mat_index_r = sh_aa_encoding[(int)myColumnChar];
-
         short add_score = sh_aa_scoring[mat_index_q*24 + mat_index_r]; // doesnt really matter in what order these indices are used, since the scoring table is symmetrical
 
         diag_score = final_prev_prev_H + add_score;
