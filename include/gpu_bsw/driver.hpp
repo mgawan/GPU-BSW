@@ -202,15 +202,15 @@ void kernel_driver(
             unsigned alignmentPad = 4 + (4 - totShmem % 4);
             size_t   ShmemBytes = totShmem + alignmentPad;
             if(ShmemBytes > 48000 && DT==DataType::DNA)
-                cudaFuncSetAttribute(gpu_bsw::sequence_kernel<DT>, cudaFuncAttributeMaxDynamicSharedMemorySize, ShmemBytes);
+                cudaFuncSetAttribute(gpu_bsw::sequence_process<DataType::DNA,Direction::FORWARD>, cudaFuncAttributeMaxDynamicSharedMemorySize, ShmemBytes);
 
-            gpu_bsw::sequence_kernel<DT><<<sequences_per_stream, minSize, ShmemBytes, streams_cuda[0]>>>(
+            gpu_bsw::sequence_process<DT,Direction::FORWARD><<<sequences_per_stream, minSize, ShmemBytes, streams_cuda[0]>>>(
                 strA_d, strB_d, gpu_data.offset_ref_gpu, gpu_data.offset_query_gpu, gpu_data.ref_start_gpu,
                 gpu_data.ref_end_gpu, gpu_data.query_start_gpu, gpu_data.query_end_gpu, gpu_data.scores_gpu,
                 openGap, extendGap, d_scoring_matrix, d_encoding_matrix);
             cudaErrchk(cudaGetLastError());
 
-            gpu_bsw::sequence_kernel<DT><<<sequences_per_stream + sequences_stream_leftover, minSize, ShmemBytes, streams_cuda[1]>>>(
+            gpu_bsw::sequence_process<DT,Direction::FORWARD><<<sequences_per_stream + sequences_stream_leftover, minSize, ShmemBytes, streams_cuda[1]>>>(
                 strA_d + half_length_A, strB_d + half_length_B, gpu_data.offset_ref_gpu + sequences_per_stream, gpu_data.offset_query_gpu + sequences_per_stream,
                 gpu_data.ref_start_gpu + sequences_per_stream, gpu_data.ref_end_gpu + sequences_per_stream, gpu_data.query_start_gpu + sequences_per_stream, gpu_data.query_end_gpu + sequences_per_stream,
                 gpu_data.scores_gpu + sequences_per_stream, openGap, extendGap, d_scoring_matrix, d_encoding_matrix);
@@ -226,12 +226,12 @@ void kernel_driver(
             int newMin = get_new_min_length(alAend, alBend, blocksLaunched); // find the new largest of smaller lengths
             timer_cpu.stop();
 
-            gpu_bsw::sequence_reverse<DT><<<sequences_per_stream, newMin, ShmemBytes, streams_cuda[0]>>>(
+            gpu_bsw::sequence_process<DT,Direction::REVERSE><<<sequences_per_stream, newMin, ShmemBytes, streams_cuda[0]>>>(
                   strA_d, strB_d, gpu_data.offset_ref_gpu, gpu_data.offset_query_gpu, gpu_data.ref_start_gpu,
                   gpu_data.ref_end_gpu, gpu_data.query_start_gpu, gpu_data.query_end_gpu, gpu_data.scores_gpu, openGap, extendGap, d_scoring_matrix, d_encoding_matrix);
             cudaErrchk(cudaGetLastError());
 
-            gpu_bsw::sequence_reverse<DT><<<sequences_per_stream + sequences_stream_leftover, newMin, ShmemBytes, streams_cuda[1]>>>(
+            gpu_bsw::sequence_process<DT,Direction::REVERSE><<<sequences_per_stream + sequences_stream_leftover, newMin, ShmemBytes, streams_cuda[1]>>>(
                   strA_d + half_length_A, strB_d + half_length_B, gpu_data.offset_ref_gpu + sequences_per_stream, gpu_data.offset_query_gpu + sequences_per_stream ,
                   gpu_data.ref_start_gpu + sequences_per_stream, gpu_data.ref_end_gpu + sequences_per_stream, gpu_data.query_start_gpu + sequences_per_stream, gpu_data.query_end_gpu + sequences_per_stream,
                   gpu_data.scores_gpu + sequences_per_stream, openGap, extendGap, d_scoring_matrix, d_encoding_matrix);
