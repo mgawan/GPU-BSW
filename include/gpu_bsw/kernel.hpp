@@ -64,53 +64,7 @@ warpReduceMax_with_index(short val, short& myIndex, short& myIndex2, const unsig
 
 
 
-static __device__ short
-blockShuffleReduce_with_index_reverse(short myVal, short& myIndex, short& myIndex2, unsigned lengthSeqB)
-{
-    const int laneId = threadIdx.x % 32;
-    const int warpId = threadIdx.x / 32;
-    __shared__ short locTots[32];
-    __shared__ short locInds[32];
-    __shared__ short locInds2[32];
-    short myInd  = myIndex;
-    short myInd2 = myIndex2;
-    myVal = warpReduceMax_with_index<ReduceDirection::REVERSE>(myVal, myInd, myInd2, lengthSeqB);
-
-    __syncthreads();
-    if(laneId == 0)
-        locTots[warpId] = myVal;
-    if(laneId == 0)
-        locInds[warpId] = myInd;
-    if(laneId == 0)
-        locInds2[warpId] = myInd2;
-    __syncthreads();
-    unsigned check =
-        ((32 + blockDim.x - 1) / 32);  // mimicing the ceil function for floats
-                                       // float check = ((float)blockDim.x / 32);
-    if(threadIdx.x < check)  /////******//////
-    {
-        myVal  = locTots[threadIdx.x];
-        myInd  = locInds[threadIdx.x];
-        myInd2 = locInds2[threadIdx.x];
-    }
-    else
-    {
-        myVal  = 0;
-        myInd  = -1;
-        myInd2 = -1;
-    }
-    __syncthreads();
-
-    if(warpId == 0)
-    {
-        myVal    = warpReduceMax_with_index<ReduceDirection::REVERSE>(myVal, myInd, myInd2, lengthSeqB);
-        myIndex  = myInd;
-        myIndex2 = myInd2;
-    }
-    __syncthreads();
-    return myVal;
-}
-
+template<ReduceDirection DIR>
 static __device__ short
 blockShuffleReduce_with_index(short myVal, short& myIndex, short& myIndex2, unsigned lengthSeqB)
 {
@@ -121,7 +75,7 @@ blockShuffleReduce_with_index(short myVal, short& myIndex, short& myIndex2, unsi
     __shared__ short locInds2[32];
     short myInd  = myIndex;
     short myInd2 = myIndex2;
-    myVal = warpReduceMax_with_index<ReduceDirection::FORWARD>(myVal, myInd, myInd2, lengthSeqB);
+    myVal = warpReduceMax_with_index<DIR>(myVal, myInd, myInd2, lengthSeqB);
 
     __syncthreads();
     if(laneId == 0)
@@ -150,7 +104,7 @@ blockShuffleReduce_with_index(short myVal, short& myIndex, short& myIndex2, unsi
 
     if(warpId == 0)
     {
-        myVal    = warpReduceMax_with_index<ReduceDirection::FORWARD>(myVal, myInd, myInd2, lengthSeqB);
+        myVal    = warpReduceMax_with_index<DIR>(myVal, myInd, myInd2, lengthSeqB);
         myIndex  = myInd;
         myIndex2 = myInd2;
     }
@@ -399,7 +353,7 @@ sequence_reverse(
   }
   __syncthreads();
 
-  thread_max = blockShuffleReduce_with_index_reverse(thread_max, thread_max_i, thread_max_j, minSize);  // thread 0 will have the correct values
+  thread_max = blockShuffleReduce_with_index<ReduceDirection::REVERSE>(thread_max, thread_max_i, thread_max_j, minSize);  // thread 0 will have the correct values
   if(thread_Id == 0)
   {
     if(newlengthSeqA < newlengthSeqB)
@@ -607,7 +561,7 @@ sequence_dna_kernel(
   }
   __syncthreads();
 
-  thread_max = blockShuffleReduce_with_index(thread_max, thread_max_i, thread_max_j, minSize);  // thread 0 will have the correct values
+  thread_max = blockShuffleReduce_with_index<ReduceDirection::FORWARD>(thread_max, thread_max_i, thread_max_j, minSize);  // thread 0 will have the correct values
 
   if(thread_Id == 0)
   {
@@ -833,7 +787,7 @@ sequence_aa_kernel(
   }
   __syncthreads();
 
-  thread_max = blockShuffleReduce_with_index(thread_max, thread_max_i, thread_max_j, minSize);  // thread 0 will have the correct values
+  thread_max = blockShuffleReduce_with_index<ReduceDirection::FORWARD>(thread_max, thread_max_i, thread_max_j, minSize);  // thread 0 will have the correct values
 
   if(thread_Id == 0)
   {
