@@ -652,17 +652,15 @@ gpu_bsw::sequence_aa_kernel(char* seqA_array, char* seqB_array, unsigned* prefix
   // the shorter of the two strings is stored in thread registers
   if(lengthSeqA < lengthSeqB)
   {
-    if(thread_Id < lengthSeqA){
+    if(thread_Id < lengthSeqA)
       myColumnChar = seqA[thread_Id];  // read only once
     longer_seq = seqB;
   }
-  }
   else
   {
-    if(thread_Id < lengthSeqB){
+    if(thread_Id < lengthSeqB)
       myColumnChar = seqB[thread_Id];
      longer_seq = seqA;
-     }
   }
 
   __syncthreads(); // this is required here so that complete sequence has been copied to shared memory
