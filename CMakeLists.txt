@@ -13,7 +13,6 @@ find_package(OpenMP REQUIRED)
 set(sources
   src/utils.cpp
   src/alignments.cpp
-  src/kernel.cpp
   src/driver.cpp
   src/read_fasta.cpp
 )
