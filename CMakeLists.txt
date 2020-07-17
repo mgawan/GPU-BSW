@@ -34,8 +34,15 @@ PROPERTIES
 add_library(gpu_bsw ${sources})
 target_include_directories(gpu_bsw PUBLIC include)
 target_link_libraries(gpu_bsw PUBLIC OpenMP::OpenMP_CXX)
-target_compile_options(gpu_bsw PUBLIC $<$<COMPILE_LANGUAGE:CUDA>:-gencode arch=compute_70,code=sm_70;-Xcompiler=-Wall,-Wextra>)
 #target_link_libraries(program_gpu PUBLIC timemory OpenMP::OpenMP_CXX)
+target_compile_options(gpu_bsw PUBLIC
+    $<$<COMPILE_LANGUAGE:CUDA>:-gencode=arch=compute_50,code=sm_50>
+    $<$<COMPILE_LANGUAGE:CUDA>:-gencode=arch=compute_52,code=sm_52>
+    $<$<COMPILE_LANGUAGE:CUDA>:-gencode=arch=compute_60,code=sm_60>
+    $<$<COMPILE_LANGUAGE:CUDA>:-gencode=arch=compute_61,code=sm_61>
+    $<$<COMPILE_LANGUAGE:CUDA>:-gencode=arch=compute_70,code=sm_70>
+    $<$<COMPILE_LANGUAGE:CUDA>:-Xcompiler=-Wall,-Wextra>
+)
 
 get_property(LANGUAGES GLOBAL PROPERTY ENABLED_LANGUAGES)
 if(CMAKE_CUDA_COMPILER AND "CUDA" IN_LIST LANGUAGES)
