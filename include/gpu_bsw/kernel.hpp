@@ -17,8 +17,14 @@ enum class DataType {
 
 namespace gpu_bsw{
 
+enum class ReduceDirection {
+  FORWARD,
+  REVERSE
+};
+
+template<ReduceDirection DIR>
 static __inline__ __device__ short
-warpReduceMax_with_index_reverse(short val, short& myIndex, short& myIndex2, const unsigned lengthSeqB)
+warpReduceMax_with_index(short val, short& myIndex, short& myIndex2, const unsigned lengthSeqB)
 {
     constexpr int warpSize = 32;
     short myMax    = val;
@@ -34,8 +40,6 @@ warpReduceMax_with_index_reverse(short val, short& myIndex, short& myIndex2, con
         val     = max(val,tempVal);
         newInd  = __shfl_down_sync(mask, ind, offset);
         newInd2 = __shfl_down_sync(mask, ind2, offset);
-
-      //  if(threadIdx.x == 0)printf("index1:%d, index2:%d, max:%d\n", newInd, newInd2, val);
         if(val != myMax)
         {
             ind   = newInd;
@@ -46,52 +50,10 @@ warpReduceMax_with_index_reverse(short val, short& myIndex, short& myIndex2, con
                                     // with SSW to get the smallest alignment with highest score. Theoreticaly
                                     // all the alignmnts with same score are same.
         {
-          if(newInd2 > ind2){
-            ind = newInd;
-            ind2 = newInd2;
-
-          }
-        }
-    }
-    myIndex  = ind;
-    myIndex2 = ind2;
-    val      = myMax;
-    return val;
-}
-
-static __inline__ __device__ short
-warpReduceMax_with_index(short val, short& myIndex, short& myIndex2, const unsigned lengthSeqB)
-{
-    constexpr int warpSize = 32;
-    short myMax    = 0;
-    short newInd   = 0;
-    short newInd2  = 0;
-    short ind      = myIndex;
-    short ind2     = myIndex2;
-    myMax          = val;
-    unsigned mask  = __ballot_sync(0xffffffff, threadIdx.x < lengthSeqB);  // blockDim.x
-    // unsigned newmask;
-    for(int offset = warpSize / 2; offset > 0; offset /= 2)
-    {
-
-        int tempVal = __shfl_down_sync(mask, val, offset);
-        val     = max(val,tempVal);
-        newInd  = __shfl_down_sync(mask, ind, offset);
-        newInd2 = __shfl_down_sync(mask, ind2, offset);
-        if(val != myMax)
-        {
-            ind   = newInd;
-            ind2  = newInd2;
-            myMax = val;
-        }
-        else if((val == tempVal) ) // this is kind of redundant and has been done purely to match the results
-                                    // with SSW to get the smallest alignment with highest score. Theoreticaly
-                                    // all the alignmnts with same score are same.
-        {
-          if(newInd < ind){
-            ind = newInd;
-            ind2 = newInd2;
-          }
+            if((DIR==ReduceDirection::REVERSE && newInd2 > ind2) || (DIR==ReduceDirection::FORWARD && newInd < ind)){
+              ind = newInd;
+              ind2 = newInd2;
+            }
         }
     }
     myIndex  = ind;
@@ -112,7 +74,7 @@ blockShuffleReduce_with_index_reverse(short myVal, short& myIndex, short& myInde
     __shared__ short locInds2[32];
     short myInd  = myIndex;
     short myInd2 = myIndex2;
-    myVal = warpReduceMax_with_index_reverse(myVal, myInd, myInd2, lengthSeqB);
+    myVal = warpReduceMax_with_index<ReduceDirection::REVERSE>(myVal, myInd, myInd2, lengthSeqB);
 
     __syncthreads();
     if(laneId == 0)
@@ -141,7 +103,7 @@ blockShuffleReduce_with_index_reverse(short myVal, short& myIndex, short& myInde
 
     if(warpId == 0)
     {
-        myVal    = warpReduceMax_with_index_reverse(myVal, myInd, myInd2, lengthSeqB);
+        myVal    = warpReduceMax_with_index<ReduceDirection::REVERSE>(myVal, myInd, myInd2, lengthSeqB);
         myIndex  = myInd;
         myIndex2 = myInd2;
     }
@@ -159,7 +121,7 @@ blockShuffleReduce_with_index(short myVal, short& myIndex, short& myIndex2, unsi
     __shared__ short locInds2[32];
     short myInd  = myIndex;
     short myInd2 = myIndex2;
-    myVal = warpReduceMax_with_index(myVal, myInd, myInd2, lengthSeqB);
+    myVal = warpReduceMax_with_index<ReduceDirection::FORWARD>(myVal, myInd, myInd2, lengthSeqB);
 
     __syncthreads();
     if(laneId == 0)
@@ -188,7 +150,7 @@ blockShuffleReduce_with_index(short myVal, short& myIndex, short& myIndex2, unsi
 
     if(warpId == 0)
     {
-        myVal    = warpReduceMax_with_index(myVal, myInd, myInd2, lengthSeqB);
+        myVal    = warpReduceMax_with_index<ReduceDirection::FORWARD>(myVal, myInd, myInd2, lengthSeqB);
         myIndex  = myInd;
         myIndex2 = myInd2;
     }
