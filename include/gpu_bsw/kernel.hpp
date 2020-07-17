@@ -36,7 +36,7 @@ warpReduceMax_with_index(short val, short& myIndex, short& myIndex2, const unsig
     // unsigned newmask;
     for(int offset = warpSize / 2; offset > 0; offset /= 2)
     {
-        int tempVal = __shfl_down_sync(mask, val, offset);
+        const int tempVal = __shfl_down_sync(mask, val, offset);
         val     = max(val,tempVal);
         newInd  = __shfl_down_sync(mask, ind, offset);
         newInd2 = __shfl_down_sync(mask, ind2, offset);
@@ -78,12 +78,11 @@ blockShuffleReduce_with_index(short myVal, short& myIndex, short& myIndex2, unsi
     myVal = warpReduceMax_with_index<DIR>(myVal, myInd, myInd2, lengthSeqB);
 
     __syncthreads();
-    if(laneId == 0)
-        locTots[warpId] = myVal;
-    if(laneId == 0)
-        locInds[warpId] = myInd;
-    if(laneId == 0)
+    if(laneId == 0){
+        locTots[warpId]  = myVal;
+        locInds[warpId]  = myInd;
         locInds2[warpId] = myInd2;
+    }
     __syncthreads();
     unsigned check =
         ((32 + blockDim.x - 1) / 32);  // mimicing the ceil function for floats
@@ -119,8 +118,8 @@ findMaxFour(const short first, const short second, const short third, const shor
 {
     short maxScore = 0;
 
-    maxScore = max(first,second);
-    maxScore = max(maxScore, third);
+    maxScore = max(first,    second);
+    maxScore = max(maxScore, third );
     maxScore = max(maxScore, fourth);
 
     return maxScore;
@@ -131,24 +130,24 @@ findMaxFour(const short first, const short second, const short third, const shor
 template<DataType DT, Direction DIR>
 inline __global__ void
 sequence_process(
-  char        *const seqA_array,
-  char        *const seqB_array,
-  unsigned    *const prefix_lengthA,
-  unsigned    *const prefix_lengthB,
-  short       *const seqA_align_begin,
-  short       *const seqA_align_end,
-  short       *const seqB_align_begin,
-  short       *const seqB_align_end,
-  short       *const top_scores,
-  const short        startGap,
-  const short        extendGap,
-  const short *const scoring_matrix,
-  const short *const encoding_matrix
+  const char     *const seqA_array,
+  const char     *const seqB_array,
+  const unsigned *const prefix_lengthA,
+  const unsigned *const prefix_lengthB,
+  short          *const seqA_align_begin,
+  short          *const seqA_align_end,
+  short          *const seqB_align_begin,
+  short          *const seqB_align_end,
+  short          *const top_scores,
+  const short           startGap,
+  const short           extendGap,
+  const short *const    scoring_matrix,
+  const short *const    encoding_matrix
 ){
-  int block_Id  = blockIdx.x;
-  int thread_Id = threadIdx.x;
-  short laneId = threadIdx.x%32;
-  short warpId = threadIdx.x/32;
+  const int   block_Id  = blockIdx.x;
+  const int   thread_Id = threadIdx.x;
+  const short laneId    = threadIdx.x%32;
+  const short warpId    = threadIdx.x/32;
 
   //Only used by DNA sequencing
   const short matchScore    = scoring_matrix[0];
@@ -158,9 +157,9 @@ sequence_process(
   unsigned lengthSeqB;
 
   // local pointers
-  char*    seqA;
-  char*    seqB;
-  char* longer_seq;
+  const char* seqA;
+  const char* seqB;
+  const char* longer_seq;
 
   extern __shared__ char is_valid_array[];
   char*                  is_valid = &is_valid_array[0];
@@ -168,13 +167,13 @@ sequence_process(
   // setting up block local sequences and their lengths.
   if(block_Id == 0)
   {
-    seqA       = seqA_array;
-    seqB       = seqB_array;
+    seqA = seqA_array;
+    seqB = seqB_array;
   }
   else
   {
-    seqA       = seqA_array + prefix_lengthA[block_Id - 1];
-    seqB       = seqB_array + prefix_lengthB[block_Id - 1];
+    seqA = seqA_array + prefix_lengthA[block_Id - 1];
+    seqB = seqB_array + prefix_lengthB[block_Id - 1];
   }
 
   if(DIR==Direction::FORWARD){
@@ -195,8 +194,8 @@ sequence_process(
 
 
   // what is the max length and what is the min length
-  unsigned maxSize = lengthSeqA > lengthSeqB ? lengthSeqA : lengthSeqB;
-  unsigned minSize = lengthSeqA < lengthSeqB ? lengthSeqA : lengthSeqB;
+  const unsigned maxSize = lengthSeqA > lengthSeqB ? lengthSeqA : lengthSeqB;
+  const unsigned minSize = lengthSeqA < lengthSeqB ? lengthSeqA : lengthSeqB;
 
   // shared memory space for storing longer of the two strings
   memset(is_valid, 0, minSize);
@@ -232,7 +231,7 @@ sequence_process(
   int   i            = 1;
   short thread_max   = 0; // to maintain the thread max score
   short thread_max_i = 0; // to maintain the DP coordinate i for the longer string
-  short thread_max_j = 0;// to maintain the DP cooirdinate j for the shorter string
+  short thread_max_j = 0; // to maintain the DP coordinate j for the shorter string
 
   //initializing registers for storing diagonal values for three recent most diagonals (separate tables for
   //H, E and F)
@@ -245,7 +244,7 @@ sequence_process(
   __shared__ short sh_prev_H[32];
   __shared__ short sh_prev_prev_H[32];
 
-  __shared__ short local_spill_prev_E[1024];// each threads local spill,
+  __shared__ short local_spill_prev_E[1024]; // each threads local spill,
   __shared__ short local_spill_prev_H[1024];
   __shared__ short local_spill_prev_prev_H[1024];
 
@@ -268,7 +267,6 @@ sequence_process(
   // iterate for the number of anti-diagonals
   for(int diag = 0; diag < lengthSeqA + lengthSeqB - 1; diag++)
   {
-
     is_valid = is_valid - (diag < minSize || diag >= maxSize); //move the pointer to left by 1 if cnd true
 
     // value exchange happens here to setup registers for next iteration
@@ -308,12 +306,12 @@ sequence_process(
 
     if(is_valid[thread_Id] && thread_Id < minSize)
     {
-      unsigned mask  = __ballot_sync(__activemask(), (is_valid[thread_Id] &&( thread_Id < minSize)));
-      short fVal = _prev_F + extendGap;
-      short hfVal = _prev_H + startGap;
-      short valeShfl = __shfl_sync(mask, _prev_E, laneId- 1, 32);
-      short valheShfl = __shfl_sync(mask, _prev_H, laneId - 1, 32);
-      short eVal=0;
+      const unsigned mask  = __ballot_sync(__activemask(), (is_valid[thread_Id] &&( thread_Id < minSize)));
+      const short fVal = _prev_F + extendGap;
+      const short hfVal = _prev_H + startGap;
+      const short valeShfl = __shfl_sync(mask, _prev_E, laneId- 1, 32);
+      const short valheShfl = __shfl_sync(mask, _prev_H, laneId - 1, 32);
+      short eVal  = 0;
       short heVal = 0;
 
       if(diag >= maxSize) // when the previous thread has phased out, get value from shmem
@@ -335,7 +333,7 @@ sequence_process(
       _curr_F = (fVal > hfVal) ? fVal : hfVal;
       _curr_E = (eVal > heVal) ? eVal : heVal;
 
-      short testShufll = __shfl_sync(mask, _prev_prev_H, laneId - 1, 32);
+      const short testShufll = __shfl_sync(mask, _prev_prev_H, laneId - 1, 32);
       short final_prev_prev_H = 0;
 
       if(diag >= maxSize)
@@ -349,15 +347,14 @@ sequence_process(
 
       if(warpId == 0 && laneId == 0) final_prev_prev_H = 0;
 
-      const int diag_pos = (DIR==Direction::FORWARD) ? i-1 : maxSize-i;
-
       short diag_score;
+      const int diag_pos = (DIR==Direction::FORWARD) ? i-1 : maxSize-i;
       if(DT==DataType::DNA){
         diag_score = final_prev_prev_H + ((longer_seq[diag_pos] == myColumnChar) ? matchScore : misMatchScore);
       } else {
-        short mat_index_q = sh_aa_encoding[(int)longer_seq[diag_pos]]; //encoding_matrix
-        short mat_index_r = sh_aa_encoding[(int)myColumnChar];
-        short add_score = sh_aa_scoring[mat_index_q*24 + mat_index_r]; // doesnt really matter in what order these indices are used, since the scoring table is symmetrical
+        const short mat_index_q = sh_aa_encoding[(int)longer_seq[diag_pos]]; //encoding_matrix
+        const short mat_index_r = sh_aa_encoding[(int)myColumnChar];
+        const short add_score = sh_aa_scoring[mat_index_q*24 + mat_index_r]; // doesnt really matter in what order these indices are used, since the scoring table is symmetrical
 
         diag_score = final_prev_prev_H + add_score;
       }
