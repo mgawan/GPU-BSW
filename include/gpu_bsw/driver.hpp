@@ -58,10 +58,6 @@ void kernel_driver(
     const auto maxReadSize = getMaxLength(reads);
     unsigned totalAlignments = contigs.size(); // assuming that read and contig vectors are same length
 
-    //These scores are used only by the DNA kernel
-    const auto matchScore    = scoring_matrix[0];
-    const auto misMatchScore = scoring_matrix[1];
-
     //This matrix is used only by the RNA kernel
     constexpr short encoding_matrix[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,
                                          0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -205,33 +201,20 @@ void kernel_driver(
             unsigned totShmem = 3 * (minSize + 1) * sizeof(short);
             unsigned alignmentPad = 4 + (4 - totShmem % 4);
             size_t   ShmemBytes = totShmem + alignmentPad;
-            if(ShmemBytes > 48000)
-                cudaFuncSetAttribute(gpu_bsw::sequence_dna_kernel, cudaFuncAttributeMaxDynamicSharedMemorySize, ShmemBytes);
+            if(ShmemBytes > 48000 && DT==DataType::DNA)
+                cudaFuncSetAttribute(gpu_bsw::sequence_kernel<DT>, cudaFuncAttributeMaxDynamicSharedMemorySize, ShmemBytes);
 
-            if(DT==DataType::RNA){
-              gpu_bsw::sequence_aa_kernel<<<sequences_per_stream, minSize, ShmemBytes, streams_cuda[0]>>>(
-                  strA_d, strB_d, gpu_data.offset_ref_gpu, gpu_data.offset_query_gpu, gpu_data.ref_start_gpu,
-                  gpu_data.ref_end_gpu, gpu_data.query_start_gpu, gpu_data.query_end_gpu, gpu_data.scores_gpu,
-                  openGap, extendGap, d_scoring_matrix, d_encoding_matrix);
-              cudaErrchk(cudaGetLastError());
+            gpu_bsw::sequence_kernel<DT><<<sequences_per_stream, minSize, ShmemBytes, streams_cuda[0]>>>(
+                strA_d, strB_d, gpu_data.offset_ref_gpu, gpu_data.offset_query_gpu, gpu_data.ref_start_gpu,
+                gpu_data.ref_end_gpu, gpu_data.query_start_gpu, gpu_data.query_end_gpu, gpu_data.scores_gpu,
+                openGap, extendGap, d_scoring_matrix, d_encoding_matrix);
+            cudaErrchk(cudaGetLastError());
 
-              gpu_bsw::sequence_aa_kernel<<<sequences_per_stream + sequences_stream_leftover, minSize, ShmemBytes, streams_cuda[1]>>>(
-                  strA_d + half_length_A, strB_d + half_length_B, gpu_data.offset_ref_gpu + sequences_per_stream, gpu_data.offset_query_gpu + sequences_per_stream,
-                  gpu_data.ref_start_gpu + sequences_per_stream, gpu_data.ref_end_gpu + sequences_per_stream, gpu_data.query_start_gpu + sequences_per_stream, gpu_data.query_end_gpu + sequences_per_stream,
-                  gpu_data.scores_gpu + sequences_per_stream, openGap, extendGap, d_scoring_matrix, d_encoding_matrix);
-              cudaErrchk(cudaGetLastError());
-            } else if(DT==DataType::DNA){
-              gpu_bsw::sequence_dna_kernel<<<sequences_per_stream, minSize, ShmemBytes, streams_cuda[0]>>>(
-                  strA_d, strB_d, gpu_data.offset_ref_gpu, gpu_data.offset_query_gpu, gpu_data.ref_start_gpu,
-                  gpu_data.ref_end_gpu, gpu_data.query_start_gpu, gpu_data.query_end_gpu, gpu_data.scores_gpu, matchScore, misMatchScore, openGap, extendGap);
-              cudaErrchk(cudaGetLastError());
-
-              gpu_bsw::sequence_dna_kernel<<<sequences_per_stream + sequences_stream_leftover, minSize, ShmemBytes, streams_cuda[1]>>>(
-                  strA_d + half_length_A, strB_d + half_length_B, gpu_data.offset_ref_gpu + sequences_per_stream, gpu_data.offset_query_gpu + sequences_per_stream,
-                  gpu_data.ref_start_gpu + sequences_per_stream, gpu_data.ref_end_gpu + sequences_per_stream, gpu_data.query_start_gpu + sequences_per_stream, gpu_data.query_end_gpu + sequences_per_stream,
-                  gpu_data.scores_gpu + sequences_per_stream, matchScore, misMatchScore, openGap, extendGap);
-              cudaErrchk(cudaGetLastError());
-            }
+            gpu_bsw::sequence_kernel<DT><<<sequences_per_stream + sequences_stream_leftover, minSize, ShmemBytes, streams_cuda[1]>>>(
+                strA_d + half_length_A, strB_d + half_length_B, gpu_data.offset_ref_gpu + sequences_per_stream, gpu_data.offset_query_gpu + sequences_per_stream,
+                gpu_data.ref_start_gpu + sequences_per_stream, gpu_data.ref_end_gpu + sequences_per_stream, gpu_data.query_start_gpu + sequences_per_stream, gpu_data.query_end_gpu + sequences_per_stream,
+                gpu_data.scores_gpu + sequences_per_stream, openGap, extendGap, d_scoring_matrix, d_encoding_matrix);
+            cudaErrchk(cudaGetLastError());
 
             // copyin back end index so that we can find new min
             asynch_mem_copies_dth_mid(&gpu_data, alAend, alBend, sequences_per_stream, sequences_stream_leftover, streams_cuda);
