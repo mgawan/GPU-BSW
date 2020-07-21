@@ -1,6 +1,7 @@
 #ifndef KERNEL_HPP
 #define KERNEL_HPP
 
+#include <cassert>
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
@@ -22,44 +23,62 @@ enum class Direction {
 
 namespace gpu_bsw{
 
+///@brief Within a warp, find the maximum value and its associated indices
+///@param val        Value associated with this thread
+///@param myIndex    Index of that value along the i-axis
+///@param myIndex2   Index of that value along the j-axis
+///@param lengthSeqB Length of the sequence being aligned (<=1024)
+///@return Lane 0 of the warp returns the maximum value found in the warp,
+///        and Lane 0's myIndex and myIndex2 are set to correspond to the
+//         indices of this value. Other lanes' values and returns are garbage.
 template<Direction DIR>
 static __inline__ __device__ short
-warpReduceMax_with_index(short val, short& myIndex, short& myIndex2, const unsigned lengthSeqB)
+warpReduceMax_with_index(const short my_initial_val, short& myIndex, short& myIndex2, const unsigned lengthSeqB)
 {
+    assert(lengthSeqB<=1024);
+
     constexpr int warpSize = 32;
-    short myMax    = val;
-    short newInd   = 0;
-    short newInd2  = 0;
-    short ind      = myIndex;
-    short ind2     = myIndex2;
-    unsigned mask  = __ballot_sync(0xffffffff, threadIdx.x < lengthSeqB);  // blockDim.x
-    // unsigned newmask;
+    //We set the initial maximum value to INT16_MIN for threads which are out of
+    //range. Since all other allowed values are greater than this, we'll always
+    //get the right answer unless all of the threads have INT16_MIN as their
+    //value and we're moving in the reverse direction.
+    short maxval = (threadIdx.x < lengthSeqB) ? my_initial_val : INT16_MIN;
+    short maxi   = myIndex;
+    short maxi2  = myIndex2;
+
+    const auto mask = __ballot_sync(0xffffffff, threadIdx.x < lengthSeqB);
+
     for(int offset = warpSize / 2; offset > 0; offset /= 2)
     {
-        const int tempVal = __shfl_down_sync(mask, val, offset);
-        val     = max(val,tempVal);
-        newInd  = __shfl_down_sync(mask, ind, offset);
-        newInd2 = __shfl_down_sync(mask, ind2, offset);
-        if(val != myMax)
+        //Get the value and indices corresponding to our shuffle buddy
+        const auto buddy_val = __shfl_down_sync(mask, maxval, offset);
+        const auto buddy_i   = __shfl_down_sync(mask, maxi,   offset);
+        const auto buddy_i2  = __shfl_down_sync(mask, maxi2,  offset);
+
+        //If our buddy's value is greater than our value, we take our buddy's
+        //information
+        if(buddy_val>maxval)
         {
-            ind   = newInd;
-            ind2  = newInd2;
-            myMax = val;
+            maxi   = buddy_i;
+            maxi2  = buddy_i2;
+            maxval = buddy_val;
         }
-        else if((val == tempVal) ) // this is kind of redundant and has been done purely to match the results
-                                    // with SSW to get the smallest alignment with highest score. Theoreticaly
-                                    // all the alignmnts with same score are same.
+        else if(buddy_val == maxval)
         {
-            if((DIR==Direction::REVERSE && newInd2 > ind2) || (DIR==Direction::FORWARD && newInd < ind)){
-              ind = newInd;
-              ind2 = newInd2;
+            // We want to keep the first maximum value we find in the direction
+            // of travel. This is kind of redundant and has been done purely to
+            // match the results with SSW to get the smallest alignment with
+            // highest score. Theoreticaly all the alignmnts with same score are
+            // same.
+            if((DIR==Direction::REVERSE && buddy_i2 > maxi2) || (DIR==Direction::FORWARD && buddy_i < maxi)){
+              maxi  = buddy_i;
+              maxi2 = buddy_i2;
             }
         }
     }
-    myIndex  = ind;
-    myIndex2 = ind2;
-    val      = myMax;
-    return val;
+    myIndex  = maxi;
+    myIndex2 = maxi2;
+    return maxval;
 }
 
 

@@ -18,11 +18,13 @@ set(sources
 )
 
 set(test_sources
-  unittest/test_page_locked_string.cpp
   unittest/test_main.cpp
+  unittest/test_page_locked_string.cpp
   unittest/test_read_fasta.cpp
   unittest/test_timer.cpp
+  unittest/test_warpReduceMax_with_index.cu
 )
+
 
 set_source_files_properties(${sources} ${test_sources} evaluation/main.cpp
 PROPERTIES
