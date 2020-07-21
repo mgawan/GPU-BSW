@@ -22,6 +22,7 @@ set(test_sources
   unittest/test_main.cpp
   unittest/test_page_locked_string.cpp
   unittest/test_read_fasta.cpp
+  unittest/test_sequence_process.cu
   unittest/test_timer.cpp
   unittest/test_warpReduceMax_with_index.cu
 )
@@ -56,6 +57,10 @@ target_link_libraries(program_gpu PRIVATE gpu_bsw)
 
 add_executable(unittest ${test_sources})
 target_link_libraries(unittest PRIVATE gpu_bsw)
+
+add_executable(test unittest/test.cu)
+target_link_libraries(test PRIVATE gpu_bsw)
+
 
 add_custom_target(
     regression_tests ALL
