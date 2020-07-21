@@ -87,46 +87,65 @@ template<Direction DIR>
 static __device__ short
 blockShuffleReduce_with_index(short myVal, short& myIndex, short& myIndex2, unsigned lengthSeqB)
 {
-    const int laneId = threadIdx.x % 32;
-    const int warpId = threadIdx.x / 32;
-    __shared__ short locTots[32];
-    __shared__ short locInds[32];
-    __shared__ short locInds2[32];
+    assert(lengthSeqB<=1024);
+
+    constexpr int WS = 32; //Warp size
+    const auto laneId = threadIdx.x % WS;
+    const auto warpId = threadIdx.x / WS;
+
+    __shared__ short warp_lead_max  [WS]; //Maximum value of each warp's lane 0
+    __shared__ short warp_lead_inds [WS]; //Index1 associated with that max
+    __shared__ short warp_lead_inds2[WS]; //Index2 associated with that max
+
+    //Get the maximum value information for each of the warps
     short myInd  = myIndex;
     short myInd2 = myIndex2;
     myVal = warpReduceMax_with_index<DIR>(myVal, myInd, myInd2, lengthSeqB);
 
-    __syncthreads();
+    //Each warp calculates and writes its answer independently and all the
+    //threads in the warp move together, so we don't need a sync point here
     if(laneId == 0){
-        locTots[warpId]  = myVal;
-        locInds[warpId]  = myInd;
-        locInds2[warpId] = myInd2;
+        warp_lead_max  [warpId] = myVal;
+        warp_lead_inds [warpId] = myInd;
+        warp_lead_inds2[warpId] = myInd2;
     }
+
+    //We need to gather each warp's maximum info into a single warp, so we need
+    //to sync here.
     __syncthreads();
-    unsigned check =
-        ((32 + blockDim.x - 1) / 32);  // mimicing the ceil function for floats
-                                       // float check = ((float)blockDim.x / 32);
-    if(threadIdx.x < check)  /////******//////
+
+    //We'll now set up the 0th warp of the block to finish the reduction. Each
+    //thread in that warp will take the maximum information retrieved from each
+    //of the block's warps above.
+
+    //A standard block reduction would use `blockDim.x/WS` to determine which
+    //warps were active, but this assumes all the threads in a warp were active.
+    //In our case, only some of the threads might be activate, so we need to
+    //round up. Therefore, we use the integer ceiling function below.
+    const unsigned warp_was_active = (blockDim.x + (WS-1)) / WS;
+
+    if(threadIdx.x < warp_was_active)
     {
-        myVal  = locTots[threadIdx.x];
-        myInd  = locInds[threadIdx.x];
-        myInd2 = locInds2[threadIdx.x];
+        myVal  = warp_lead_max  [laneId];
+        myInd  = warp_lead_inds [laneId];
+        myInd2 = warp_lead_inds2[laneId];
     }
     else
     {
-        myVal  = 0;
-        myInd  = -1;
-        myInd2 = -1;
+        myVal  = INT16_MIN;
+        myInd  = INT16_MIN;
+        myInd2 = INT16_MIN;
     }
-    __syncthreads();
 
+    //The zeroth warp now holds the maximums of each of the other warps. We now
+    //do a reduction on the zeroth warp to find the overall max.
     if(warpId == 0)
     {
         myVal    = warpReduceMax_with_index<DIR>(myVal, myInd, myInd2, lengthSeqB);
         myIndex  = myInd;
         myIndex2 = myInd2;
     }
-    __syncthreads();
+
     return myVal;
 }
 
