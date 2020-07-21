@@ -3,24 +3,26 @@
 __inline__ __device__ short
 gpu_bsw::warpReduceMax_with_index_reverse(short val, short& myIndex, short& myIndex2, unsigned lengthSeqB)
 {
-    int   warpSize = 32;
+    constexpr int warpSize = 32;
     short myMax    = 0;
-    short newInd   = 0;
-    short newInd2  = 0;
-    short ind      = myIndex;
-    short ind2     = myIndex2;
+    auto  ind      = myIndex;
+    auto  ind2     = myIndex2;
     myMax          = val;
-    unsigned mask  = __ballot_sync(0xffffffff, threadIdx.x < lengthSeqB);  // blockDim.x
-    // unsigned newmask;
+    const unsigned mask  = __ballot_sync(0xffffffff, threadIdx.x < lengthSeqB);  // blockDim.x
+
+    if(threadIdx.x >= lengthSeqB)
+    {
+      val = INT16_MIN;
+    }
+
     for(int offset = warpSize / 2; offset > 0; offset /= 2)
     {
 
-        int tempVal = __shfl_down_sync(mask, val, offset);
-        val     = max(val,tempVal);
-        newInd  = __shfl_down_sync(mask, ind, offset);
-        newInd2 = __shfl_down_sync(mask, ind2, offset);
+        const auto tempVal = __shfl_down_sync(mask, val, offset);
+        val = max(val,tempVal);
+        const auto newInd  = __shfl_down_sync(mask, ind, offset);
+        const auto newInd2 = __shfl_down_sync(mask, ind2, offset);
 
-      //  if(threadIdx.x == 0)printf("index1:%d, index2:%d, max:%d\n", newInd, newInd2, val);
         if(val != myMax)
         {
             ind   = newInd;
