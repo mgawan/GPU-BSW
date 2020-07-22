@@ -175,6 +175,14 @@ swap(T &a, T &b){
 
 
 
+struct Cell {
+  short H = 0;
+  short F = 0;
+  short E = 0;
+};
+
+
+
 template<DataType DT, Direction DIR>
 inline __global__ void
 sequence_process(
@@ -260,10 +268,9 @@ sequence_process(
   __shared__ short local_spill_prev_H[1024];
   __shared__ short local_spill_prev_prev_H[1024];
 
-  short _curr_H = 0, _curr_F = 0, _curr_E = 0;
-  short _prev_H = 0, _prev_F = 0, _prev_E = 0;
-  short _prev_prev_H = 0, _prev_prev_F = 0, _prev_prev_E = 0;
-  short _temp_Val = 0;
+  Cell curr;
+  Cell prev;
+  Cell pprev;
 
   int   i            = 1;
   short thread_max   = 0; // to maintain the thread max score
@@ -277,37 +284,23 @@ sequence_process(
   {
     is_valid = is_valid - (diag < lengthSeqA || diag >= lengthSeqB); //move the pointer to left by 1 if cnd true
 
-    // value exchange happens here to setup registers for next iteration
-    _temp_Val = _prev_H;
-    _prev_H = _curr_H;
-    _curr_H = _prev_prev_H;
-    _prev_prev_H = _temp_Val;
-    _curr_H = 0;
-
-    _temp_Val = _prev_E;
-    _prev_E = _curr_E;
-    _curr_E = _prev_prev_E;
-    _prev_prev_E = _temp_Val;
-    _curr_E = 0;
-
-    _temp_Val = _prev_F;
-    _prev_F = _curr_F;
-    _curr_F = _prev_prev_F;
-    _prev_prev_F = _temp_Val;
-    _curr_F = 0;
+    // Value exchange happens here to setup registers for next iteration
+    pprev = prev;
+    prev  = curr;
+    curr  = {0,0,0};
 
     if(laneId == 31)
     { // if you are the last thread in your warp then spill your values to shmem
-      sh_prev_E[warpId] = _prev_E;
-      sh_prev_H[warpId] = _prev_H;
-      sh_prev_prev_H[warpId] = _prev_prev_H;
+      sh_prev_E[warpId] = prev.E;
+      sh_prev_H[warpId] = prev.H;
+      sh_prev_prev_H[warpId] = pprev.H;
     }
 
     if(diag >= lengthSeqB)
     { // if you are invalid in this iteration, spill your values to shmem
-      local_spill_prev_E[thread_Id] = _prev_E;
-      local_spill_prev_H[thread_Id] = _prev_H;
-      local_spill_prev_prev_H[thread_Id] = _prev_prev_H;
+      local_spill_prev_E[thread_Id] = prev.E;
+      local_spill_prev_H[thread_Id] = prev.H;
+      local_spill_prev_prev_H[thread_Id] = pprev.H;
     }
 
     __syncthreads(); // this is needed so that all the shmem writes are completed.
@@ -315,10 +308,10 @@ sequence_process(
     if(is_valid[thread_Id] && thread_Id < lengthSeqA)
     {
       const unsigned mask = __ballot_sync(__activemask(), (is_valid[thread_Id] &&( thread_Id < lengthSeqA)));
-      const short fVal  = _prev_F + extendGap;
-      const short hfVal = _prev_H + startGap;
-      const short valeShfl  = __shfl_sync(mask, _prev_E, laneId - 1, 32);
-      const short valheShfl = __shfl_sync(mask, _prev_H, laneId - 1, 32);
+      const short fVal  = prev.F + extendGap;
+      const short hfVal = prev.H + startGap;
+      const short valeShfl  = __shfl_sync(mask, prev.E, laneId - 1, 32);
+      const short valheShfl = __shfl_sync(mask, prev.H, laneId - 1, 32);
       short eVal  = 0;
       short heVal = 0;
 
@@ -338,10 +331,10 @@ sequence_process(
         eVal = 0;
         heVal = 0;
       }
-      _curr_F = max(fVal, hfVal);
-      _curr_E = max(eVal, heVal);
+      curr.F = max(fVal, hfVal);
+      curr.E = max(eVal, heVal);
 
-      const short testShufll = __shfl_sync(mask, _prev_prev_H, laneId - 1, 32);
+      const short testShufll = __shfl_sync(mask, pprev.H, laneId - 1, 32);
       short final_prev_prev_H = 0;
 
       if(diag >= lengthSeqB)
@@ -367,15 +360,15 @@ sequence_process(
         diag_score = final_prev_prev_H + add_score;
       }
 
-      _curr_H = findMaxFour(diag_score, _curr_F, _curr_E, 0);
+      curr.H = findMaxFour(diag_score, curr.F, curr.E, 0);
       if(DIR==Direction::FORWARD){
-        thread_max_i = (thread_max >= _curr_H) ? thread_max_i : i;
-        thread_max_j = (thread_max >= _curr_H) ? thread_max_j : thread_Id + 1;
+        thread_max_i = (thread_max >= curr.H) ? thread_max_i : i;
+        thread_max_j = (thread_max >= curr.H) ? thread_max_j : thread_Id + 1;
       } else {
-        thread_max_i = (thread_max >= _curr_H) ? thread_max_i : lengthSeqB - i;            // begin_A (longer string)
-        thread_max_j = (thread_max >= _curr_H) ? thread_max_j : lengthSeqA - thread_Id -1; // begin_B (shorter string)
+        thread_max_i = (thread_max >= curr.H) ? thread_max_i : lengthSeqB - i;            // begin_A (longer string)
+        thread_max_j = (thread_max >= curr.H) ? thread_max_j : lengthSeqA - thread_Id -1; // begin_B (shorter string)
       }
-      thread_max   = (thread_max >= _curr_H) ? thread_max : _curr_H;
+      thread_max   = (thread_max >= curr.H) ? thread_max : curr.H;
       i++;
     }
     __syncthreads(); // why do I need this? commenting it out breaks it
@@ -388,7 +381,7 @@ sequence_process(
     if(DIR==Direction::FORWARD){
       seqB_align_end[block_Id] = thread_max_i;
       seqA_align_end[block_Id] = thread_max_j;
-      top_scores[block_Id] = thread_max;
+      top_scores[block_Id]     = thread_max;
     } else {
       seqB_align_begin[block_Id] = thread_max_i; //newlengthSeqB
       seqA_align_begin[block_Id] = thread_max_j; //newlengthSeqA
