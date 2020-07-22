@@ -251,7 +251,7 @@ sequence_process(
   __shared__ short sh_aa_scoring [(DT==DataType::RNA)?SCORE_MAT_SIZE:1];
 
   if(DT==DataType::RNA){
-    int max_threads = blockDim.x;
+    const auto max_threads = blockDim.x;
     for(int p = thread_Id; p < SCORE_MAT_SIZE; p+=max_threads){
       sh_aa_scoring[p] = scoring_matrix[p];
     }
@@ -355,14 +355,15 @@ sequence_process(
       if(DT==DataType::DNA){
         diag_score = final_prev_prev_H + ((seqB[diag_pos] == myColumnChar) ? matchScore : misMatchScore);
       } else {
-        const short mat_index_q = sh_aa_encoding[(int)seqB[diag_pos]]; //encoding_matrix
-        const short mat_index_r = sh_aa_encoding[(int)myColumnChar];
+        const short mat_index_q = sh_aa_encoding[seqB[diag_pos]]; //encoding_matrix
+        const short mat_index_r = sh_aa_encoding[myColumnChar];
         const short add_score = sh_aa_scoring[mat_index_q*24 + mat_index_r]; // doesnt really matter in what order these indices are used, since the scoring table is symmetrical
 
         diag_score = final_prev_prev_H + add_score;
       }
 
       curr.H = findMaxFour(diag_score, curr.F, curr.E, 0);
+
       if(DIR==Direction::FORWARD){
         thread_max_i = (thread_max >= curr.H) ? thread_max_i : i;
         thread_max_j = (thread_max >= curr.H) ? thread_max_j : thread_Id + 1;
@@ -371,6 +372,7 @@ sequence_process(
         thread_max_j = (thread_max >= curr.H) ? thread_max_j : lengthSeqA - thread_Id -1; // begin_B (shorter string)
       }
       thread_max   = (thread_max >= curr.H) ? thread_max : curr.H;
+
       i++;
     }
     __syncthreads(); // why do I need this? commenting it out breaks it
