@@ -277,12 +277,14 @@ sequence_process(
   short thread_max_i = 0; // to maintain the DP coordinate i for the longer string
   short thread_max_j = 0;// to maintain the DP cooirdinate j for the shorter string
 
-  __syncthreads(); // to make sure all shmem allocations have been initialized
+  //We don't need to sync before the loop since none of the shared memory that
+  //is written above is used before the first sync point within the loop.
 
   // iterate for the number of anti-diagonals
   for(int diag = 0; diag < lengthSeqA + lengthSeqB - 1; diag++)
   {
-    is_valid = is_valid - (diag < lengthSeqA || diag >= lengthSeqB); //move the pointer to left by 1 if cnd true
+    // Move the pointer to left by 1 if the condition is true
+    is_valid -= (diag < lengthSeqA || diag >= lengthSeqB);
 
     // Value exchange happens here to setup registers for next iteration
     pprev = prev;
