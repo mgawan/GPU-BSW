@@ -20,6 +20,7 @@ set(sources
 set(test_sources
   unittest/test_blockShuffleReduce_with_index.cu
   unittest/test_main.cpp
+  unittest/test_misc.cpp
   unittest/test_page_locked_string.cpp
   unittest/test_read_fasta.cpp
   unittest/test_sequence_process.cu
