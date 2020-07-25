@@ -106,3 +106,36 @@ size_t FastaPair::sequence_count() const {
   assert(a.sequence_count()==b.sequence_count());
   return a.sequence_count();
 }
+
+
+
+SortUnsortFastaPair::SortUnsortFastaPair(FastaPair &fp){
+  //Load the ordering
+  ordering.reserve(fp.sequence_count());
+  for(size_t i=0;i<fp.sequence_count();i++)
+    ordering.push_back(i);
+
+  std::sort(ordering.begin(), ordering.end(), [&](const size_t ai, const size_t bi){
+    return  std::min(fp.a.sequences.at(ai).size(), fp.b.sequences.at(ai).size())
+            <std::min(fp.a.sequences.at(bi).size(), fp.b.sequences.at(bi).size());
+  });
+
+  forward_reorder(fp.a.sequences, ordering, visited);
+  // forward_reorder(fp.a.headers,   ordering, visited); //TODO: We don't use these just now
+  // forward_reorder(fp.a.modifiers, ordering, visited);
+
+  forward_reorder(fp.b.sequences, ordering, visited);
+  // forward_reorder(fp.b.headers,   ordering, visited);
+  // forward_reorder(fp.b.modifiers, ordering, visited);
+}
+
+
+void SortUnsortFastaPair::unsort(FastaPair &fp) const {
+    backward_reorder(fp.a.sequences.data(), ordering, visited);
+    // backward_reorder(fp.a.headers.data(),   ordering, visited); //TODO: We don't use these just now
+    // backward_reorder(fp.a.modifiers.data(), ordering, visited);
+
+    backward_reorder(fp.b.sequences.data(), ordering, visited);
+    // backward_reorder(fp.b.headers.data(),   ordering, visited);
+    // backward_reorder(fp.b.modifiers.data(), ordering, visited);
+  }

@@ -1,7 +1,14 @@
 #pragma once
 
+#include <gpu_bsw/reordering.hpp>
+
+#include <algorithm>
+#include <cassert>
+#include <iostream>
+#include <iterator>
 #include <string>
 #include <vector>
+
 
 struct FastaInput {
   std::vector<std::string> sequences;
@@ -22,3 +29,21 @@ struct FastaPair {
 FastaInput ReadFasta(const std::string &filename);
 
 FastaPair ReadFastaQueryTargetPair(const std::string &query, const std::string &target);
+
+
+
+class SortUnsortFastaPair {
+ public:
+  SortUnsortFastaPair(FastaPair &fp);
+
+  template<class T>
+  void unsort(T *data) const {
+    backward_reorder(data, ordering, visited);
+  }
+
+  void unsort(FastaPair &fp) const;
+
+ private:
+  std::vector<int32_t> ordering;
+  mutable std::vector<uint8_t> visited;
+};

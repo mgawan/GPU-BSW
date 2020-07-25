@@ -86,7 +86,9 @@ int main(int argc, char* argv[]){
   const std::string queFile  = argv[3];
   const std::string out_file = argv[4];
 
-  const auto input_data = ReadFastaQueryTargetPair(refFile, queFile);
+  auto input_data = ReadFastaQueryTargetPair(refFile, queFile);
+
+  SortUnsortFastaPair sufp(input_data);
 
   Timer timer_calc;
   timer_calc.start();
@@ -102,6 +104,8 @@ int main(int argc, char* argv[]){
   }
 
   timer_calc.stop();
+
+  sufp.unsort(results.top_scores);
 
   std::ofstream results_file(out_file);
   for(size_t k = 0; k < input_data.sequence_count(); k++){
