@@ -4,9 +4,12 @@
 #include <gpu_bsw/alignments.hpp>
 #include <gpu_bsw/driver.hpp>
 #include <gpu_bsw/kernel.hpp>
-#include <gpu_bsw/page_locked_string.hpp>
-#include <gpu_bsw/timer.hpp>
 #include <gpu_bsw/utils.hpp>
+
+#include <albp/memory.hpp>
+#include <albp/page_locked_string.hpp>
+#include <albp/read_fasta.hpp>
+#include <albp/timer.hpp>
 
 #include <thrust/device_vector.h>
 #include <thrust/host_vector.h>
@@ -54,8 +57,8 @@ void kernel_driver(
   const short openGap,
   const short extendGap
 ){
-    const auto maxContigSize = getMaxLength(contigs);
-    const auto maxReadSize = getMaxLength(reads);
+    const auto maxContigSize = albp::get_max_length(contigs);
+    const auto maxReadSize = albp::get_max_length(reads);
     unsigned totalAlignments = contigs.size(); // assuming that read and contig vectors are same length
 
     //This matrix is used only by the RNA kernel
@@ -83,7 +86,7 @@ void kernel_driver(
     int       its    = (max_per_device>20000)?(ceil((float)max_per_device/20000)):1;
     initialize_alignments(alignments, totalAlignments); // pinned memory allocation
 
-    Timer timer_total;
+    albp::Timer timer_total;
     timer_total.start();
 
     #pragma omp parallel
@@ -92,7 +95,7 @@ void kernel_driver(
         cudaSetDevice(my_cpu_id);
         int myGPUid;
         cudaGetDevice(&myGPUid);
-        Timer timer_cpu;
+        albp::Timer timer_cpu;
 
         std::array<cudaStream_t, 2> streams_cuda;
         for(auto &stream: streams_cuda){
@@ -112,9 +115,9 @@ void kernel_driver(
         short *d_encoding_matrix;
 
         if(DT==DataType::RNA){
-          d_encoding_matrix = DeviceMalloc<short>(ENCOD_MAT_SIZE, encoding_matrix);
+          d_encoding_matrix = albp::DeviceMalloc<short>(ENCOD_MAT_SIZE, encoding_matrix);
         }
-        d_scoring_matrix  = DeviceMalloc<short>(SCORE_MAT_SIZE, scoring_matrix);
+        d_scoring_matrix  = albp::DeviceMalloc<short>(SCORE_MAT_SIZE, scoring_matrix);
 
         short* alAbeg         = alignments->ref_begin   + my_cpu_id * alignmentsPerDevice;
         short* alBbeg         = alignments->query_begin + my_cpu_id * alignmentsPerDevice;
@@ -122,16 +125,16 @@ void kernel_driver(
         short* alBend         = alignments->query_begin + my_cpu_id * alignmentsPerDevice;  // memory on CPU for copying the results
         short* top_scores_cpu = alignments->top_scores  + my_cpu_id * alignmentsPerDevice;
 
-        unsigned *const offsetA_h = PageLockedMalloc<unsigned>(stringsPerIt + leftOvers);
-        unsigned *const offsetB_h = PageLockedMalloc<unsigned>(stringsPerIt + leftOvers);
+        unsigned *const offsetA_h = albp::PageLockedMalloc<unsigned>(stringsPerIt + leftOvers);
+        unsigned *const offsetB_h = albp::PageLockedMalloc<unsigned>(stringsPerIt + leftOvers);
 
-        char *const strA_d = DeviceMalloc<char>(maxContigSize * (stringsPerIt + leftOvers));
-        char *const strB_d = DeviceMalloc<char>(maxReadSize   * (stringsPerIt + leftOvers));
+        char *const strA_d = albp::DeviceMalloc<char>(maxContigSize * (stringsPerIt + leftOvers));
+        char *const strB_d = albp::DeviceMalloc<char>(maxReadSize   * (stringsPerIt + leftOvers));
 
-        auto strA = PageLockedString(maxContigSize * (stringsPerIt + leftOvers));
-        auto strB = PageLockedString(maxReadSize   * (stringsPerIt + leftOvers));
+        auto strA = albp::PageLockedString(maxContigSize * (stringsPerIt + leftOvers));
+        auto strB = albp::PageLockedString(maxReadSize   * (stringsPerIt + leftOvers));
 
-        Timer timer_packing;
+        albp::Timer timer_packing;
 
         std::cout<<"loop begin\n";
         for(int perGPUIts = 0; perGPUIts < its; perGPUIts++)
@@ -208,13 +211,13 @@ void kernel_driver(
                 strA_d, strB_d, gpu_data.offset_ref_gpu, gpu_data.offset_query_gpu, gpu_data.ref_start_gpu,
                 gpu_data.ref_end_gpu, gpu_data.query_start_gpu, gpu_data.query_end_gpu, gpu_data.scores_gpu,
                 openGap, extendGap, d_scoring_matrix, d_encoding_matrix);
-            cudaErrchk(cudaGetLastError());
+            ALBP_CUDA_ERROR_CHECK(cudaGetLastError());
 
             gpu_bsw::sequence_process<DT,Direction::FORWARD><<<sequences_per_stream + sequences_stream_leftover, minSize, ShmemBytes, streams_cuda[1]>>>(
                 strA_d + half_length_A, strB_d + half_length_B, gpu_data.offset_ref_gpu + sequences_per_stream, gpu_data.offset_query_gpu + sequences_per_stream,
                 gpu_data.ref_start_gpu + sequences_per_stream, gpu_data.ref_end_gpu + sequences_per_stream, gpu_data.query_start_gpu + sequences_per_stream, gpu_data.query_end_gpu + sequences_per_stream,
                 gpu_data.scores_gpu + sequences_per_stream, openGap, extendGap, d_scoring_matrix, d_encoding_matrix);
-            cudaErrchk(cudaGetLastError());
+            ALBP_CUDA_ERROR_CHECK(cudaGetLastError());
 
             // copyin back end index so that we can find new min
             asynch_mem_copies_dth_mid(&gpu_data, alAend, alBend, sequences_per_stream, sequences_stream_leftover, streams_cuda);
@@ -229,13 +232,13 @@ void kernel_driver(
             gpu_bsw::sequence_process<DT,Direction::REVERSE><<<sequences_per_stream, newMin, ShmemBytes, streams_cuda[0]>>>(
                   strA_d, strB_d, gpu_data.offset_ref_gpu, gpu_data.offset_query_gpu, gpu_data.ref_start_gpu,
                   gpu_data.ref_end_gpu, gpu_data.query_start_gpu, gpu_data.query_end_gpu, gpu_data.scores_gpu, openGap, extendGap, d_scoring_matrix, d_encoding_matrix);
-            cudaErrchk(cudaGetLastError());
+            ALBP_CUDA_ERROR_CHECK(cudaGetLastError());
 
             gpu_bsw::sequence_process<DT,Direction::REVERSE><<<sequences_per_stream + sequences_stream_leftover, newMin, ShmemBytes, streams_cuda[1]>>>(
                   strA_d + half_length_A, strB_d + half_length_B, gpu_data.offset_ref_gpu + sequences_per_stream, gpu_data.offset_query_gpu + sequences_per_stream ,
                   gpu_data.ref_start_gpu + sequences_per_stream, gpu_data.ref_end_gpu + sequences_per_stream, gpu_data.query_start_gpu + sequences_per_stream, gpu_data.query_end_gpu + sequences_per_stream,
                   gpu_data.scores_gpu + sequences_per_stream, openGap, extendGap, d_scoring_matrix, d_encoding_matrix);
-            cudaErrchk(cudaGetLastError());
+            ALBP_CUDA_ERROR_CHECK(cudaGetLastError());
 
             asynch_mem_copies_dth(&gpu_data, alAbeg, alBbeg, top_scores_cpu, sequences_per_stream, sequences_stream_leftover, streams_cuda);
 
@@ -247,8 +250,8 @@ void kernel_driver(
 
         }  // for iterations end here
 
-        cudaErrchk(cudaFree(strA_d));
-        cudaErrchk(cudaFree(strB_d));
+        ALBP_CUDA_ERROR_CHECK(cudaFree(strA_d));
+        ALBP_CUDA_ERROR_CHECK(cudaFree(strB_d));
         cudaFreeHost(offsetA_h);
         cudaFreeHost(offsetB_h);
 

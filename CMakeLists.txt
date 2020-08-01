@@ -10,22 +10,19 @@ set(CMAKE_CUDA_EXTENSIONS OFF CACHE BOOL "")
 #find_package(timemory REQUIRED COMPONENTS headers cuda cupti compile-options arch)
 find_package(OpenMP REQUIRED)
 
+add_subdirectory(submodules/alignment_boilerplate EXCLUDE_FROM_ALL)
+
 set(sources
   src/utils.cpp
   src/alignments.cpp
   src/driver.cpp
-  src/read_fasta.cpp
 )
 
 set(test_sources
   unittest/test_blockShuffleReduce_with_index.cu
   unittest/test_main.cpp
   unittest/test_misc.cpp
-  unittest/test_page_locked_string.cpp
-  unittest/test_read_fasta.cpp
-  unittest/test_reordering.cpp
   unittest/test_sequence_process.cu
-  unittest/test_timer.cpp
   unittest/test_warpReduceMax_with_index.cu
 )
 
@@ -38,7 +35,7 @@ PROPERTIES
 
 add_library(gpu_bsw ${sources})
 target_include_directories(gpu_bsw PUBLIC include)
-target_link_libraries(gpu_bsw PUBLIC OpenMP::OpenMP_CXX)
+target_link_libraries(gpu_bsw PUBLIC albp OpenMP::OpenMP_CXX)
 #target_link_libraries(program_gpu PUBLIC timemory OpenMP::OpenMP_CXX)
 target_compile_options(gpu_bsw PUBLIC
     $<$<COMPILE_LANGUAGE:CUDA>:-gencode=arch=compute_50,code=sm_50>
@@ -60,8 +57,8 @@ target_link_libraries(program_gpu PRIVATE gpu_bsw)
 add_executable(unittest ${test_sources})
 target_link_libraries(unittest PRIVATE gpu_bsw)
 
-add_executable(test unittest/test.cu)
-target_link_libraries(test PRIVATE gpu_bsw)
+# add_executable(test unittest/test.cu)
+# target_link_libraries(test PRIVATE gpu_bsw)
 
 
 add_custom_target(
