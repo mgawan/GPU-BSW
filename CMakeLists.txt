@@ -13,8 +13,6 @@ find_package(OpenMP REQUIRED)
 add_subdirectory(submodules/alignment_boilerplate EXCLUDE_FROM_ALL)
 
 set(sources
-  src/utils.cpp
-  src/alignments.cpp
   src/driver.cpp
 )
 
@@ -44,6 +42,7 @@ target_compile_options(gpu_bsw PUBLIC
     $<$<COMPILE_LANGUAGE:CUDA>:-gencode=arch=compute_61,code=sm_61>
     $<$<COMPILE_LANGUAGE:CUDA>:-gencode=arch=compute_70,code=sm_70>
     $<$<COMPILE_LANGUAGE:CUDA>:-Xcompiler=-Wall,-Wextra>
+    # $<$<COMPILE_LANGUAGE:CUDA>:-G>
 )
 
 get_property(LANGUAGES GLOBAL PROPERTY ENABLED_LANGUAGES)

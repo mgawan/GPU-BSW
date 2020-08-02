@@ -188,8 +188,8 @@ inline __global__ void
 sequence_process(
   const char     *const seqA_array,
   const char     *const seqB_array,
-  const unsigned *const prefix_lengthA,
-  const unsigned *const prefix_lengthB,
+  const size_t   *const startsA,
+  const size_t   *const startsB,
   short          *      seqA_align_begin,
   short          *      seqA_align_end,
   short          *      seqB_align_begin,
@@ -213,15 +213,27 @@ sequence_process(
   unsigned lengthSeqA;
   unsigned lengthSeqB;
   if(DIR==Direction::FORWARD){
-    lengthSeqA = prefix_lengthA[block_Id] - ((block_Id==0) ? 0 : prefix_lengthA[block_Id - 1]);
-    lengthSeqB = prefix_lengthB[block_Id] - ((block_Id==0) ? 0 : prefix_lengthB[block_Id - 1]);
+    lengthSeqA = startsA[block_Id+1] - startsA[block_Id];
+    lengthSeqB = startsB[block_Id+1] - startsB[block_Id];
   } else {
     lengthSeqA = seqA_align_end[block_Id];
     lengthSeqB = seqB_align_end[block_Id];
   }
 
-  const char *seqA = &seqA_array[(block_Id==0) ? 0 : prefix_lengthA[block_Id - 1]];
-  const char *seqB = &seqB_array[(block_Id==0) ? 0 : prefix_lengthB[block_Id - 1]];
+  if(lengthSeqA==0 || lengthSeqB==0){
+    if(DIR==Direction::FORWARD){
+      seqB_align_end[block_Id] = -1;
+      seqA_align_end[block_Id] = -1;
+      top_scores[block_Id]     = -1;
+    } else {
+      seqB_align_begin[block_Id] = -1; //newlengthSeqB
+      seqA_align_begin[block_Id] = -1; //newlengthSeqA
+    }
+    return;
+  }
+
+  const char *seqA = &seqA_array[startsA[block_Id]-startsA[0]];
+  const char *seqB = &seqB_array[startsB[block_Id]-startsB[0]];
 
   // We arbitrarily decide that Sequence A will always be shorter (or equal to)
   // Sequence B. If this isn't the case, we swap things around to make the code
@@ -307,9 +319,9 @@ sequence_process(
 
     __syncthreads(); // this is needed so that all the shmem writes are completed.
 
-    if(is_valid[thread_Id] && thread_Id < lengthSeqA)
+    if(thread_Id < lengthSeqA && is_valid[thread_Id])
     {
-      const unsigned mask = __ballot_sync(__activemask(), (is_valid[thread_Id] &&( thread_Id < lengthSeqA)));
+      const unsigned mask = __ballot_sync(__activemask(), (thread_Id < lengthSeqA) && is_valid[thread_Id]);
       const short fVal  = prev.F + extendGap;
       const short hfVal = prev.H + startGap;
       const short valeShfl  = __shfl_sync(mask, prev.E, laneId - 1, 32);

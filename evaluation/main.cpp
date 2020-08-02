@@ -92,11 +92,11 @@ int main(int argc, char* argv[]){
   albp::Timer timer_calc;
   timer_calc.start();
 
-  gpu_bsw_driver::alignment_results results;
+  AlignmentResults results;
   if(in_arg == "aa"){
- 	  gpu_bsw_driver::kernel_driver<DataType::RNA>(input_data.a.sequences, input_data.b.sequences, &results, blosum62.data(), -6, -1);
+ 	  results = gpu_bsw_driver::kernel_driver<DataType::RNA>(input_data, blosum62.data(), -6, -1);
   } else if(in_arg == "dna") {
- 	  gpu_bsw_driver::kernel_driver<DataType::DNA>(input_data.a.sequences, input_data.b.sequences, &results, match_mismatch_scores.data(), -3, -1);
+ 	  results = gpu_bsw_driver::kernel_driver<DataType::DNA>(input_data, match_mismatch_scores.data(), -3, -1);
   } else {
     std::cerr<<"Data type must be 'aa' or 'dna'!"<<std::endl;
     return -1;
@@ -109,8 +109,6 @@ int main(int argc, char* argv[]){
     results_file<<results.top_scores[k]<<std::endl;
   }
   results_file.close();
-
-  free_alignments(&results);
 
   std::cout << "Total Cells = "<<input_data.total_cells_1_to_1()<<std::endl;
   std::cout << "Wall-time   = "<<timer_calc.getSeconds()<<std::endl;
