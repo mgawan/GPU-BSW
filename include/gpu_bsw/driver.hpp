@@ -16,11 +16,7 @@
 #include <string>
 #include <vector>
 
-constexpr int STREAMS_PER_GPU = 2;
-
-int get_new_min_length(const short *const alAend, const short *const alBend, const albp::RangePair &rp);
-
-  // for storing the alignment results
+// for storing the alignment results
 struct AlignmentResults{
   AlignmentResults() = default;
   AlignmentResults(const size_t size);
@@ -136,12 +132,12 @@ AlignmentResults kernel_driver(
   const albp::FastaPair &input_data,
   const short scoring_matrix[],
   const short openGap,
-  const short extendGap
+  const short extendGap,
+  const int streams_per_gpu,
+  const size_t chunk_size
 ){
     albp::Timer timer_total;
     timer_total.start();
-
-    constexpr size_t chunk_size = 10000;
 
     // Assuming that read and contig vectors are same length
     const auto totalAlignments = input_data.sequence_count();
@@ -179,7 +175,7 @@ AlignmentResults kernel_driver(
         albp::DeviceMallocUnique<short>(ENCOD_MAT_SIZE, encoding_matrix) //Only used by RNA kernel
       });
 
-      for(int s=0;s<STREAMS_PER_GPU;s++){
+      for(int s=0;s<streams_per_gpu;s++){
         streams.emplace_back(scoring, alignments, pl_fasta, device_id, input_data.a.maximum_sequence_length, input_data.b.maximum_sequence_length, chunk_size);
         stream_functions.emplace_back(streams.back());
       }

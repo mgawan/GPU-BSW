@@ -87,14 +87,17 @@ int main(int argc, char* argv[]){
 
   auto input_data = albp::ReadFastaQueryTargetPair(refFile, queFile);
 
+  constexpr size_t chunk_size = 10000;
+  constexpr int streams_per_gpu = 2;
+
   albp::Timer timer_calc;
   timer_calc.start();
 
   AlignmentResults results;
   if(in_arg == "aa"){
- 	  results = gpu_bsw_driver::kernel_driver<DataType::RNA>(input_data, blosum62.data(), -6, -1);
+ 	  results = gpu_bsw_driver::kernel_driver<DataType::RNA>(input_data, blosum62.data(), -6, -1, streams_per_gpu, chunk_size);
   } else if(in_arg == "dna") {
- 	  results = gpu_bsw_driver::kernel_driver<DataType::DNA>(input_data, match_mismatch_scores.data(), -3, -1);
+ 	  results = gpu_bsw_driver::kernel_driver<DataType::DNA>(input_data, match_mismatch_scores.data(), -3, -1, streams_per_gpu, chunk_size);
   } else {
     std::cerr<<"Data type must be 'aa' or 'dna'!"<<std::endl;
     return -1;
