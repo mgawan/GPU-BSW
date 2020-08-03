@@ -1,6 +1,8 @@
 #ifndef KERNEL_HPP
 #define KERNEL_HPP
 
+#include <thrust/swap.h>
+
 #include <cassert>
 #include <cstdint>
 #include <cstdlib>
@@ -163,16 +165,6 @@ findMaxFour(const short first, const short second, const short third, const shor
 
 
 
-template<class T>
-__inline__ __device__ __host__ void
-swap(T &a, T &b){
-  T temp(a);
-  a = b;
-  b = temp;
-}
-
-
-
 struct Cell {
   short H = 0;
   short F = 0;
@@ -237,10 +229,10 @@ sequence_process(
   // Sequence B. If this isn't the case, we swap things around to make the code
   // below simpler.
   if(lengthSeqA>lengthSeqB){
-    swap(lengthSeqA,       lengthSeqB      );
-    swap(seqA_align_begin, seqB_align_begin);
-    swap(seqA_align_end,   seqB_align_end  );
-    swap(seqA,             seqB            );
+    thrust::swap(lengthSeqA,       lengthSeqB      );
+    thrust::swap(seqA_align_begin, seqB_align_begin);
+    thrust::swap(seqA_align_end,   seqB_align_end  );
+    thrust::swap(seqA,             seqB            );
   }
 
   extern __shared__ char is_valid_array[];
