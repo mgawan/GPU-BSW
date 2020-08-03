@@ -11,17 +11,8 @@
 #include <albp/stream_manager.hpp>
 #include <albp/timer.hpp>
 
-#include <thrust/device_vector.h>
-#include <thrust/host_vector.h>
-#include <thrust/scan.h>
-
-#include <chrono>
-#include <cmath>
-#include <fstream>
-#include <iomanip>
 #include <iostream>
 #include <list>
-#include <omp.h>
 #include <string>
 #include <vector>
 
@@ -166,7 +157,7 @@ AlignmentResults kernel_driver(
 
     int device_count;
     cudaGetDeviceCount(&device_count);
-    omp_set_num_threads(device_count); //one OMP thread per GPU
+
     std::cout<<"Number of available GPUs:"<<device_count<<"\n";
 
     AlignmentResults alignments(input_data.sequence_count());

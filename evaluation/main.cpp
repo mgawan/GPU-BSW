@@ -6,9 +6,7 @@
 #include <array>
 #include <fstream>
 #include <iostream>
-#include <omp.h>
 #include <string>
-#include <bits/stdc++.h>
 
 constexpr std::array<short,576> blosum62 = {
  //  A   R   N   D   C   Q   E   G   H   I   L   K   M   F   P   S   T   W   Y   V   B   Z   X   *
