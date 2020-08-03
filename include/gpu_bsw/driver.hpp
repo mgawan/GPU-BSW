@@ -76,8 +76,6 @@ class StreamConsumer {
   void operator()(const albp::RangePair range){
     ALBP_CUDA_ERROR_CHECK(cudaSetDevice(device_id));
 
-    std::cerr<<"Processing range "<<range.begin<<" "<<range.end<<std::endl;
-
     const albp::RangePair range_plus_one(range.begin, range.end+1);
 
     //Copy from host to device
@@ -179,7 +177,7 @@ AlignmentResults kernel_driver(
     albp::Timer timer_total;
     timer_total.start();
 
-    constexpr size_t chunk_size = 4000;
+    constexpr size_t chunk_size = 10000;
 
     // Assuming that read and contig vectors are same length
     const auto totalAlignments = input_data.sequence_count();
