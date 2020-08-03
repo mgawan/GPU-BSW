@@ -93,38 +93,11 @@ class StreamConsumer {
     const auto alignmentPad = 4 + (4 - totShmem % 4);
     const auto ShmemBytes = totShmem + alignmentPad;
     if(ShmemBytes > 48000 && DT==DataType::DNA)
-      cudaFuncSetAttribute(gpu_bsw::sequence_process<DataType::DNA,Direction::FORWARD>, cudaFuncAttributeMaxDynamicSharedMemorySize, ShmemBytes);
+      cudaFuncSetAttribute(gpu_bsw::sequence_process_forward_and_reverse<DataType::DNA>, cudaFuncAttributeMaxDynamicSharedMemorySize, ShmemBytes);
 
     assert(minSize>0);
     assert(ShmemBytes>0);
-    gpu_bsw::sequence_process<DT,Direction::FORWARD><<<range.size(), minSize, ShmemBytes, stream>>>(
-      seq_a_gpu.get(),
-      seq_b_gpu.get(),
-      starts_a_gpu.get(),
-      starts_b_gpu.get(),
-      seq_a_start_gpu.get(),
-      seq_a_end_gpu.get(),
-      seq_b_start_gpu.get(),
-      seq_b_end_gpu.get(),
-      scores_gpu.get(),
-      scoring->gap_open,
-      scoring->gap_extend,
-      scoring->d_scoring_matrix.get(),
-      scoring->d_encoding_matrix.get()
-    );
-    ALBP_CUDA_ERROR_CHECK(cudaGetLastError());
-
-    copy_to_host_async(alignments.a_end.get(), seq_a_end_gpu.get(), range, stream);
-    copy_to_host_async(alignments.b_end.get(), seq_b_end_gpu.get(), range, stream);
-
-    ALBP_CUDA_ERROR_CHECK(cudaStreamSynchronize(stream));
-
-    // Find the new largest of smaller lengths
-    const auto newMin = get_new_min_length(alignments.a_end.get(), alignments.b_end.get(), range);
-
-    assert(newMin>0);
-    assert(ShmemBytes>0);
-    gpu_bsw::sequence_process<DT,Direction::REVERSE><<<range.size(), newMin, ShmemBytes, stream>>>(
+    gpu_bsw::sequence_process_forward_and_reverse<DT><<<range.size(), minSize, ShmemBytes, stream>>>(
       seq_a_gpu.get(),
       seq_b_gpu.get(),
       starts_a_gpu.get(),

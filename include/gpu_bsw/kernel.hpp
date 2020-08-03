@@ -184,7 +184,7 @@ struct Cell {
 
 
 template<DataType DT, Direction DIR>
-inline __global__ void
+inline __device__ void
 sequence_process(
   const char     *const seqA_array,
   const char     *const seqB_array,
@@ -403,6 +403,29 @@ sequence_process(
       seqA_align_begin[block_Id] = thread_max_j; //newlengthSeqA
     }
   }
+}
+
+
+
+template<DataType DT>
+inline __global__ void
+sequence_process_forward_and_reverse(
+  const char     *const seqA_array,
+  const char     *const seqB_array,
+  const size_t   *const startsA,
+  const size_t   *const startsB,
+  short          *      seqA_align_begin,
+  short          *      seqA_align_end,
+  short          *      seqB_align_begin,
+  short          *      seqB_align_end,
+  short          *const top_scores,
+  const short           startGap,
+  const short           extendGap,
+  const short *const    scoring_matrix,
+  const short *const    encoding_matrix
+){
+  sequence_process<DT, Direction::FORWARD>(seqA_array,seqB_array,startsA,startsB,seqA_align_begin,seqA_align_end,seqB_align_begin,seqB_align_end,top_scores,startGap,extendGap,scoring_matrix,encoding_matrix);
+  sequence_process<DT, Direction::REVERSE>(seqA_array,seqB_array,startsA,startsB,seqA_align_begin,seqA_align_end,seqB_align_begin,seqB_align_end,top_scores,startGap,extendGap,scoring_matrix,encoding_matrix);
 }
 
 }
