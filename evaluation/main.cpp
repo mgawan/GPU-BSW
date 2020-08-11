@@ -87,6 +87,13 @@ int main(int argc, char* argv[]){
 
   auto input_data = albp::ReadFastaQueryTargetPair(refFile, queFile);
 
+  for(size_t i=0;i<input_data.sequence_count();i++){
+    if(input_data.a.sequences[i].size()>1024 && input_data.b.sequences[i].size()>1024){
+      std::cerr<<"The input contains a pair of sequences which are each longer than 1024 bases. Cannot proceed."<<std::endl;
+      return -1;
+    }
+  }
+
   constexpr size_t chunk_size = 10000;
   constexpr int streams_per_gpu = 2;
 
