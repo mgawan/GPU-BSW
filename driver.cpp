@@ -76,7 +76,7 @@ gpu_bsw_driver::kernel_driver_dna(std::vector<std::string> reads, std::vector<st
 
         auto start2 = NOW;
         for(int perGPUIts = 0; perGPUIts < its; perGPUIts++)
-        {   
+        {
             auto packing_start = NOW;
             int                                      blocksLaunched = 0;
             std::vector<std::string>::const_iterator beginAVec;
@@ -107,7 +107,7 @@ gpu_bsw_driver::kernel_driver_dna(std::vector<std::string> reads, std::vector<st
             int sequences_stream_leftover = (blocksLaunched) % NSTREAMS;
             unsigned half_length_A = 0;
             unsigned half_length_B = 0;
-            
+
             auto start_cpu = NOW;
 
             for(int i = 0; i < sequencesA.size(); i++)
@@ -142,7 +142,7 @@ gpu_bsw_driver::kernel_driver_dna(std::vector<std::string> reads, std::vector<st
 
             for(int i = 0; i < sequencesA.size(); i++)
             {
-                char* seqptrA = strA + offsetSumA;  
+                char* seqptrA = strA + offsetSumA;
                 memcpy(seqptrA, sequencesA[i].c_str(), sequencesA[i].size());
                 char* seqptrB = strB + offsetSumB;
                 memcpy(seqptrB, sequencesB[i].c_str(), sequencesB[i].size());
@@ -159,22 +159,24 @@ gpu_bsw_driver::kernel_driver_dna(std::vector<std::string> reads, std::vector<st
             unsigned minSize = (maxReadSize < maxContigSize) ? maxReadSize : maxContigSize;
             unsigned totShmem = 3 * (minSize + 1) * sizeof(short);
             unsigned alignmentPad = 4 + (4 - totShmem % 4);
-            size_t   ShmemBytes = totShmem + alignmentPad; 
+            size_t   ShmemBytes = totShmem + alignmentPad;
             if(ShmemBytes > 48000)
                 cudaFuncSetAttribute(gpu_bsw::sequence_dna_kernel, cudaFuncAttributeMaxDynamicSharedMemorySize, ShmemBytes);
 
             gpu_bsw::sequence_dna_kernel<<<sequences_per_stream, minSize, ShmemBytes, streams_cuda[0]>>>(
                 strA_d, strB_d, gpu_data.offset_ref_gpu, gpu_data.offset_query_gpu, gpu_data.ref_start_gpu,
                 gpu_data.ref_end_gpu, gpu_data.query_start_gpu, gpu_data.query_end_gpu, gpu_data.scores_gpu, matchScore, misMatchScore, startGap, extendGap);
+            cudaErrchk(cudaGetLastError());
 
             gpu_bsw::sequence_dna_kernel<<<sequences_per_stream + sequences_stream_leftover, minSize, ShmemBytes, streams_cuda[1]>>>(
                 strA_d + half_length_A, strB_d + half_length_B, gpu_data.offset_ref_gpu + sequences_per_stream, gpu_data.offset_query_gpu + sequences_per_stream,
-                 gpu_data.ref_start_gpu + sequences_per_stream, gpu_data.ref_end_gpu + sequences_per_stream, gpu_data.query_start_gpu + sequences_per_stream, gpu_data.query_end_gpu + sequences_per_stream, 
+                 gpu_data.ref_start_gpu + sequences_per_stream, gpu_data.ref_end_gpu + sequences_per_stream, gpu_data.query_start_gpu + sequences_per_stream, gpu_data.query_end_gpu + sequences_per_stream,
                  gpu_data.scores_gpu + sequences_per_stream, matchScore, misMatchScore, startGap, extendGap);
-      
+            cudaErrchk(cudaGetLastError());
+
             // copyin back end index so that we can find new min
             asynch_mem_copies_dth_mid(&gpu_data, alAend, alBend, sequences_per_stream, sequences_stream_leftover, streams_cuda);
-      
+
             cudaStreamSynchronize (streams_cuda[0]);
             cudaStreamSynchronize (streams_cuda[1]);
 
@@ -187,18 +189,20 @@ gpu_bsw_driver::kernel_driver_dna(std::vector<std::string> reads, std::vector<st
             gpu_bsw::sequence_dna_reverse<<<sequences_per_stream, newMin, ShmemBytes, streams_cuda[0]>>>(
                     strA_d, strB_d, gpu_data.offset_ref_gpu, gpu_data.offset_query_gpu, gpu_data.ref_start_gpu,
                     gpu_data.ref_end_gpu, gpu_data.query_start_gpu, gpu_data.query_end_gpu, gpu_data.scores_gpu, matchScore, misMatchScore, startGap, extendGap);
+            cudaErrchk(cudaGetLastError());
 
             gpu_bsw::sequence_dna_reverse<<<sequences_per_stream + sequences_stream_leftover, newMin, ShmemBytes, streams_cuda[1]>>>(
                     strA_d + half_length_A, strB_d + half_length_B, gpu_data.offset_ref_gpu + sequences_per_stream, gpu_data.offset_query_gpu + sequences_per_stream ,
-                    gpu_data.ref_start_gpu + sequences_per_stream, gpu_data.ref_end_gpu + sequences_per_stream, gpu_data.query_start_gpu + sequences_per_stream, gpu_data.query_end_gpu + sequences_per_stream, 
+                    gpu_data.ref_start_gpu + sequences_per_stream, gpu_data.ref_end_gpu + sequences_per_stream, gpu_data.query_start_gpu + sequences_per_stream, gpu_data.query_end_gpu + sequences_per_stream,
                     gpu_data.scores_gpu + sequences_per_stream, matchScore, misMatchScore, startGap, extendGap);
+            cudaErrchk(cudaGetLastError());
 
             asynch_mem_copies_dth(&gpu_data, alAbeg, alBbeg, top_scores_cpu, sequences_per_stream, sequences_stream_leftover, streams_cuda);
 
-                 alAbeg += stringsPerIt;  
-                 alBbeg += stringsPerIt; 
-                 alAend += stringsPerIt; 
-                 alBend += stringsPerIt;  
+                 alAbeg += stringsPerIt;
+                 alBbeg += stringsPerIt;
+                 alAend += stringsPerIt;
+                 alBend += stringsPerIt;
                  top_scores_cpu += stringsPerIt;
 
         }  // for iterations end here
@@ -307,7 +311,7 @@ gpu_bsw_driver::kernel_driver_aa(std::vector<std::string> reads, std::vector<std
       auto start2 = NOW;
       std::cout<<"loop begin\n";
       for(int perGPUIts = 0; perGPUIts < its; perGPUIts++)
-      {   
+      {
           auto packing_start = NOW;
           int                                      blocksLaunched = 0;
           std::vector<std::string>::const_iterator beginAVec;
@@ -338,7 +342,7 @@ gpu_bsw_driver::kernel_driver_aa(std::vector<std::string> reads, std::vector<std
           int sequences_stream_leftover = (blocksLaunched) % NSTREAMS;
           unsigned half_length_A = 0;
           unsigned half_length_B = 0;
-          
+
           auto start_cpu = NOW;
 
           for(int i = 0; i < sequencesA.size(); i++)
@@ -373,7 +377,7 @@ gpu_bsw_driver::kernel_driver_aa(std::vector<std::string> reads, std::vector<std
 
           for(int i = 0; i < sequencesA.size(); i++)
           {
-              char* seqptrA = strA + offsetSumA;  
+              char* seqptrA = strA + offsetSumA;
               memcpy(seqptrA, sequencesA[i].c_str(), sequencesA[i].size());
               char* seqptrB = strB + offsetSumB;
               memcpy(seqptrB, sequencesB[i].c_str(), sequencesB[i].size());
@@ -390,20 +394,22 @@ gpu_bsw_driver::kernel_driver_aa(std::vector<std::string> reads, std::vector<std
           unsigned minSize = (maxReadSize < maxContigSize) ? maxReadSize : maxContigSize;
           unsigned totShmem = 3 * (minSize + 1) * sizeof(short);
           unsigned alignmentPad = 4 + (4 - totShmem % 4);
-          size_t   ShmemBytes = totShmem + alignmentPad; 
+          size_t   ShmemBytes = totShmem + alignmentPad;
           if(ShmemBytes > 48000)
               cudaFuncSetAttribute(gpu_bsw::sequence_dna_kernel, cudaFuncAttributeMaxDynamicSharedMemorySize, ShmemBytes);
 
           gpu_bsw::sequence_aa_kernel<<<sequences_per_stream, minSize, ShmemBytes, streams_cuda[0]>>>(
               strA_d, strB_d, gpu_data.offset_ref_gpu, gpu_data.offset_query_gpu, gpu_data.ref_start_gpu,
-              gpu_data.ref_end_gpu, gpu_data.query_start_gpu, gpu_data.query_end_gpu, gpu_data.scores_gpu, 
+              gpu_data.ref_end_gpu, gpu_data.query_start_gpu, gpu_data.query_end_gpu, gpu_data.scores_gpu,
               openGap, extendGap, d_scoring_matrix, d_encoding_matrix);
+          cudaErrchk(cudaGetLastError());
 
           gpu_bsw::sequence_aa_kernel<<<sequences_per_stream + sequences_stream_leftover, minSize, ShmemBytes, streams_cuda[1]>>>(
               strA_d + half_length_A, strB_d + half_length_B, gpu_data.offset_ref_gpu + sequences_per_stream, gpu_data.offset_query_gpu + sequences_per_stream,
-                gpu_data.ref_start_gpu + sequences_per_stream, gpu_data.ref_end_gpu + sequences_per_stream, gpu_data.query_start_gpu + sequences_per_stream, gpu_data.query_end_gpu + sequences_per_stream, 
+                gpu_data.ref_start_gpu + sequences_per_stream, gpu_data.ref_end_gpu + sequences_per_stream, gpu_data.query_start_gpu + sequences_per_stream, gpu_data.query_end_gpu + sequences_per_stream,
                 gpu_data.scores_gpu + sequences_per_stream, openGap, extendGap, d_scoring_matrix, d_encoding_matrix);
-        
+          cudaErrchk(cudaGetLastError());
+
           // copyin back end index so that we can find new min
           asynch_mem_copies_dth_mid(&gpu_data, alAend, alBend, sequences_per_stream, sequences_stream_leftover, streams_cuda);
 
@@ -419,18 +425,20 @@ gpu_bsw_driver::kernel_driver_aa(std::vector<std::string> reads, std::vector<std
           gpu_bsw::sequence_aa_reverse<<<sequences_per_stream, newMin, ShmemBytes, streams_cuda[0]>>>(
                   strA_d, strB_d, gpu_data.offset_ref_gpu, gpu_data.offset_query_gpu, gpu_data.ref_start_gpu,
                   gpu_data.ref_end_gpu, gpu_data.query_start_gpu, gpu_data.query_end_gpu, gpu_data.scores_gpu, openGap, extendGap, d_scoring_matrix, d_encoding_matrix);
+          cudaErrchk(cudaGetLastError());
 
           gpu_bsw::sequence_aa_reverse<<<sequences_per_stream + sequences_stream_leftover, newMin, ShmemBytes, streams_cuda[1]>>>(
                   strA_d + half_length_A, strB_d + half_length_B, gpu_data.offset_ref_gpu + sequences_per_stream, gpu_data.offset_query_gpu + sequences_per_stream ,
-                  gpu_data.ref_start_gpu + sequences_per_stream, gpu_data.ref_end_gpu + sequences_per_stream, gpu_data.query_start_gpu + sequences_per_stream, gpu_data.query_end_gpu + sequences_per_stream, 
+                  gpu_data.ref_start_gpu + sequences_per_stream, gpu_data.ref_end_gpu + sequences_per_stream, gpu_data.query_start_gpu + sequences_per_stream, gpu_data.query_end_gpu + sequences_per_stream,
                   gpu_data.scores_gpu + sequences_per_stream, openGap, extendGap, d_scoring_matrix, d_encoding_matrix);
+          cudaErrchk(cudaGetLastError());
 
           asynch_mem_copies_dth(&gpu_data, alAbeg, alBbeg, top_scores_cpu, sequences_per_stream, sequences_stream_leftover, streams_cuda);
 
-                alAbeg += stringsPerIt;  
-                alBbeg += stringsPerIt; 
-                alAend += stringsPerIt; 
-                alBend += stringsPerIt;  
+                alAbeg += stringsPerIt;
+                alBbeg += stringsPerIt;
+                alAend += stringsPerIt;
+                alBend += stringsPerIt;
                 top_scores_cpu += stringsPerIt;
 
       }  // for iterations end here
