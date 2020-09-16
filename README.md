@@ -1,5 +1,5 @@
 # GPU-BSW
-**License:**  
+### License:
         
 **GPU accelerated Smith-Waterman for performing batch alignments (GPU-BSW) Copyright (c) 2019, The
 Regents of the University of California, through Lawrence Berkeley National
@@ -19,26 +19,31 @@ works, and perform publicly and display publicly, and to permit other to do
 so.**
        
 
+ 
+### To Build:
 
-To Build:<br />
-mkdir build <br />
-cd build <br />
-cmake CMAKE_BUILD_TYPE=Release .. <br />
-make <br />
 
-<br />
-To Execute DNA test run: <br />
+`mkdir build `
 
-./program_gpu dna ../test-data/dna-reference.fasta ../test-data/dna-query.fasta <br />
+`cd build `
 
-To Execute Protein test run: <br />
+`cmake CMAKE_BUILD_TYPE=Release .. `
 
-./program_gpu aa ../test-data/protein-reference.fasta ../test-data/protein-query.fasta <br />
+`make `
 
-<br />
+
+### To Execute DNA test run: 
+
+`./program_gpu dna ../test-data/dna-reference.fasta ../test-data/dna-query.fasta`
+
+### To Execute Protein test run: <br />
+
+`./program_gpu aa ../test-data/protein-reference.fasta ../test-data/protein-query.fasta`
+
+
 Contact: mgawan@lbl.gov
 
-<br />
-If you use GPU-BSW in your project, please cite this repo as:  
 
-*Muaaz G. Awan, GPU accelerated Smith-Waterman for performing batch alignments (GPU-BSW), 2019, Github Repository: https://github.com/m-gul/GPU-BSW/*
+
+### Citation
+*Awan, M.G., Deslippe, J., Buluc, A. et al. ADEPT: a domain independent sequence alignment strategy for gpu architectures. BMC Bioinformatics 21, 406 (2020). https://doi.org/10.1186/s12859-020-03720-1*
