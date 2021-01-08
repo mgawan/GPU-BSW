@@ -19,11 +19,11 @@ ADEPT provides a driver function that separates CUDA code from the main applicat
 
 ### To Execute DNA test run: 
 
-`./program_gpu dna ../test-data/dna-reference.fasta ../test-data/dna-query.fasta`
+`./program_gpu dna ../test-data/dna-reference.fasta ../test-data/dna-query.fasta ./out_file`
 
 ### To Execute Protein test run: <br />
 
-`./program_gpu aa ../test-data/protein-reference.fasta ../test-data/protein-query.fasta`
+`./program_gpu aa ../test-data/protein-reference.fasta ../test-data/protein-query.fasta ./out_file`
 
 ### Contact
 If you need help modifying the library to match your specific use-case or for other issues and bug reports please open an issue or reach out at mgawan@lbl.gov
