@@ -17,9 +17,10 @@ gpu_bsw_driver::kernel_driver_dna(std::vector<std::string> reads, std::vector<st
 
     int deviceCount;
     cudaGetDeviceCount(&deviceCount);
-    omp_set_num_threads(deviceCount);
+   // omp_set_num_threads(deviceCount);
     std::cout<<"Number of available GPUs:"<<deviceCount<<"\n";
-
+    deviceCount = 1;
+    omp_set_num_threads(deviceCount);
     cudaDeviceProp prop[deviceCount];
     for(int i = 0; i < deviceCount; i++)
       cudaGetDeviceProperties(&prop[i], 0);
