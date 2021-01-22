@@ -205,6 +205,9 @@ gpu_bsw_driver::kernel_driver_dna(std::vector<std::string> reads, std::vector<st
                  alBend += stringsPerIt;
                  top_scores_cpu += stringsPerIt;
 
+		 cudaStreamSynchronize (streams_cuda[0]);
+                 cudaStreamSynchronize (streams_cuda[1]);
+
         }  // for iterations end here
 
         auto end1  = NOW;
@@ -440,6 +443,9 @@ gpu_bsw_driver::kernel_driver_aa(std::vector<std::string> reads, std::vector<std
                 alAend += stringsPerIt;
                 alBend += stringsPerIt;
                 top_scores_cpu += stringsPerIt;
+		
+		 cudaStreamSynchronize (streams_cuda[0]);
+                 cudaStreamSynchronize (streams_cuda[1]);
 
       }  // for iterations end here
 
