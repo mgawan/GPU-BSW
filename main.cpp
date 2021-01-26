@@ -120,7 +120,7 @@ void proteinSampleRun(string refFile, string queFile, string out_file){
    };*/
 
     gpu_bsw_driver::alignment_results results_test;
-    gpu_bsw_driver::kernel_driver_aa(G_sequencesB, G_sequencesA, &results_test, scores_matrix, -6, -1);
+    gpu_bsw_driver::kernel_driver_aa(G_sequencesB, G_sequencesA, &results_test, scores_matrix, -6, -1, 0.5);
 
   //  gpu_bsw_driver::verificationTest(resultFile, results_test.g_alAbeg, results_test.g_alBbeg, results_test.g_alAend, results_test.g_alBend);
 
@@ -128,7 +128,12 @@ void proteinSampleRun(string refFile, string queFile, string out_file){
 
 
   for(int k = 0; k < G_sequencesA.size(); k++){
-    results_file<<results_test.top_scores[k]<<endl;
+        results_file<<results_test.top_scores[k]<<"\t"
+                <<results_test.ref_begin[k]<<"\t"
+                <<results_test.ref_end[k] - 1<<"\t"
+                <<results_test.query_begin[k]<<"\t"
+                <<results_test.query_end[k] - 1
+                <<endl;
   }
   results_file.flush();
   results_file.close();
@@ -207,7 +212,12 @@ void dnaSampleRun(string refFile, string queFile, string out_file){
 
   gpu_bsw_driver::kernel_driver_dna(G_sequencesB, G_sequencesA,&results_test, scores, 0.5);
   for(int k = 0; k < G_sequencesA.size(); k++){
-    results_file<<results_test.top_scores[k]<<endl;
+        results_file<<results_test.top_scores[k]<<"\t"
+                <<results_test.ref_begin[k]<<"\t"
+                <<results_test.ref_end[k] - 1<<"\t"
+                <<results_test.query_begin[k]<<"\t"
+                <<results_test.query_end[k] - 1
+                <<endl;
   }
   results_file.flush();
   results_file.close();

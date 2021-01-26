@@ -243,7 +243,7 @@ gpu_bsw_driver::kernel_driver_dna(std::vector<std::string> reads, std::vector<st
 }// end of DNA kernel
 
 void
-gpu_bsw_driver::kernel_driver_aa(std::vector<std::string> reads, std::vector<std::string> contigs, gpu_bsw_driver::alignment_results *alignments, short scoring_matrix[], short openGap, short extendGap)
+gpu_bsw_driver::kernel_driver_aa(std::vector<std::string> reads, std::vector<std::string> contigs, gpu_bsw_driver::alignment_results *alignments, short scoring_matrix[], short openGap, short extendGap, float factor)
 {
     unsigned maxContigSize = getMaxLength(contigs);
     unsigned maxReadSize = getMaxLength(reads);
@@ -269,10 +269,11 @@ gpu_bsw_driver::kernel_driver_aa(std::vector<std::string> reads, std::vector<std
     unsigned NBLOCKS             = totalAlignments;
     unsigned alignmentsPerDevice = NBLOCKS / deviceCount;
     unsigned leftOver_device     = NBLOCKS % deviceCount;
-    int       its    = (totalAlignments>20000)?(ceil((float)totalAlignments/20000)):1;
+    unsigned max_per_device = alignmentsPerDevice + leftOver_device;
+    
     initialize_alignments(alignments, totalAlignments); // pinned memory allocation
     auto start = NOW;
-
+    size_t tot_mem_req_per_aln = maxReadSize + maxContigSize + 2 * sizeof(int) + 5 * sizeof(short);
     #pragma omp parallel
     {
 
@@ -285,11 +286,18 @@ gpu_bsw_driver::kernel_driver_aa(std::vector<std::string> reads, std::vector<std
       for(int stm = 0; stm < NSTREAMS; stm++){
         cudaStreamCreate(&streams_cuda[stm]);
       }
+      if(my_cpu_id == 0)std::cout<<"Number of GPUs being used:"<<omp_get_num_threads()<<"\n";
+        size_t gpu_mem_avail = get_tot_gpu_mem(myGPUid);
+        unsigned max_alns_gpu = floor(((double)gpu_mem_avail*factor)/tot_mem_req_per_aln);
+        unsigned max_alns_sugg = 20000;
+        max_alns_gpu = max_alns_gpu > max_alns_sugg ? max_alns_sugg : max_alns_gpu;
+        int       its    = (max_per_device>max_alns_gpu)?(ceil((double)max_per_device/max_alns_gpu)):1;
+        std::cout<<"Mem (bytes) avail on device "<<myGPUid<<":"<<(long unsigned)gpu_mem_avail<<"\n";
+        std::cout<<"Mem (bytes) using on device "<<myGPUid<<":"<<(long unsigned)gpu_mem_avail*factor<<"\n";
 
       int BLOCKS_l = alignmentsPerDevice;
       if(my_cpu_id == deviceCount - 1)
           BLOCKS_l += leftOver_device;
-      if(my_cpu_id == 0)std::cout<<"Number of GPUs being used:"<<omp_get_num_threads()<<"\n";
       unsigned leftOvers    = BLOCKS_l % its;
       unsigned stringsPerIt = BLOCKS_l / its;
       gpu_alignments gpu_data(stringsPerIt + leftOvers); // gpu mallocs
