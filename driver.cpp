@@ -7,8 +7,13 @@
 #include <thrust/host_vector.h>
 #include <thrust/scan.h>
 
+size_t gpu_bsw_driver::get_tot_gpu_mem(int id) {
+  cudaDeviceProp prop;
+  cudaErrchk(cudaGetDeviceProperties(&prop, id));
+  return prop.totalGlobalMem;
+}
 void
-gpu_bsw_driver::kernel_driver_dna(std::vector<std::string> reads, std::vector<std::string> contigs, gpu_bsw_driver::alignment_results *alignments, short scores[4])
+gpu_bsw_driver::kernel_driver_dna(std::vector<std::string> reads, std::vector<std::string> contigs, gpu_bsw_driver::alignment_results *alignments, short scores[4], float factor)
 {
     short matchScore = scores[0], misMatchScore = scores[1], startGap = scores[2], extendGap = scores[3];
     unsigned maxContigSize = getMaxLength(contigs);
@@ -20,18 +25,16 @@ gpu_bsw_driver::kernel_driver_dna(std::vector<std::string> reads, std::vector<st
     omp_set_num_threads(deviceCount);
     std::cout<<"Number of available GPUs:"<<deviceCount<<"\n";
 
-    cudaDeviceProp prop[deviceCount];
-    for(int i = 0; i < deviceCount; i++)
-      cudaGetDeviceProperties(&prop[i], 0);
-
     unsigned NBLOCKS             = totalAlignments;
     unsigned alignmentsPerDevice = NBLOCKS / deviceCount;
     unsigned leftOver_device     = NBLOCKS % deviceCount;
     unsigned max_per_device = alignmentsPerDevice + leftOver_device;
-    int       its    = (max_per_device>20000)?(ceil((float)max_per_device/20000)):1;
+
     initialize_alignments(alignments, totalAlignments); // pinned memory allocation
     auto start = NOW;
 
+    size_t tot_mem_req_per_aln = maxReadSize + maxContigSize + 2 * sizeof(int) + 5 * sizeof(short);
+    
     #pragma omp parallel
     {
       int my_cpu_id = omp_get_thread_num();
@@ -44,11 +47,18 @@ gpu_bsw_driver::kernel_driver_dna(std::vector<std::string> reads, std::vector<st
         cudaStreamCreate(&streams_cuda[stm]);
       }
 
+        if(my_cpu_id == 0)std::cout<<"Number of GPUs being used:"<<omp_get_num_threads()<<"\n";
+        size_t gpu_mem_avail = get_tot_gpu_mem(myGPUid);
+        unsigned max_alns_gpu = floor(((double)gpu_mem_avail*factor)/tot_mem_req_per_aln);
+        unsigned max_alns_sugg = 20000;
+        max_alns_gpu = max_alns_gpu > max_alns_sugg ? max_alns_sugg : max_alns_gpu;
+        int       its    = (max_per_device>max_alns_gpu)?(ceil((double)max_per_device/max_alns_gpu)):1;
+        std::cout<<"Mem (bytes) avail on device "<<myGPUid<<":"<<(long unsigned)gpu_mem_avail<<"\n";
+        std::cout<<"Mem (bytes) using on device "<<myGPUid<<":"<<(long unsigned)gpu_mem_avail*factor<<"\n";
 
         int BLOCKS_l = alignmentsPerDevice;
         if(my_cpu_id == deviceCount - 1)
             BLOCKS_l += leftOver_device;
-        if(my_cpu_id == 0)std::cout<<"Number of GPUs being used:"<<omp_get_num_threads()<<"\n";
         unsigned leftOvers    = BLOCKS_l % its;
         unsigned stringsPerIt = BLOCKS_l / its;
         gpu_alignments gpu_data(stringsPerIt + leftOvers); // gpu mallocs
@@ -102,11 +112,11 @@ gpu_bsw_driver::kernel_driver_dna(std::vector<std::string> reads, std::vector<st
 
             std::vector<std::string> sequencesA(beginAVec, endAVec);
             std::vector<std::string> sequencesB(beginBVec, endBVec);
-            unsigned running_sum = 0;
+            long unsigned running_sum = 0;
             int sequences_per_stream = (blocksLaunched) / NSTREAMS;
             int sequences_stream_leftover = (blocksLaunched) % NSTREAMS;
-            unsigned half_length_A = 0;
-            unsigned half_length_B = 0;
+            long unsigned half_length_A = 0;
+            long unsigned half_length_B = 0;
 
             auto start_cpu = NOW;
 
@@ -119,7 +129,7 @@ gpu_bsw_driver::kernel_driver_dna(std::vector<std::string> reads, std::vector<st
                     running_sum = 0;
                   }
             }
-            unsigned totalLengthA = half_length_A + offsetA_h[sequencesA.size() - 1];
+            long unsigned totalLengthA = half_length_A + offsetA_h[sequencesA.size() - 1];
 
             running_sum = 0;
             for(int i = 0; i < sequencesB.size(); i++)
@@ -131,14 +141,14 @@ gpu_bsw_driver::kernel_driver_dna(std::vector<std::string> reads, std::vector<st
                   running_sum = 0;
                 }
             }
-            unsigned totalLengthB = half_length_B + offsetB_h[sequencesB.size() - 1];
+            long unsigned totalLengthB = half_length_B + offsetB_h[sequencesB.size() - 1];
 
             auto end_cpu = NOW;
             std::chrono::duration<double> cpu_dur = end_cpu - start_cpu;
 
             total_time_cpu += cpu_dur.count();
-            unsigned offsetSumA = 0;
-            unsigned offsetSumB = 0;
+            long unsigned offsetSumA = 0;
+            long unsigned offsetSumB = 0;
 
             for(int i = 0; i < sequencesA.size(); i++)
             {

@@ -26,8 +26,11 @@ struct alignment_results{
   short* top_scores;
 };
 
+size_t 
+get_tot_gpu_mem(int id);
+
 void
-kernel_driver_dna(std::vector<std::string> reads, std::vector<std::string> contigs, alignment_results *alignments, short scores[4]);
+kernel_driver_dna(std::vector<std::string> reads, std::vector<std::string> contigs, gpu_bsw_driver::alignment_results *alignments, short scores[4], float factor = 1.0);
 
 
 void
