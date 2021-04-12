@@ -14,8 +14,9 @@ callAlignKernel(std::vector<std::string> reads, std::vector<std::string> contigs
                 short** gg_alAbeg, short** gg_alBbeg, short** gg_alAend,
                 short** gg_alBend, char* rstFile)
 {
-    int deviceCount;
+    int deviceCount=1;
     cudaGetDeviceCount(&deviceCount);
+    omp_set_num_threads(deviceCount);
     cudaDeviceProp prop[deviceCount];
     for(int i = 0; i < deviceCount; i++)
         cudaGetDeviceProperties(&prop[i], 0);
@@ -288,6 +289,6 @@ verificationTest(char* rstFile, short* g_alAbeg, short* g_alBbeg, short* g_alAen
         if(errors == 0)
             std::cout << "VERIFICATION TEST PASSED" << std::endl;
         else
-            std::cout << "ERRORS OCCURRED DURING VERIFICATION TEST" << std::endl;
+            std::cout << "ERRORS OCCURRED DURING VERIFICATION TEST, erro count:" <<errors<< std::endl;
     }
 }

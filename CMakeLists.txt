@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
 
 project(sw_GPU LANGUAGES C CXX CUDA)
 
@@ -20,6 +20,14 @@ set_source_files_properties(${sources} PROPERTIES
     LINKER_LANGUAGE CUDA)
 
 add_executable(program_gpu ${sources} ${headers})
+target_compile_options(program_gpu PUBLIC
+    $<$<COMPILE_LANGUAGE:CUDA>:-gencode=arch=compute_50,code=sm_50>
+    $<$<COMPILE_LANGUAGE:CUDA>:-gencode=arch=compute_52,code=sm_52>
+    $<$<COMPILE_LANGUAGE:CUDA>:-gencode=arch=compute_60,code=sm_60>
+    $<$<COMPILE_LANGUAGE:CUDA>:-gencode=arch=compute_61,code=sm_61>
+    $<$<COMPILE_LANGUAGE:CUDA>:-gencode=arch=compute_70,code=sm_70>
+    ##    $<$<COMPILE_LANGUAGE:CUDA>:-gencode=arch=compute_80,code=sm_80>
+)
 #target_link_libraries(program_gpu PUBLIC timemory OpenMP::OpenMP_CXX)
 target_link_libraries(program_gpu PUBLIC OpenMP::OpenMP_CXX)
 target_include_directories(program_gpu PUBLIC ${PROJECT_SOURCE_DIR})
@@ -28,3 +36,4 @@ get_property(LANGUAGES GLOBAL PROPERTY ENABLED_LANGUAGES)
 if(CMAKE_CUDA_COMPILER AND "CUDA" IN_LIST LANGUAGES)
     target_compile_options(program_gpu PUBLIC $<$<COMPILE_LANGUAGE:CUDA>:-Xcompiler -fopenmp>)
 endif()
+
