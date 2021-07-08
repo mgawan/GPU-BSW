@@ -28,7 +28,7 @@ void
 callAlignKernel(std::vector<std::string> reads, std::vector<std::string> contigs,
                 unsigned maxReadSize, unsigned maxContigSize, unsigned totalAlignments,
                 short** gg_alAbeg, short** gg_alBbeg, short** gg_alAend,
-                short** gg_alBend, char* rstFile);
+                short** gg_alBend, short** gg_scores, char* rstFile);
 
 void
 verificationTest(char* rstFile, short* g_alAbeg, short* g_alBbeg, short* g_alAend,

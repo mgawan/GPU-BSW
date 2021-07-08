@@ -165,7 +165,7 @@ __global__ void
 align_sequences_gpu(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA,
                     unsigned* prefix_lengthB, unsigned maxMatrixSize, short* I_i_array,
                     short* I_j_array, short* seqA_align_begin, short* seqA_align_end,
-                    short* seqB_align_begin, short* seqB_align_end)
+                    short* seqB_align_begin, short* seqB_align_end, short* top_scores)
 {
     int myId  = blockIdx.x;
     int myTId = threadIdx.x;
@@ -242,21 +242,21 @@ align_sequences_gpu(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA
     __shared__ int i_max;
     __shared__ int j_max;
     int            j            = myTId + 1;
-      char myColumnChar;
+    char myColumnChar;
     if(lengthSeqA < lengthSeqB){
        myColumnChar = seqA[j - 1];  // read only once
       for(int i = myTId; i < lengthSeqB; i += 32)
       {
           myLocString[i] = seqB[i];
       }
-      }
+    }
     else{
        myColumnChar = seqB[j - 1];
       for(int i = myTId; i < lengthSeqA; i += 32)
       {
           myLocString[i] = seqA[i];
       }
-      }
+    }
     ///////////locsl dtring read in
     // for(int i = myTId; i < lengthSeqA; i += 32)
     // {
@@ -398,13 +398,15 @@ align_sequences_gpu(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA
         // if(myId == 0)printf("max:%d thread_i:%d\n", thread_max, thread_max_i );
         i_max           = thread_max_i;
         j_max           = thread_max_j;
-        short current_i = i_max, current_j = j_max;
+        short current_i = i_max, current_j = j_max, current_score = thread_max;
         if(lengthSeqA < lengthSeqB){
           seqB_align_end[myId] = current_i;
           seqA_align_end[myId] = current_j;
+          top_scores[myId] = current_score;
         }else{
-        seqA_align_end[myId] = current_i;
-        seqB_align_end[myId] = current_j;
+          seqA_align_end[myId] = current_i;
+          seqB_align_end[myId] = current_j;
+          top_scores[myId] = current_score;
         }
         traceBack(current_i, current_j, seqA_align_begin, seqB_align_begin, seqA, seqB,
                   I_i, I_j, lengthSeqB, lengthSeqA, diagOffset);
