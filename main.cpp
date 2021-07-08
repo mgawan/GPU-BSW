@@ -29,42 +29,47 @@ main(int argc, char* argv[])
              << " is:" << prop[i].totalGlobalMem << endl;
     }
 
-    // vector<string> G_sequencesA,
-    //     G_sequencesB;
+  //   vector<string> G_sequencesA,
+  //       G_sequencesB;
 
-    // string   myInLine;
-    // ifstream ref_file(argv[1]);
-    // ifstream quer_file(argv[2]);
-    // unsigned largestA = 0, largestB = 0;
+  //   string refFile = argv[1];
+  // string queFile = argv[2];
+  // string out_file = argv[3];
+  // string res_file = argv[4];
 
-    // int totSizeA = 0, totSizeB = 0;
-    // if(ref_file.is_open())
-    // {
-    //     while(getline(ref_file, myInLine))
-    //     {
-    //         string seq = myInLine.substr(myInLine.find(":") + 1, myInLine.size() - 1);
-    //         G_sequencesA.push_back(seq);
-    //         totSizeA += seq.size();
-    //         if(seq.size() > largestA)
-    //         {
-    //             largestA = seq.size();
-    //         }
-    //     }
-    // }
+  //   string   myInLine;
+  //   ifstream ref_file(refFile);
+  //   ifstream quer_file(queFile);
+  //   unsigned largestA = 0, largestB = 0;
 
-    // if(quer_file.is_open())
-    // {
-    //     while(getline(quer_file, myInLine))
-    //     {
-    //         string seq = myInLine.substr(myInLine.find(":") + 1, myInLine.size() - 1);
-    //         G_sequencesB.push_back(seq);
-    //         totSizeB += seq.size();
-    //         if(seq.size() > largestB)
-    //         {
-    //             largestB = seq.size();
-    //         }
-    //     }
-    // }
+  //   int totSizeA = 0, totSizeB = 0;
+  //   if(ref_file.is_open())
+  //   {
+  //       while(getline(ref_file, myInLine))
+  //       {
+  //           string seq = myInLine.substr(myInLine.find(":") + 1, myInLine.size() - 1);
+  //           G_sequencesA.push_back(seq);
+  //           totSizeA += seq.size();
+  //           if(seq.size() > largestA)
+  //           {
+  //               largestA = seq.size();
+  //           }
+  //       }
+  //   }
+
+  //   if(quer_file.is_open())
+  //   {
+  //       while(getline(quer_file, myInLine))
+  //       {
+  //           string seq = myInLine.substr(myInLine.find(":") + 1, myInLine.size() - 1);
+  //           G_sequencesB.push_back(seq);
+  //           totSizeB += seq.size();
+  //           if(seq.size() > largestB)
+  //           {
+  //               largestB = seq.size();
+  //           }
+  //       }
+  //   }
 
 string refFile = argv[1];
   string queFile = argv[2];
@@ -142,9 +147,9 @@ string refFile = argv[1];
     results_file << "alignment_scores\t"     << "reference_begin_location\t" << "reference_end_location\t" 
                 << "query_begin_location\t" << "query_end_location"         << std::endl;
     for(int i = 0; i < ref_sequences.size(); i++){
-        results_file <<g_scores[i]<<"\t"<<g_alAbeg[i]<<"\t"<<g_alAend[i]<<"\t"<<g_alBbeg[i]<<"\t"<<g_alBend[i]<<endl;
+        results_file <<g_scores[i]<<"\t"<<g_alAbeg[i]-1<<"\t"<<g_alAend[i]-1<<"\t"<<g_alBbeg[i]-1<<"\t"<<g_alBend[i]-1<<endl;
     }
-    verificationTest(argv[4], g_alAbeg, g_alBbeg, g_alAend, g_alBend);
+    //verificationTest(argv[4], g_alAbeg, g_alBbeg, g_alAend, g_alBend);
 
     return 0;
 }

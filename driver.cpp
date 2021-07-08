@@ -251,6 +251,7 @@ callAlignKernel(std::vector<std::string> reads, std::vector<std::string> contigs
     *gg_alBbeg = g_alBbeg;
     *gg_alAend = g_alAend;
     *gg_alBend = g_alBend;
+    *gg_scores = g_top_scores;
 }
 
 void
