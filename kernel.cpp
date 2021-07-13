@@ -2,7 +2,7 @@
 #include <kernel.hpp>
 
 __inline__ __device__ short
-warpReduceMax(short val, short& myIndex, short& myIndex2, unsigned lengthSeqB)
+warpReduceMax_with_index(short val, short& myIndex, short& myIndex2, unsigned lengthSeqB)
 {
     int   warpSize = 32;
     short myMax    = 0;
@@ -15,28 +15,69 @@ warpReduceMax(short val, short& myIndex, short& myIndex2, unsigned lengthSeqB)
     // unsigned newmask;
     for(int offset = warpSize / 2; offset > 0; offset /= 2)
     {
-        val     = max(val, __shfl_down_sync(mask, val, offset));
+
+        int tempVal = __shfl_down_sync(mask, val, offset);
+        val     = max(val,tempVal);
         newInd  = __shfl_down_sync(mask, ind, offset);
         newInd2 = __shfl_down_sync(mask, ind2, offset);
-        __syncthreads();
-
         if(val != myMax)
         {
             ind   = newInd;
             ind2  = newInd2;
             myMax = val;
         }
-        __syncthreads();
+        else if((val == tempVal) ) // this is kind of redundant and has been done purely to match the results
+                                    // with SSW to get the smallest alignment with highest score. Theoreticaly
+                                    // all the alignmnts with same score are same.
+        {
+          if(newInd < ind){
+            ind = newInd;
+            ind2 = newInd2;
+          }
+        }
     }
-    __syncthreads();
     myIndex  = ind;
     myIndex2 = ind2;
     val      = myMax;
     return val;
 }
 
+// __inline__ __device__ short
+// warpReduceMax(short val, short& myIndex, short& myIndex2, unsigned lengthSeqB)
+// {
+//     int   warpSize = 32;
+//     short myMax    = 0;
+//     short newInd   = 0;
+//     short newInd2  = 0;
+//     short ind      = myIndex;
+//     short ind2     = myIndex2;
+//     myMax          = val;
+//     unsigned mask  = __ballot_sync(0xffffffff, threadIdx.x < lengthSeqB);  // blockDim.x
+//     // unsigned newmask;
+//     for(int offset = warpSize / 2; offset > 0; offset /= 2)
+//     {
+//         val     = max(val, __shfl_down_sync(mask, val, offset));
+//         newInd  = __shfl_down_sync(mask, ind, offset);
+//         newInd2 = __shfl_down_sync(mask, ind2, offset);
+//         __syncthreads();
+
+//         if(val != myMax)
+//         {
+//             ind   = newInd;
+//             ind2  = newInd2;
+//             myMax = val;
+//         }
+//         __syncthreads();
+//     }
+//     __syncthreads();
+//     myIndex  = ind;
+//     myIndex2 = ind2;
+//     val      = myMax;
+//     return val;
+// }
+
 __device__ short
-blockShuffleReduce(short myVal, short& myIndex, short& myIndex2, unsigned lengthSeqB)
+blockShuffleReduce_with_index(short myVal, short& myIndex, short& myIndex2, unsigned lengthSeqB)
 {
     int              laneId = threadIdx.x % 32;
     int              warpId = threadIdx.x / 32;
@@ -45,20 +86,19 @@ blockShuffleReduce(short myVal, short& myIndex, short& myIndex2, unsigned length
     __shared__ short locInds2[32];
     short            myInd  = myIndex;
     short            myInd2 = myIndex2;
-    myVal                   = warpReduceMax(myVal, myInd, myInd2, lengthSeqB);
+    myVal                   = warpReduceMax_with_index(myVal, myInd, myInd2, lengthSeqB);
 
+    __syncthreads();
     if(laneId == 0)
         locTots[warpId] = myVal;
     if(laneId == 0)
         locInds[warpId] = myInd;
     if(laneId == 0)
         locInds2[warpId] = myInd2;
-
     __syncthreads();
     unsigned check =
         ((32 + blockDim.x - 1) / 32);  // mimicing the ceil function for floats
                                        // float check = ((float)blockDim.x / 32);
-
     if(threadIdx.x < check)  /////******//////
     {
         myVal  = locTots[threadIdx.x];
@@ -75,12 +115,62 @@ blockShuffleReduce(short myVal, short& myIndex, short& myIndex2, unsigned length
 
     if(warpId == 0)
     {
-        myVal    = warpReduceMax(myVal, myInd, myInd2, lengthSeqB);
+        myVal    = warpReduceMax_with_index(myVal, myInd, myInd2, lengthSeqB);
         myIndex  = myInd;
         myIndex2 = myInd2;
     }
+    __syncthreads();
     return myVal;
 }
+
+
+// __device__ short
+// blockShuffleReduce(short myVal, short& myIndex, short& myIndex2, unsigned lengthSeqB)
+// {
+//     int              laneId = threadIdx.x % 32;
+//     int              warpId = threadIdx.x / 32;
+//     __shared__ short locTots[32];
+//     __shared__ short locInds[32];
+//     __shared__ short locInds2[32];
+//     short            myInd  = myIndex;
+//     short            myInd2 = myIndex2;
+//     myVal                   = warpReduceMax(myVal, myInd, myInd2, lengthSeqB);
+
+//     if(laneId == 0)
+//         locTots[warpId] = myVal;
+//     if(laneId == 0)
+//         locInds[warpId] = myInd;
+//     if(laneId == 0)
+//         locInds2[warpId] = myInd2;
+
+//     __syncthreads();
+//     unsigned check =
+//         ((32 + blockDim.x - 1) / 32);  // mimicing the ceil function for floats
+//                                        // float check = ((float)blockDim.x / 32);
+
+//     if(threadIdx.x < check)  /////******//////
+//     {
+//         myVal  = locTots[threadIdx.x];
+//         myInd  = locInds[threadIdx.x];
+//         myInd2 = locInds2[threadIdx.x];
+//     }
+//     else
+//     {
+//         myVal  = 0;
+//         myInd  = -1;
+//         myInd2 = -1;
+//     }
+//     __syncthreads();
+
+//     if(warpId == 0)
+//     {
+//         myVal    = warpReduceMax(myVal, myInd, myInd2, lengthSeqB);
+//         myIndex  = myInd;
+//         myIndex2 = myInd2;
+//     }
+//     return myVal;
+// }
+
 __device__ __host__ short
            findMax(short array[], int length, int* ind)
 {
@@ -388,7 +478,7 @@ align_sequences_gpu(char* seqA_array, char* seqB_array, unsigned* prefix_lengthA
     }
     __syncthreads();
 
-    thread_max = blockShuffleReduce(thread_max, thread_max_i, thread_max_j,
+    thread_max = blockShuffleReduce_with_index(thread_max, thread_max_i, thread_max_j,
                                     minSize);  // thread 0 will have the correct values
 
     __syncthreads();

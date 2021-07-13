@@ -5,17 +5,17 @@
 #include <iostream>
 #include <sys/time.h>
 
-#define EXTEND_GAP -2
-#define START_GAP -2
+#define EXTEND_GAP -1
+#define START_GAP -6
 //#define NBLOCKS 15000
-#define MATCH 15
+#define MATCH 3
 #define MISMATCH -3
 
 __inline__ __device__ short
-warpReduceMax(short val, short& myIndex, short& myIndex2);
+warpReduceMax_with_index(short val, short& myIndex, short& myIndex2, unsigned lengthSeqB);
 
 __device__ short
-blockShuffleReduce(short myVal, short& myIndex, short& myIndex2);
+blockShuffleReduce_with_index(short myVal, short& myIndex, short& myIndex2, unsigned lengthSeqB);
 
 __device__ __host__ short
            findMax(short array[], int length, int* ind);
