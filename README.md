@@ -1,3 +1,6 @@
+# ADEPT Revamped
+A newer, more user friendly version of ADEPT [is available here](https://github.com/mgawan/ADEPT). It is recommended to use the newer version unless you are trying to reproduce the results from the original ADEPT paper.
+
 # ADEPT (GPU-BSW)
 GPU-BSW or GPU Batch Smith-Waterman is a GPU accelerated implementation of the Smith-Waterman alignment algorithm based on the ADEPT strategy hence also referenced as ADEPT. Implementation details of ADEPT can be found in the publication here: https://rdcu.be/b7fhY. ADEPT uses GPU's two level parallelism to perform multiple sequence alignments in batches while using fine grained parallelism to accelerate each individual alignment.  Overall it provides several time faster performance in comparison to existing SIMD implementations for CPU, a comparative study with existing CPU and GPU methods has been provided in the publication mentioned above. ADEPT performs a complete smith-waterman alignment with affine gap penalities and can align both protein and DNA sequences. 
 
